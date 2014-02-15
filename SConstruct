@@ -54,6 +54,6 @@ builddir = env.Dir('build/%s-%s' % (env['build'], platform.machine()))
 
 Export('env')
 
-SConscript(["SConscript"], variant_dir=builddir)
+SConscript("src/SConscript", variant_dir=builddir)
 
 # vim: ft=python
