@@ -86,14 +86,14 @@ fetchtarball() {
         return
     fi
     mkdir -p $tgtdir
-    ( cd $tgtdir && wget -N $url && tar xzf ${url:t} )
+    ( cd $tgtdir && curl -z ${url:t} -O $url && tar xzf ${url:t} )
 }
 
 
 fetchsvnrepository() {
     [[ $# == 2 ]] || exit $?
     local tgtdir=$1 url=$2
-    svn checkout $url $tgtdir
+    svn checkout --quiet $url $tgtdir
 }
 
 # Build commands here --------------------------------------------------------
