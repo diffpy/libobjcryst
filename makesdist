@@ -19,7 +19,7 @@ Options:
 "
 DOC=${${DOC##[[:space:]]##}%%[[:space:]]##}
 MYDIR=${0:A:h}
-BASEDIR=${MYDIR:h}
+BASEDIR=${MYDIR}
 BDIR=${BASEDIR}/build
 
 # Upstream code repositories -------------------------------------------------
