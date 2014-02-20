@@ -15,6 +15,7 @@ a range FIRST-LAST.  Use option --list to display step number.
 Options:
 
   -l, --list    show a numbered list of packages and exit
+  --clean       remove all generated files except downloads
   -h, --help    display this message and exit
 "
 DOC=${${DOC##[[:space:]]##}%%[[:space:]]##}
@@ -40,16 +41,18 @@ svnrepos=(
 
 # Parse Options --------------------------------------------------------------
 
+[[ 0 != $# ]] || opt_help=1
+
 zmodload zsh/zutil
 zparseopts -K -E -D \
-    h=opt_help -help=opt_help l=opt_list -list=opt_list
+    h=opt_help -help=opt_help l=opt_list -list=opt_list -clean=opt_clean
 
-if [[ -n ${opt_help} || ( $# == 0 && -z ${opt_list} ) ]]; then
+if [[ -n ${opt_help} ]]; then
     print -r -- $DOC
     exit
 fi
 
-typeset -U selection
+typeset -aU selection
 for n; do
     if [[ $n == [[:digit:]]##-[[:digit:]]## ]]; then
         selection=( $selection {${n%%-*}..${n##*-}} )
@@ -63,6 +66,10 @@ for n; do
     fi
 done
 
+if [[ -n ${opt_list} && -z ${selection} ]]; then
+    selection=( {1..100} )
+fi
+
 # Define functions used in build steps ---------------------------------------
 
 integer BIDX=0
@@ -70,7 +77,7 @@ integer BIDX=0
 ListSkipOrBuild() {
     local name=${1?}
     (( ++BIDX ))
-    if [[ -n ${selection} && -z ${(M)selection:#${BIDX}} ]]; then
+    if [[ -z ${(M)selection:#${BIDX}} ]]; then
         return 0
     fi
     if [[ -n ${opt_list} ]]; then
@@ -123,6 +130,12 @@ assign_cctbx_sources() {
 
 cd $BASEDIR
 
+if [[ -n $opt_clean ]]; then
+    print "# Clean generated files"
+    rm -rf ${BDIR}/bundle
+    rm -rf ${BDIR}/cctbx/cctbx_build
+fi
+
 ListSkipOrBuild "download upstream sources" || (
     mkdir -p $BDIR
     cd $BDIR
@@ -149,10 +162,10 @@ ListSkipOrBuild "configure cctbx" || {
 ListSkipOrBuild "create bundle branch" || {
     GITLASTCOMMIT=$(cd $BASEDIR && git rev-parse HEAD)
     cd ${BDIR}
-    if [[ ! -d libfox ]]; then
-        git clone ${BASEDIR} libfox
+    if [[ ! -d bundle ]]; then
+        git clone ${BASEDIR} bundle
     fi
-    cd libfox
+    cd bundle
     git checkout -B bundle
     # objcryst
     objcryst_exclude=(
