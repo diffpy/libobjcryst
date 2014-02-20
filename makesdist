@@ -177,6 +177,7 @@ ListSkipOrBuild "create bundle branch" || {
         --link-dest=${BDIR}/ObjCryst ${BDIR}/ObjCryst/ src/ObjCryst/
     # newmat
     rsync -a --delete \
+        --exclude='newmat*.tar.gz' \
         --link-dest=${BDIR}/newmat ${BDIR}/newmat/ src/newmat/
     # cctbx
     assign_cctbx_sources
@@ -207,5 +208,5 @@ ListSkipOrBuild "write libobjcryst tarball" || {
     version=${${version#v}%-g[[:xdigit:]]##}
     prefix=libobjcryst-${version}
     output=${prefix}.tar.gz
-    git archive --verbose --prefix=${prefix}/ -o $output bundle
+    git archive --prefix=${prefix}/ -o $output bundle
 }
