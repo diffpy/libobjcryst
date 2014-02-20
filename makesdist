@@ -6,7 +6,7 @@ umask 022
 
 DOC="\
 ${0:t} build libobjcryst source bundle from fox-objcryst and cctbx repos.
-usage: ${0:t} [options] [N1] [N2] [FIRST-LAST]
+usage: ${0:t} [options] [all] [N1] [N2] [FIRST-LAST]
 
 With no arguments all build steps are executed in sequence.  Otherwise do
 only steps given as arguments, where each argument is a step number or
@@ -44,7 +44,7 @@ zmodload zsh/zutil
 zparseopts -K -E -D \
     h=opt_help -help=opt_help l=opt_list -list=opt_list
 
-if [[ -n ${opt_help} ]]; then
+if [[ -n ${opt_help} || ( $# == 0 && -z ${opt_list} ) ]]; then
     print -r -- $DOC
     exit
 fi
@@ -53,6 +53,8 @@ typeset -U selection
 for n; do
     if [[ $n == [[:digit:]]##-[[:digit:]]## ]]; then
         selection=( $selection {${n%%-*}..${n##*-}} )
+    elif [[ $n == all ]]; then
+        selection=( {1..100} )
     else
         selection=( $selection $n )
     fi
@@ -118,7 +120,7 @@ assign_cctbx_sources() {
 
 cd $BASEDIR
 
-ListSkipOrBuild "fetch sources" || (
+ListSkipOrBuild "download upstream sources" || (
     mkdir -p $BDIR
     cd $BDIR
     for t u in $svnrepos;  fetchsvnrepository $t $u
