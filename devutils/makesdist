@@ -96,15 +96,32 @@ fetchsvnrepository() {
     svn checkout --quiet $url $tgtdir
 }
 
+
+typeset -aU cctbx_sources
+assign_cctbx_sources() {
+    [[ 0 == ${#cctbx_sources} ]] || return
+    local lines
+    pushd ${BDIR}/cctbx/cctbx_build
+    lines=( ${(f)"$(bin/libtbx.scons -n --tree=all lib/libcctbx.a)"} )
+    lines=( ${${(M)lines:#*+-*.(h|cpp)}#*+-} )
+    cctbx_sources=( $lines )
+    cctbx_sources=( ${^${cctbx_sources:a}}(N.) )
+    popd
+    # explicitly exclude unnecessary sources
+    cctbx_sources=( ${cctbx_sources:#*/eltbx/electron_scattering*} )
+}
+
 # Build commands here --------------------------------------------------------
 
 cd $BASEDIR
 
 ListSkipOrBuild "fetch sources" || (
+    mkdir -p $BDIR
     cd $BDIR
     for t u in $svnrepos;  fetchsvnrepository $t $u
     for t u in $tarballs;  fetchtarball $t $u
 )
+
 
 ListSkipOrBuild "configure cctbx" || {
     mkdir -p ${BDIR}/cctbx/cctbx_build
@@ -122,16 +139,44 @@ ListSkipOrBuild "configure cctbx" || {
     python ../cctbx_sources/libtbx/configure.py $cctbx_configargs
 }
 
-ListSkipOrBuild "create bundle branch" || {
-    exit
-    CCTBXBDIR=${SRCDIR}/cctbx/cctbx_build
-    cd $PYTHONDIR
-    cctbxpth="$(<cctbx.pth)"
-    lines=( ${(f)cctbxpth} )
-    if [[ -n ${(M)lines:#/*} ]]; then
-        lines[1]="import os; os.environ.setdefault('LIBTBX_BUILD', os.path.abspath(os.path.dirname(fullname) + '$($RELPATH $CCTBXBDIR .)'))"
-        lines=( ${lines[1]} ${(f)"$($RELPATH ${lines[2,-1]} .)"} )
-        print -l ${lines} >| cctbx.pth
-    fi
-}
 
+ListSkipOrBuild "create bundle branch" || {
+    GITLASTCOMMIT=$(cd $BASEDIR && git rev-parse HEAD)
+    cd ${BDIR}
+    if [[ ! -d libfox ]]; then
+        git clone ${BASEDIR} libfox
+    fi
+    cd libfox
+    git checkout -B bundle
+    # objcryst
+    objcryst_exclude=(
+        /doc  /example  /wxCryst
+        Makefile  '*.mak' '.cvs*'
+    )
+    rsync -a --delete --delete-excluded \
+        --exclude=${^objcryst_exclude} --cvs-exclude \
+        --link-dest=${BDIR}/ObjCryst ${BDIR}/ObjCryst/ src/ObjCryst/
+    # newmat
+    rsync -a --delete \
+        --link-dest=${BDIR}/newmat ${BDIR}/newmat/ src/newmat/
+    # cctbx
+    assign_cctbx_sources
+    for f in $cctbx_sources; do
+        if [[ $f == ${BDIR}/*/include/*.h ]]; then
+            t=src/cctbx/include/${f##*/include/}
+        elif [[ $f == *.h ]]; then
+            t=src/cctbx/include/${f##${BDIR}*cctbx_(build|sources)/}
+        else
+            t=src/cctbx/${f##${BDIR}*cctbx_(build|sources)/}
+        fi
+        test -d ${t:h} || mkdir -p ${t:h}
+        ln -f $f $t
+    done
+    ln -f ${BDIR}/cctbx/cctbx_sources/cctbx/*.txt src/cctbx/
+    # Commit bundle branch
+    git add --all src
+    if ! git diff --cached --quiet; then
+        git commit -m "Bundle generated from scripts at $GITLASTCOMMIT."
+    fi
+    git push -f ${BASEDIR}/.git bundle:bundle
+}
