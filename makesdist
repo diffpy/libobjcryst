@@ -14,7 +14,7 @@ a range FIRST-LAST.  Use option --list to display step number.
 
 Options:
 
-  --list        show a numbered list of packages and exit
+  -l, --list    show a numbered list of packages and exit
   -h, --help    display this message and exit
 "
 DOC=${${DOC##[[:space:]]##}%%[[:space:]]##}
@@ -53,10 +53,13 @@ typeset -U selection
 for n; do
     if [[ $n == [[:digit:]]##-[[:digit:]]## ]]; then
         selection=( $selection {${n%%-*}..${n##*-}} )
+    elif [[ $n == [[:digit:]]## ]]; then
+        selection=( $selection $n )
     elif [[ $n == all ]]; then
         selection=( {1..100} )
     else
-        selection=( $selection $n )
+        print -u2 "Invalid option or argument '$n'."
+        exit 2
     fi
 done
 
