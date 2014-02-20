@@ -1,9 +1,19 @@
-# Top level targets that are defined in subsidiary SConscripts
-#
-# lib               -- build shared library object
-# install           -- install everything under prefix directory
-# install-include   -- install C++ header files
-# install-lib       -- install shared library object
+MY_SCONS_HELP = """\
+SCons build rules for the libobjcryst C++ library
+Usage: scons [target] [var=value]
+
+Targets:
+
+lib                 build the shared library object [default]
+install             install everything under prefix directory
+install-lib         install the shared library object
+install-include     install the C++ header files
+
+Build configuration variables:
+%s
+Variables can be also assigned in a user-written script sconsvars.py.
+SCons construction environment can be customized in sconscript.local script.
+"""
 
 import os
 import platform
@@ -29,7 +39,7 @@ env.EnsureSConsVersion(0, 98)
 vars = Variables('sconsvars.py')
 
 vars.Add(EnumVariable('build',
-    'compiler settings', 'debug',
+    'compiler settings', 'fast',
     allowed_values=('debug', 'fast')))
 vars.Add(BoolVariable('profile',
     'build with profiling information', False))
@@ -48,11 +58,14 @@ vars.Add(PathVariable('includedir',
     env['prefix'] + '/include',
     PathVariable.PathAccept))
 vars.Update(env)
-env.Help(vars.GenerateHelpText(env))
+env.Help(MY_SCONS_HELP % vars.GenerateHelpText(env))
 
 builddir = env.Dir('build/%s-%s' % (env['build'], platform.machine()))
 
 Export('env')
+
+if os.path.isfile('sconscript.local'):
+    env.SConscript('sconscript.local')
 
 SConscript("src/SConscript", variant_dir=builddir)
 

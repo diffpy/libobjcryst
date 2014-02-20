@@ -19,11 +19,11 @@ else:
         '''.split(), language='C++', autoadd=False)
     env = conf.Finish()
 
-# setup cctbx according to has_shared_cctbx flag
+# reuse the installed cctbx library if available
 if has_shared_cctbx:
     env.AppendUnique(LIBS='cctbx')
+# otherwise link in the included cctbx sources
 else:
-    # statically link in the included cctbx sources
     # Define the what we need for the cctbx
     cctbxenv = env.Clone()
     # Source path
