@@ -105,7 +105,10 @@ assign_cctbx_sources() {
     lines=( ${(f)"$(bin/libtbx.scons -n --tree=all lib/libcctbx.a)"} )
     lines=( ${${(M)lines:#*+-*.(h|cpp)}#*+-} )
     cctbx_sources=( $lines )
-    cctbx_sources=( ${^${cctbx_sources:a}}(N.) )
+    cctbx_sources=(
+        {.,../cctbx_sources}/${^${cctbx_sources:#/*}}(N-.:a)
+        ${(M)cctbx_sources:#/*}
+    )
     popd
     # explicitly exclude unnecessary sources
     cctbx_sources=( ${cctbx_sources:#*/eltbx/electron_scattering*} )
