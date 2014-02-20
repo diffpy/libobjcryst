@@ -186,3 +186,13 @@ ListSkipOrBuild "create bundle branch" || {
     fi
     git push -f ${BASEDIR}/.git bundle:bundle
 }
+
+
+ListSkipOrBuild "write libobjcryst tarball" || {
+    cd $BASEDIR
+    version=$(git describe --match='v[[:digit:]]*')
+    version=${${version#v}%-g[[:xdigit:]]##}
+    prefix=libobjcryst-${version}
+    output=${prefix}.tar.gz
+    git archive --verbose --prefix=${prefix}/ -o $output bundle
+}
