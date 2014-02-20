@@ -4,20 +4,30 @@ Import('env')
 
 # Build environment configuration --------------------------------------------
 
+# Insert LIBRARY_PATH explicitly because some compilers
+# ignore it in the system environment.
+env.PrependUnique(LIBPATH=env['ENV'].get('LIBRARY_PATH', '').split(':'))
+
 # Use Intel C++ compiler when it is available
 icpc = env.WhereIs('icpc')
 if icpc:
     env.Tool('intelc', topdir=icpc[:icpc.rfind('/bin')])
 
+fast_linkflags = ['-s']
+
+# Platform specific intricacies.
+if env['PLATFORM'] == 'darwin':
+    fast_linkflags[:] = []
+
 # Compiler specific options
 if icpc:
     # options for Intel C++ compiler on hpc dev-intel07
-    env.AppendUnique(CCFLAGS=['-w1', '-fp-model', 'precise'])
+    env.PrependUnique(CCFLAGS=['-w1', '-fp-model', 'precise'])
     env.PrependUnique(LIBS=['imf'])
-    fast_optimflags = ['-fast']
+    fast_optimflags = ['-fast', '-no-ipo']
 else:
     # g++ options
-    env.AppendUnique(CCFLAGS=['-Wall'])
+    env.PrependUnique(CCFLAGS=['-Wall'])
     fast_optimflags = ['-ffast-math']
 
 # Configure build variants
@@ -25,8 +35,8 @@ if env['build'] == 'debug':
     env.Append(CCFLAGS='-g')
 elif env['build'] == 'fast':
     env.AppendUnique(CCFLAGS=['-O3'] + fast_optimflags)
-    env.AppendUnique(CPPDEFINES=['NDEBUG'])
-    env.AppendUnique(LINKFLAGS='-s')
+    env.AppendUnique(CPPDEFINES={'NDEBUG' : None})
+    env.AppendUnique(LINKFLAGS=fast_linkflags)
 
 if env['profile']:
     env.AppendUnique(CCFLAGS='-pg')
@@ -53,6 +63,7 @@ objcrystobjs = env["objcrystobjs"]
 # This builds the shared library
 libobjcryst = env.SharedLibrary("libObjCryst",
         objcrystobjs + cctbxobjs + newmatobjs)
+Default(libobjcryst)
 Alias('lib', libobjcryst)
 
 # Installation targets.
@@ -60,26 +71,19 @@ Alias('lib', libobjcryst)
 prefix = env['prefix']
 
 # install-lib
-libdir = env.get('libdir', os.path.join(prefix, 'lib'))
-libinstall = Install(libdir, libobjcryst)
+libinstall = Install(env['libdir'], libobjcryst)
 if env['PLATFORM'] == 'darwin':
     env.AddPostAction(libinstall,
             'install_name_tool -id $TARGET.abspath $TARGET')
 Alias('install-lib', libinstall)
 
 # install-includes
-includedir = env.get('includedir', os.path.join(env['prefix'], 'include'))
-srcdir = Dir('.').path
-def get_target_path(f):
-    cutleft = len(srcdir) + 1
-    frelsrc = f.path[cutleft:]
-    rv = os.path.join(includedir, frelsrc)
-    return rv
-include_targets = map(get_target_path, env['lib_includes'])
-
+ninc = len(Dir('.').path) + 1
+inc_target_path = lambda f: os.path.join(env['includedir'], f.path[ninc:])
+include_targets = map(inc_target_path, env['lib_includes'])
 Alias('install-include', InstallAs(include_targets, env['lib_includes']))
 
 # install
-Alias('install', ['install-include', 'install-lib'])
+Alias('install', ['install-lib', 'install-include'])
 
 # vim: ft=python
