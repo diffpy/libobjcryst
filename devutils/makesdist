@@ -128,18 +128,16 @@ ListSkipOrBuild "fetch sources" || (
 
 ListSkipOrBuild "configure cctbx" || {
     mkdir -p ${BDIR}/cctbx/cctbx_build
+    # minimum configuration that generates all files used in ObjCryst
     cctbx_configargs=(
         --no-bin-python
-        # 2013-10-30 PJ:
-        # cctbx Python extensions get linked to included boost_python, not
-        # sure if it is possible to link with the system boost_python.
-        # For now the build of extensions is disabled.
         --build-boost-python-extensions=False
-        mmtbx libtbx cctbx iotbx fftw3tbx rstbx spotfinder
-        smtbx mmtbx cbflib clipper
+        cctbx
     )
     cd ${BDIR}/cctbx/cctbx_build
     python ../cctbx_sources/libtbx/configure.py $cctbx_configargs
+    # compile one file to make "scons -n" work in assign_cctbx_sources
+    bin/libtbx.scons cctbx/uctbx/uctbx.o
 }
 
 
