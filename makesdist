@@ -159,14 +159,15 @@ ListSkipOrBuild "configure cctbx" || {
 }
 
 
-ListSkipOrBuild "create bundle branch" || {
+ListSkipOrBuild "create bundle tag" || {
     GITLASTCOMMIT=$(cd $BASEDIR && git rev-parse HEAD)
     cd ${BDIR}
     if [[ ! -d bundle ]]; then
         git clone ${BASEDIR} bundle
     fi
     cd bundle
-    git checkout -B bundle
+    git fetch origin
+    git checkout --detach --quiet $GITLASTCOMMIT
     # objcryst
     objcryst_exclude=(
         /doc  /example  /wxCryst
@@ -193,12 +194,13 @@ ListSkipOrBuild "create bundle branch" || {
         ln -f $f $t
     done
     ln -f ${BDIR}/cctbx/cctbx_sources/cctbx/*.txt src/cctbx/
-    # Commit bundle branch
+    # Commit and create a bundle tag
     git add --all src
     if ! git diff --cached --quiet; then
         git commit -m "Bundle generated from scripts at $GITLASTCOMMIT."
+        git tag -f bundle
     fi
-    git push -f ${BASEDIR}/.git bundle:bundle
+    git push -f ${BASEDIR} tags/bundle:bundle
 }
 
 
