@@ -6,11 +6,11 @@ umask 022
 
 DOC="\
 ${0:t} build libobjcryst source bundle from fox-objcryst and cctbx repos.
-usage: ${0:t} [options] [all] [N1] [N2] [FIRST-LAST]
+usage: ${0:t} [options] [all] [N] [N1-N2]
 
-With no arguments all build steps are executed in sequence.  Otherwise do
-only steps given as arguments, where each argument is a step number or
-a range FIRST-LAST.  Use option --list to display step number.
+Perform selected build steps in sequence.  Select all steps with 'all'
+or only specific steps with a step number N or a range N1-N2.
+Use option --list to display all steps.
 
 Options:
 
@@ -25,7 +25,9 @@ BDIR=${BASEDIR}/build
 
 # Upstream code repositories -------------------------------------------------
 
-# URLs to source code bundles as (directory, URL)
+## edit URLs in this section to follow upstream updates.
+
+# URLs to source code bundles in pairs of (directory, URL)
 tarballs=(
     cctbx
         http://cci.lbl.gov/cctbx_build/results/2013_07_05_0005/cctbx_bundle.tar.gz
@@ -33,10 +35,10 @@ tarballs=(
         http://www.robertnz.net/ftp/newmat11.tar.gz
 )
 
-# Subversion repositories as (targetpath, URL)
+# Subversion repositories defined in pairs of (targetpath, URL)
 svnrepos=(
     ObjCryst
-        https://svn.code.sf.net/p/objcryst/code/trunk/ObjCryst
+        https://svn.code.sf.net/p/objcryst/code/trunk/ObjCryst@1378
 )
 
 # Parse Options --------------------------------------------------------------
