@@ -75,6 +75,11 @@ libinstall = Install(env['libdir'], libobjcryst)
 if env['PLATFORM'] == 'darwin':
     env.AddPostAction(libinstall,
             'install_name_tool -id $TARGET.abspath $TARGET')
+if env['PLATFORM'] == 'posix' and WhereIs('ldconfig'):
+    opts = ''
+    if os.getuid() != 0:  opts = '-n'
+    env.AddPostAction(libinstall,
+            'ldconfig %s $TARGET.dir' % opts)
 Alias('install-lib', libinstall)
 
 # install-includes
