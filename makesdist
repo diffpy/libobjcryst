@@ -209,9 +209,12 @@ ListSkipOrBuild "create bundle tag" || {
 
 ListSkipOrBuild "write libobjcryst tarball" || {
     cd $BASEDIR
-    version=$(git describe --match='v[[:digit:]]*')
-    version=${${version#v}%-g[[:xdigit:]]##}
+    version=$(git describe --match='s[[:digit:]]*')
+    version=${${version#s}%-g[[:xdigit:]]##}
     prefix=libobjcryst-${version}
     output=${prefix}.tar.gz
     git archive --prefix=${prefix}/ -o $output bundle
+    if git tag -a -m "Release bundle for ${version}" "v$version" bundle; then
+        print "Release bundle tagged as v$version."
+    fi
 }
