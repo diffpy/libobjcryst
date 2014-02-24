@@ -60,7 +60,7 @@ If administrator (root) access is not available, see the usage info from
 `scons --help` for options to install to a user-writable location.
 
 To verify libobjcryst installation, compile and run the included
-test code examples/testlib.cpp
+test code [examples/testlib.cpp](examples/testlib.cpp)
 
 ```sh
 cd examples
