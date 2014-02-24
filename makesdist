@@ -213,7 +213,7 @@ ListSkipOrBuild "write libobjcryst tarball" || {
     version=${${version#s}%-g[[:xdigit:]]##}
     prefix=libobjcryst-${version}
     output=${prefix}.tar.gz
-    git -c tar.umask=0022 archive --prefix=${prefix}/ -o $output bundle
+    git archive --prefix=${prefix}/ -o $output bundle
     if git tag -a -m "Release bundle for ${version}" "v$version" bundle; then
         print "Release bundle tagged as v$version."
     fi
