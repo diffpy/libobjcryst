@@ -6,11 +6,12 @@ for installation as a system shared library.
 ObjCryst++ is Object-Oriented Crystallographic Library for C++ developed
 by Vincent Favre-Nicolin.  libobjcryst is a mirror of the
 ObjCryst++ sources from https://sourceforge.net/projects/objcryst/,
-expanded with SCons build scripts that simplify installation as
+expanded with SCons build scripts to make it easier to install as
 a system shared library.  libobjcryst does not include GUI related
-sources from ObjCryst++.  This distribution contains required
+files from ObjCryst++.  This distribution contains required
 sources from [cctbx](http://cctbx.sourceforge.net/current/) and
-[newmat](http://www.robertnz.net/nm_intro.htm) projects.
+[newmat](http://www.robertnz.net/nm_intro.htm) that are used in
+ObjCryst++.
 
 For more information about the ObjCryst++ library, see the upstream project at
 http://objcryst.sourceforge.net.  For Python bindings to ObjCryst++ see the
