@@ -11,7 +11,7 @@
 int main(int argc, char* argv[])
 {
     using ObjCryst::Crystal;
-    Crystal nickel(3.523, 3.523, 3.523, 90, 90, 90, "F m -3 m");
+    Crystal fcc(3.523, 3.523, 3.523, 90, 90, 90, "F m -3 m");
     std::cout << "Installation of ObjCryst shared library works!\n";
     return 0;
 }
