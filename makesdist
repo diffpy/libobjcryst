@@ -171,6 +171,7 @@ ListSkipOrBuild "create bundle tag" || {
     cd bundle
     git fetch origin
     git checkout --detach --quiet $GITLASTCOMMIT
+    git rm --force --ignore-unmatch makesdist
     # objcryst
     objcryst_exclude=(
         /doc  /example  /wxCryst
