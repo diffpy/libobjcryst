@@ -43,7 +43,7 @@ sudo port install scons boost
 ## INSTALLATION
 
 Download and extract the latest libobjcryst bundle from
-https://github.com/diffpy/libobjcryst/releases
+https://github.com/diffpy/libobjcryst/releases/latest:
 
 ```sh
 tar xzf libobjcryst-VERSION.tar.gz
