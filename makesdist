@@ -14,7 +14,7 @@ Use option --list to display all steps.
 
 Options:
 
-  -l, --list    show a numbered list of packages and exit
+  -l, --list    show a numbered list of build steps and exit
   --clean       remove all generated files except downloads
   -h, --help    display this message and exit
 "
