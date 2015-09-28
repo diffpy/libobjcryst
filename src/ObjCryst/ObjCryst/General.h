@@ -80,7 +80,9 @@ namespace ObjCryst
 #define DEG2RAD (M_PI/180.)
 #define RAD2DEG (180./M_PI)
 
-#define REAL float
+#ifndef REAL
+#define REAL double
+#endif
 
 // forward declarations... These should be removed...
    //class AsymmetricUnit;

@@ -1,14 +1,7 @@
 Import('env')
 
-# initialize custom builder BuildDefineREAL
-SConscript('SConscript.definereal')
-
 # Define the what we need to install objcryst
 objcrystenv = env.Clone()
-
-# We take care of REAL for good here.
-objcrystenv.BuildDefineREAL(['ObjCryst/ObjCryst/General.h'],
-        Value(env['REAL']))
 
 # Source directories
 objcrystenv.PrependUnique(CPPPATH = ["."])
