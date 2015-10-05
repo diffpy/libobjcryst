@@ -46,6 +46,7 @@ namespace cctbx { namespace eltbx { namespace xray_scattering {
     std::string const& label)
   {
     if (label == "const") return true;
+    if (label == "TX" || label == "XX") return true;
     if (label == "unknown") return true;
     return false;
   }
@@ -56,7 +57,7 @@ namespace cctbx { namespace eltbx { namespace xray_scattering {
     std::string const& label)
   {
     if (is_reserved_scattering_type_label(label)) {
-      throw std::runtime_error(
+      throw std::invalid_argument(
         "Reserved scattering type label: \""+label+"\"");
     }
   }
@@ -69,6 +70,7 @@ namespace cctbx { namespace eltbx { namespace xray_scattering {
     bool optional=false)
   {
     if (label == "const") return boost::optional<std::string>(label);
+    if (label == "TX" || label == "XX") return boost::optional<std::string>(label);
     std::string work_label = basic::strip_label(label, exact);
     const char* result = 0;
     int m = 0;
@@ -84,7 +86,7 @@ namespace cctbx { namespace eltbx { namespace xray_scattering {
     }
     if (exact || result == 0) {
       if (optional) return boost::optional<std::string>();
-      throw std::runtime_error(
+      throw std::invalid_argument(
         "Unknown scattering type label: \"" + label + "\"");
     }
     return boost::optional<std::string>(result);
@@ -182,7 +184,7 @@ namespace cctbx { namespace eltbx { namespace xray_scattering {
       }
     }
     if (entry_ == 0) {
-      throw std::runtime_error(
+      throw std::invalid_argument(
         "Unknown scattering type label: \"" + label + "\"");
     }
   }
