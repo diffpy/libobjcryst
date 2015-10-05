@@ -116,7 +116,7 @@ void Atom::operator=(const Atom &rhs)
    //:TODO: Check if this is enough (copy constructor for Scatterer ??)
    mScattCompList.Reset();
    ++mScattCompList;
-   
+
    this->Init(rhs.mXYZ(0),rhs.mXYZ(1),rhs.mXYZ(2),
               rhs.mName,rhs.mpScattPowAtom,
               rhs.mOccupancy);
@@ -145,9 +145,9 @@ void Atom::Init(const REAL x, const REAL y, const REAL z,
    }
    mpScattPowAtom->RegisterClient(*this);
    mOccupancy=popu;
-   
+
    if(this->GetNbPar()<4) this->InitRefParList();
-   
+
    mClockScatterer.Click();
    VFN_DEBUG_MESSAGE("Atom::Init():End.",5)
 }
@@ -168,16 +168,16 @@ string Atom::GetComponentName(const int i) const{ return this->GetName();}
 void Atom::Print() const
 {
    VFN_DEBUG_MESSAGE("Atom::Print()",1)
-   cout << "Atom (" 
+   cout << "Atom ("
         << FormatString(mpScattPowAtom->GetSymbol(),4) << ") :"
-        << FormatString(this->GetName(),16)  << " at : " 
-        << FormatFloat(this->GetX()) 
-        << FormatFloat(this->GetY()) 
+        << FormatString(this->GetName(),16)  << " at : "
+        << FormatFloat(this->GetX())
+        << FormatFloat(this->GetY())
         << FormatFloat(this->GetZ());
    if(this->IsDummy()) cout << " DUMMY! ";
    else
    {
-      cout << ", Biso=" 
+      cout << ", Biso="
            << FormatFloat(mpScattPowAtom->GetBiso())
            << ", Popu=" << FormatFloat(this->GetOccupancy());
    }
@@ -200,6 +200,7 @@ ostream& Atom::POVRayDescription(ostream &os,
                                  const CrystalPOVRayOptions &options)const
 {
    if(this->IsDummy()) return os;
+   if(options.mShowHydrogens==false && (mpScattPowAtom->GetForwardScatteringFactor(RAD_XRAY)<1.5)) return os;
    const REAL xMin=options.mXmin; const REAL xMax=options.mXmax;
    const REAL yMin=options.mYmin; const REAL yMax=options.mYmax;
    const REAL zMin=options.mZmin; const REAL zMax=options.mZmax;
@@ -207,6 +208,9 @@ ostream& Atom::POVRayDescription(ostream &os,
    x0=mXYZ(0);
    y0=mXYZ(1);
    z0=mXYZ(2);
+   const REAL aa=this->GetCrystal().GetLatticePar(0);
+   const REAL bb=this->GetCrystal().GetLatticePar(1);
+   const REAL cc=this->GetCrystal().GetLatticePar(2);
    CrystMatrix_REAL xyzCoords ;
    xyzCoords=this->GetCrystal().GetSpaceGroup().GetAllSymmetrics(x0,y0,z0,false,false,true);
    int nbSymmetrics=xyzCoords.rows();
@@ -253,17 +257,32 @@ ostream& Atom::POVRayDescription(ostream &os,
          REAL x=x0+translate(j,0);
          REAL y=y0+translate(j,1);
          REAL z=z0+translate(j,2);
-         if(   (x>xMin) && (x<xMax)
-             &&(y>yMin) && (y<yMax)
-             &&(z>zMin) && (z<zMax))
+         const bool isinside=((x>=xMin) && (x<=xMax)) && ((y>=yMin) && (y<=yMax)) && ((z>=zMin) && (z<=zMax));
+         REAL borderdist;
+         if(isinside) borderdist=0;
+         else
+         {
+            borderdist=0;
+            if(xMin>x) borderdist+=(xMin-x)*aa*(xMin-x)*aa;
+            if(yMin>y) borderdist+=(yMin-y)*bb*(yMin-y)*bb;
+            if(zMin>z) borderdist+=(zMin-z)*cc*(zMin-z)*cc;
+            if(xMax<x) borderdist+=(xMax-x)*aa*(xMax-x)*aa;
+            if(yMax<y) borderdist+=(yMax-y)*bb*(yMax-y)*bb;
+            if(zMax<z) borderdist+=(zMax-z)*cc*(zMax-z)*cc;
+            borderdist=sqrt(borderdist);
+         }
+         REAL fout=1.0;
+         if(isinside==false) fout=exp(-borderdist)*this->GetCrystal().GetDynPopCorr(this,0);
+         if(fout>0.001)
          {
             this->GetCrystal().FractionalToOrthonormalCoords(x,y,z);
             os << "   ObjCrystAtom("
                <<x<<","
                <<y<<","
                <<z<<","
-               <<this->GetScatteringPower().GetRadius()<<","
-               <<"colour_"+this->GetScatteringPower().GetName()
+               <<this->GetScatteringPower().GetRadius()/3.0<<","
+               <<"colour_"+this->GetScatteringPower().GetName()<<","
+               <<this->GetOccupancy()<<","<<fout
                <<")"<<endl;
          }
       }
@@ -276,7 +295,8 @@ void Atom::GLInitDisplayList(const bool onlyIndependentAtoms,
                              const REAL yMin,const REAL yMax,
                              const REAL zMin,const REAL zMax,
                              const bool displayEnantiomer,
-                             const bool displayNames)const
+                             const bool displayNames,
+                             const bool hideHydrogens)const
 {
    #ifdef OBJCRYST_GL
    VFN_DEBUG_MESSAGE("Atom::GLInitDisplayList():"<<this->GetName(),5)
@@ -286,21 +306,26 @@ void Atom::GLInitDisplayList(const bool onlyIndependentAtoms,
       const float r=mpScattPowAtom->GetColourRGB()[0];
       const float g=mpScattPowAtom->GetColourRGB()[1];
       const float b=mpScattPowAtom->GetColourRGB()[2];
-   
-      const GLfloat colour0[] = {.0, .0, .0, 0.0}; 
-      const GLfloat colourAtom [] = {r, g, b, 1.0}; 
-      GLfloat colourChar [] = {1.0, 1.0, 1.0, 1.0}; 
+      const float f=mOccupancy;
+
+      const GLfloat colour0[] = {.0, .0, .0, 0.0};
+      GLfloat colourChar [] = {1.0, 1.0, 1.0, 1.0};
       if((r>0.8)&&(g>0.8)&&(b>0.8))
       {
          colourChar[0] = 0.5;
          colourChar[1] = 0.5;
          colourChar[2] = 0.5;
       }
+   const REAL aa=this->GetCrystal().GetLatticePar(0);
+   const REAL bb=this->GetCrystal().GetLatticePar(1);
+   const REAL cc=this->GetCrystal().GetLatticePar(2);
 
    if(this->IsDummy()) return ;
+   if(hideHydrogens  && (mpScattPowAtom->GetForwardScatteringFactor(RAD_XRAY)<1.5)) return;
    GLUquadricObj* pQuadric = gluNewQuadric();
    if(true==onlyIndependentAtoms)
    {
+      const GLfloat colourAtom [] = {r, g, b, f};
       REAL x,y,z;
       x=mXYZ(0);
       y=mXYZ(1);
@@ -313,19 +338,19 @@ void Atom::GLInitDisplayList(const bool onlyIndependentAtoms,
          glTranslatef(x*en, y, z);
          if(displayNames)
          {
-            glMaterialfv(GL_FRONT, GL_AMBIENT,   colour0); 
-            glMaterialfv(GL_FRONT, GL_DIFFUSE,   colour0); 
-            glMaterialfv(GL_FRONT, GL_SPECULAR,  colour0); 
-            glMaterialfv(GL_FRONT, GL_EMISSION,  colourChar); 
+            glMaterialfv(GL_FRONT, GL_AMBIENT,   colour0);
+            glMaterialfv(GL_FRONT, GL_DIFFUSE,   colour0);
+            glMaterialfv(GL_FRONT, GL_SPECULAR,  colour0);
+            glMaterialfv(GL_FRONT, GL_EMISSION,  colourChar);
             glMaterialfv(GL_FRONT, GL_SHININESS, colour0);
             glRasterPos3f(0,0,0);
             crystGLPrint(this->GetName());
          }
          else
          {
-            glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,   colourAtom); 
-            glMaterialfv(GL_FRONT, GL_SPECULAR,  colour0); 
-            glMaterialfv(GL_FRONT, GL_EMISSION,  colour0); 
+            glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,   colourAtom);
+            glMaterialfv(GL_FRONT, GL_SPECULAR,  colour0);
+            glMaterialfv(GL_FRONT, GL_EMISSION,  colour0);
             glMaterialfv(GL_FRONT, GL_SHININESS, colour0);
             glPolygonMode(GL_FRONT, GL_FILL);
             gluSphere(pQuadric,this->GetRadius()/3.,20,20);
@@ -383,28 +408,49 @@ void Atom::GLInitDisplayList(const bool onlyIndependentAtoms,
             REAL x=x0+translate(j,0);
             REAL y=y0+translate(j,1);
             REAL z=z0+translate(j,2);
-            if(   (x>xMin) && (x<xMax)
-                &&(y>yMin) && (y<yMax)
-                &&(z>zMin) && (z<zMax))
+            const bool isinside=((x>=xMin) && (x<=xMax)) && ((y>=yMin) && (y<=yMax)) && ((z>=zMin) && (z<=zMax));
+            REAL borderdist;
+            if(isinside) borderdist=0;
+            else
             {
+               borderdist=0;
+               if(xMin>x) borderdist+=(xMin-x)*aa*(xMin-x)*aa;
+               if(yMin>y) borderdist+=(yMin-y)*bb*(yMin-y)*bb;
+               if(zMin>z) borderdist+=(zMin-z)*cc*(zMin-z)*cc;
+               if(xMax<x) borderdist+=(xMax-x)*aa*(xMax-x)*aa;
+               if(yMax<y) borderdist+=(yMax-y)*bb*(yMax-y)*bb;
+               if(zMax<z) borderdist+=(zMax-z)*cc*(zMax-z)*cc;
+               borderdist=sqrt(borderdist);
+            }
+            REAL fout=1;
+            // NB about dyn pop corr: it's not taken into account for atoms inside the view range,
+            // to avoid transparency for fully occupied atoms.
+            // :TODO: Maybe it should for partially occupied atoms ?
+            if(isinside==false) fout*=exp(-borderdist)*this->GetCrystal().GetDynPopCorr(this,0);
+            if(fout>0.01)
+            {
+               const GLfloat colourAtom [] = {r, g, b, f*fout};
                this->GetCrystal().FractionalToOrthonormalCoords(x,y,z);
                glPushMatrix();
                   glTranslatef(x*en, y, z);
                   if(displayNames)
                   {
-                     glMaterialfv(GL_FRONT, GL_AMBIENT,   colour0); 
-                     glMaterialfv(GL_FRONT, GL_DIFFUSE,   colour0); 
-                     glMaterialfv(GL_FRONT, GL_SPECULAR,  colour0); 
-                     glMaterialfv(GL_FRONT, GL_EMISSION,  colourChar); 
-                     glMaterialfv(GL_FRONT, GL_SHININESS, colour0);
-                     glRasterPos3f(0,0,0);
-                     crystGLPrint(this->GetName());
+                     if(fout>0.99)
+                     {
+                        glMaterialfv(GL_FRONT, GL_AMBIENT,   colour0);
+                        glMaterialfv(GL_FRONT, GL_DIFFUSE,   colour0);
+                        glMaterialfv(GL_FRONT, GL_SPECULAR,  colour0);
+                        glMaterialfv(GL_FRONT, GL_EMISSION,  colourChar);
+                        glMaterialfv(GL_FRONT, GL_SHININESS, colour0);
+                        glRasterPos3f(0,0,0);
+                        crystGLPrint(this->GetName());
+                     }
                   }
                   else
                   {
-                     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,   colourAtom); 
-                     glMaterialfv(GL_FRONT, GL_SPECULAR,  colour0); 
-                     glMaterialfv(GL_FRONT, GL_EMISSION,  colour0); 
+                     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,   colourAtom);
+                     glMaterialfv(GL_FRONT, GL_SPECULAR,  colour0);
+                     glMaterialfv(GL_FRONT, GL_EMISSION,  colour0);
                      glMaterialfv(GL_FRONT, GL_SHININESS, colour0);
                      glPolygonMode(GL_FRONT, GL_FILL);
                      gluSphere(pQuadric,this->GetRadius()/3.,20,20);

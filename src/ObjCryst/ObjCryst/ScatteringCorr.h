@@ -28,7 +28,7 @@ namespace ObjCryst
 * absorption, texcture, extinction, etc...
 *
 * The computed intensities are to be multiplied by all the ScatteringCorr calculated.
-* 
+*
 *
 * This is an abstract base class.
 */
@@ -44,6 +44,7 @@ class ScatteringCorr
       virtual const string & GetClassName() const=0;
       /// Get the vector of corrections for all reflections. Calculated values must
       /// be multiplied by these values.
+      /// If the vector is empty (size==0), then no correction should be applied
       const CrystVector_REAL& GetCorr() const;
       /// Get the value of the clock corresponding to the last time the correction
       /// was actually computed
@@ -80,8 +81,8 @@ class LorentzCorr:public ScatteringCorr
 * So far, it only considers the correction for equatorial diffraction:
 *\f$ P = \frac{1}{1+A}\left(1+A\cos^2(2\theta)\right) \f$ (Polarization factor), with
 * \f$ A = \frac{1-f}{1+f} \f$, where f is the polarization rate of the incident
-*beam in the plane which (i) includes the incident beam, and (ii) is perpendicular to  
-*the diffracting plane. For an X-Ray Tube without monochromator, A=1, and 
+*beam in the plane which (i) includes the incident beam, and (ii) is perpendicular to
+*the diffracting plane. For an X-Ray Tube without monochromator, A=1, and
 *if there is a monochromator : \f$ A = \cos^2(2\theta_{mono}) \f$
 *
 * Currently, the linear polarization factor is directly read from the radiation object,
@@ -105,7 +106,7 @@ class PolarizationCorr:public ScatteringCorr
 /** Slit aperture correction (for powder)
 *
 * This correction takes into account the fact that diffraction
-* rings (cones) have a portion of the ring proportionnal to 
+* rings (cones) have a portion of the ring proportionnal to
 * \f$ SlitAp = \frac{1}{\sin(\theta)} \f$ which falls into the detector
 * (due to slits in the direction perpendicular to the incident beam/ detector plane).
 */
@@ -198,9 +199,52 @@ class TextureMarchDollase:public ScatteringCorr,public RefinableObj
    friend class WXTextureMarchDollase;
    #endif
 };
+
+/** Texture correction using the Ellipsoidal preferred orientation function.
+*
+*  Icorr = Iobs[ 1 + (EPR1*h^2 + EPR2*k^2 + EPR3*l^2 + EPR4*2hk + EPR5*2hl + EPR6*2kl) * 0.001d^2 ]^-1.5
+*
+*/
+class TextureEllipsoid:public ScatteringCorr,public RefinableObj
+{
+   public:
+      TextureEllipsoid(const ScatteringData & data, const REAL EPR1=0.0, const REAL EPR2=0.0, const REAL EPR3=0.0,
+                       const REAL EPR4=0.0, const REAL EPR5=0.0, const REAL EPR6=0.0);
+      virtual ~TextureEllipsoid();
+      virtual const string & GetName() const;
+      virtual const string & GetClassName() const;
+      void SetParams(const REAL EPR1, const REAL EPR2, const REAL EPR3, const REAL EPR4, const REAL EPR5, const REAL EPR6);
+      REAL mEPR[6];
+      virtual void GlobalOptRandomMove(const REAL mutationAmplitude, const RefParType *type=gpRefParTypeObjCryst);
+      virtual void XMLOutput(ostream &os,int indent=0)const;
+      virtual void XMLInput(istream &is,const XMLCrystTag &tag);
+      virtual void BeginOptimization(const bool allowApproximations=false, const bool enableRestraints=false);
+         /// Prepare the refinable parameters list
+      void InitRefParList();
+         /// Update ellipsoid parameters for tetragonal, trigonal, hexagonal, cubic lattices.
+      /// This is needed during Refinement, since for example in a quadratic spg,
+      /// only a is refined and we need to have b=a...
+      void UpdateEllipsoidPar();
+   protected:
+      virtual void CalcCorr() const;
+      RefinableObjClock mClockTextureEllipsoidPar;
+      /// Number of reflexion for which the calculation is actually done.
+      /// This is automaticaly updated during CalcCorr, from the parent
+      /// ScatteringData::GetMaxSinThetaOvLambda()
+      mutable unsigned long mNbReflUsed;
+
+   #ifdef __WX__CRYST__
+    public:
+      virtual WXCrystObjBasic* WXCreate(wxWindow* parent);
+   #endif
+
+
+};
+
+
 /** Time-Of-Flight Correction
 *
-* 
+*
 * \f$ T = d^4\sin(\theta) \f$
 *
 * The \theta angle of the detector is ignored, as it is just a scale factor.

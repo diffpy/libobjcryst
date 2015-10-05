@@ -29,7 +29,7 @@ REAL CIFNumeric2REAL(const std::string &s);
 int CIFNumeric2Int(const std::string &s);
 
 /** The CIFData class holds all the information from a \e single data_ block from a cif file.
-* 
+*
 * It is a placeholder for all comments, item and loop data, as raw strings copied from
 * a cif file.
 *
@@ -56,14 +56,14 @@ int CIFNumeric2Int(const std::string &s);
 * - coordinates: _pd_proc_2theta_corrected > _pd_meas_angle_2theta > _pd_meas_time_of_flight > _pd_proc_2theta_range_{min,max,inc}
 * - intensity normalizer (optional): _pd_meas_intensity_monitor > _pd_meas_step_count_time
 *
-* If another data field is needed, it is possible to directly access the string data 
+* If another data field is needed, it is possible to directly access the string data
 * (CIFData::mvComment , CIFData::mvItem and CIFData::mvLoop) to search for the correct tags.
 */
 class CIFData
 {
    public:
       CIFData();
-      
+
       /// Extract lattice parameters, spacegroup (symbol or number), atomic positions,
       /// chemical name and formula if available.
       /// All other data is ignored
@@ -121,7 +121,7 @@ class CIFData
       std::string mName;
       /// Formula. Or empty string if none is available.
       std::string mFormula;
-      /// Atom record 
+      /// Atom record
       struct CIFAtom
       {
          CIFAtom();
@@ -132,7 +132,7 @@ class CIFData
          /// Fractionnal coordinates (_atom_site_fract_{x,y,z}) or empty vector.
          std::vector<REAL> mCoordFrac;
          /// Cartesian coordinates in Angstroem (_atom_site_Cartn_{x,y,z}) or empty vector.
-         /// Transformation to fractionnal coordinates currently assumes 
+         /// Transformation to fractionnal coordinates currently assumes
          /// "a parallel to x; b in the plane of y and z" (see _atom_sites_Cartn_transform_axes)
          std::vector<REAL> mCoordCart;
          /// Site occupancy, or -1
@@ -196,6 +196,22 @@ class PowderPattern;
 * setting by trying different ones using cctbx
 */
 Crystal* CreateCrystalFromCIF(CIF &cif,const bool verbose=true,const bool checkSymAsXYZ=true);
+
+/** Extract Crystal object(s) from a CIF, if possible.
+* Returns a null pointer if no crystal structure could be extracted
+* (the minimum data is the unit cell parameters).
+*
+* \param checkSymAsXYZ: if true, and the CIF file does not have a Hall symbol
+* but has a list of symmetry_equiv_pos_as_xyz, check we have the correct
+* setting by trying different ones using cctbx
+* \param oneScatteringPowerPerElement: if false (the default), then there will be as many
+* ScatteringPowerAtom created as there are different Debye-Waller parameters. If true,
+* only one will be created per element, avoiding a large number of scattering powers
+* e.g. when importing CIFs obtained from single crystal data refinement.
+* \param connectAtoms: if true, call Crystal::ConnectAtoms to try to create as many Molecules
+* as possible from the list of imported atoms.
+*/
+Crystal* CreateCrystalFromCIF(CIF &cif,const bool verbose,const bool checkSymAsXYZ, const bool oneScatteringPowerPerElement, const bool connectAtoms);
 
 /// Create PowderPattern object(s) from a CIF, if possible.
 /// Returns a null pointer if no pattern could be extracted.

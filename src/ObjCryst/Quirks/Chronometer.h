@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include "boost/date_time/posix_time/posix_time_types.hpp"
+using namespace std;
 
 /** Simple chronometer class, with microsecond precision
 *
@@ -41,7 +42,7 @@ class Chronometer
          mTime0=boost::posix_time::microsec_clock::local_time()-(mTime1-mTime0);
          mPaused=false;
       }
-      void print() 
+      void print()
       {
          if(mPaused == false) mTime1=boost::posix_time::microsec_clock::local_time();
          cout.setf(ios::fixed);

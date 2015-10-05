@@ -17,7 +17,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 /*
-*  source file for generic XMLInput/XMLOutput in 
+*  source file for generic XMLInput/XMLOutput in
 *
 */
 
@@ -43,7 +43,7 @@ XMLCrystTag::XMLCrystTag(istream &is)
 }
 
 XMLCrystTag::XMLCrystTag(const string &tagName,
-                         const bool isEndTag, 
+                         const bool isEndTag,
                          const bool isEmptyTag):
 mName(tagName),mIsEndTag(isEndTag),mIsEmptyTag(isEmptyTag)
 {}
@@ -125,25 +125,26 @@ istream& operator>> (istream& is, XMLCrystTag &tag)
    char tmp;
    is>>tmp;
    while ((tmp!='<') && !(is.eof()) && !(is.fail()) )is>>tmp;
-   if(is.eof() || (is.fail())) return is;//:TODO: throw exception ?
+   if(is.eof()) return is;
+   if(is.fail()) {cout<<"throw:"<<__FILE__<<":"<<__LINE__<<":"<<tag<<endl;throw ObjCrystException("XMLCrystTag::>>   failed input");}
    while ((tmp==' ')||(tmp=='<'))is>>tmp;
-   
+
    if('/'==tmp)
    {
       tag.mIsEndTag=true;
       while ((tmp==' ')||(tmp=='/'))is>>tmp;
    }
-   
+
    string str="";
-   do 
+   do
    {
      str+=tmp;
      is>>tmp;
      VFN_DEBUG_MESSAGE(str,1);
-     if(is.fail()) {throw ObjCrystException("XMLCrystTag::>>   failed input");cout<<"throw:"<<__FILE__<<":"<<__LINE__<<endl;}
+      if(is.fail()) {cout<<"throw:"<<__FILE__<<":"<<__LINE__<<":"<<tag<<endl;throw ObjCrystException("XMLCrystTag::>>   failed input");}
    } while ((tmp!=' ')&&(tmp!='>')&&(tmp!='/'));
    tag.mName=str;
-   
+
    string str2;
    while(true)
    {
@@ -156,7 +157,7 @@ istream& operator>> (istream& is, XMLCrystTag &tag)
       if(tmp=='/')
       {
          is>>tmp;
-         //if(tmp!='>') ; :TODO: 
+         //if(tmp!='>') ; :TODO:
          tag.mIsEmptyTag=true;
          is.setf(f);
          return is;
@@ -168,10 +169,10 @@ istream& operator>> (istream& is, XMLCrystTag &tag)
       is>>tmp;
       if(tmp!='"') do {str2+=tmp;is>>tmp;VFN_DEBUG_MESSAGE(str2,1)} while (tmp!='"');
       is>>tmp;
-      
+
       tag.AddAttribute(str,str2);
    }
-   
+
    is.setf(f);
    return is;
 }
@@ -213,7 +214,7 @@ void RefinablePar::XMLOutput(ostream &os,const string &name,int indent)const
    #endif
    //the name of the parameter is saved last to enhance readability of saved files
    tag.AddAttribute("Name",name);
-   
+
    for(int i=0;i<indent;i++) os << "  " ;
    os <<tag;
    tag.SetIsEndTag(true);
@@ -235,6 +236,7 @@ void RefinablePar::XMLInput(istream &is,const XMLCrystTag &tag)
       {
          bool b;
          stringstream ss(tag.GetAttributeValue(i));
+         ss.imbue(std::locale::classic());
          ss >>b;
          this->SetIsFixed(!b);
          continue;
@@ -243,6 +245,7 @@ void RefinablePar::XMLInput(istream &is,const XMLCrystTag &tag)
       {
          bool b;
          stringstream ss(tag.GetAttributeValue(i));
+         ss.imbue(std::locale::classic());
          ss >>b;
          this->SetIsLimited(b);
          continue;
@@ -251,6 +254,7 @@ void RefinablePar::XMLInput(istream &is,const XMLCrystTag &tag)
       {
          REAL f;
          stringstream ss(tag.GetAttributeValue(i));
+         ss.imbue(std::locale::classic());
          ss >>f;
          this->SetHumanMin(f);
          continue;
@@ -259,6 +263,7 @@ void RefinablePar::XMLInput(istream &is,const XMLCrystTag &tag)
       {
          REAL f;
          stringstream ss(tag.GetAttributeValue(i));
+         ss.imbue(std::locale::classic());
          ss >>f;
          this->SetHumanMax(f);
          continue;
@@ -267,15 +272,18 @@ void RefinablePar::XMLInput(istream &is,const XMLCrystTag &tag)
       {
          bool b;
          stringstream ss(tag.GetAttributeValue(i));
+         ss.imbue(std::locale::classic());
          ss >>b;
          this->SetIsPeriodic(b);
          continue;
       }
    }
+   VFN_DEBUG_MESSAGE(tag, 10)
    REAL f=InputFloat(is,'<');
    if(ISNAN_OR_INF(f)) f=1.0;
    this->SetHumanValue(f);
    XMLCrystTag junk(is);//read end tag
+   VFN_DEBUG_MESSAGE(tag, 10)
    VFN_DEBUG_EXIT("RefinablePar::XMLInput():"<<this->GetName(),5)
 }
 
@@ -298,7 +306,7 @@ void RefObjOpt::XMLOutput(ostream &os,int indent)const
 
    for(int i=0;i<indent;i++) os << "  " ;
    os <<tag;
-   
+
    VFN_DEBUG_EXIT("RefObjOpt::XMLOutput():"<<this->GetName(),5)
 }
 
@@ -418,7 +426,7 @@ IOCrystTag::IOCrystTag(istream &is)
       mIsClosingTag=true;
    }
    else
-   {  
+   {
       IOCrystExtractNameQuoted(is,mTagName);
       is >> mTagVersion;
       mIsClosingTag=false;
@@ -448,7 +456,7 @@ void IOCrystTag::XMLInput(istream &is)
       mIsClosingTag=true;
    }
    else
-   {  
+   {
       IOCrystExtractNameQuoted(is,mTagName);
       is >> mTagVersion;
       mIsClosingTag=false;
