@@ -110,7 +110,7 @@ Alias('install-lib', libinstall)
 # install-includes
 ninc = len(Dir('.').path) + 1
 inc_target_path = lambda f: os.path.join(env['includedir'], f.path[ninc:])
-include_targets = map(inc_target_path, env['lib_includes'])
+include_targets = [inc_target_path(f) for f in env['lib_includes']]
 Alias('install-include', InstallAs(include_targets, env['lib_includes']))
 
 # install

@@ -1,0 +1,45 @@
+import os
+import re
+import string
+
+Import('env')
+
+
+def build_VersionCode(target, source, env):
+    tplcode = source[0].get_contents()
+    numversion = (1000000 * ginfo['major'] +
+            1000 * ginfo['minor'] + ginfo['number'])
+    if ginfo['prerelease']:
+        numversion = "(-500 + %i)" % numversion
+    flds = {
+        'LIBOBJCRYST_VERSION' : numversion,
+        'LIBOBJCRYST_VERSION_MAJOR' : ginfo['major'],
+        'LIBOBJCRYST_VERSION_MINOR' : ginfo['minor'],
+        'LIBOBJCRYST_VERSION_STR' : ginfo['version'],
+        'LIBOBJCRYST_VERSION_DATE' : ginfo['date'],
+        'LIBOBJCRYST_GIT_SHA' : ginfo['commit'],
+    }
+    versiontemplate = string.Template(tplcode)
+    versioncode = versiontemplate.safe_substitute(flds)
+    open(target[0].path, 'w').write(versioncode)
+    return None
+
+
+env.Append(BUILDERS={'BuildVersionCode' :
+        Builder(action=build_VersionCode, suffix='.h', src_suffix='.tpl')})
+
+# Targets --------------------------------------------------------------------
+
+vhpp = File('ObjCryst/version.h')
+
+# If version.h exists do not use git
+if not os.path.isfile(str(vhpp.srcnode())):
+    from libobjcrystbuildutils import gitinfo
+    vtpl = File('ObjCryst/version.tpl')
+    ginfo = gitinfo()
+    vhpp, = env.BuildVersionCode(['ObjCryst/version.h'], vtpl)
+    env.Depends(vhpp, env.Value(ginfo['version'] + ginfo['commit']))
+
+env['lib_includes'] += [vhpp]
+
+# vim: ft=python

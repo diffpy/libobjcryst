@@ -13,6 +13,10 @@ srcfiles += Glob("./ObjCryst/RefinableObj/*.cpp")
 srcfiles += Glob("./ObjCryst/CrystVector/*.cpp")
 srcfiles += Glob("./ObjCryst/Quirks/*.cpp")
 
+# Determine library version from the git data.
+SConscript("SConscript.version")
+srcfiles += [File("./ObjCryst/version.cpp")]
+
 # Make shared objects
 objects = objcrystenv.SharedObject(srcfiles)
 Clean(objects, "ObjCryst")
@@ -21,7 +25,7 @@ Clean(objects, "ObjCryst")
 env["objcrystobjs"] = objects
 
 # Record headers
-env['lib_includes']  = Glob("./ObjCryst/ObjCryst/*.h")
+env['lib_includes'] += Glob("./ObjCryst/ObjCryst/*.h")
 env['lib_includes'] += Glob("./ObjCryst/RefinableObj/*.h")
 env['lib_includes'] += Glob("./ObjCryst/CrystVector/*.h")
 env['lib_includes'] += Glob("./ObjCryst/Quirks/*.h")
