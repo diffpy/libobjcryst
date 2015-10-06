@@ -78,6 +78,12 @@ if not (skip_source_check or sources_exist):
 # These will create the built objects and header file lists.
 SConscript(["SConscript.cctbx", "SConscript.newmat", "SConscript.objcryst"])
 
+# Define sdist target for creating source distribution bundle
+# Do so only if required to avoid extra git executions.
+# Note: See .gitattributes for files excluded from sdist.
+if 'sdist' in COMMAND_LINE_TARGETS:
+    SConscript('SConscript.sdist')
+
 # Top Level Targets ----------------------------------------------------------
 
 # This retrieves the intermediate objects

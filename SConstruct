@@ -8,6 +8,7 @@ lib                 build the shared library object [default]
 install             install everything under prefix directory
 install-lib         install the shared library object
 install-include     install the C++ header files
+sdist               create source distribution tarball (requires git repo)
 
 Build configuration variables:
 %s
