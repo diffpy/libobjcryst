@@ -5,6 +5,7 @@
 #include <scitbx/array_family/ref.h>
 #include <cmath>
 
+#include <boost/version.hpp>
 #if !(defined(__GNUC__) && __GNUC__ == 3 && __GNUC_MINOR__ == 2)
 # include <boost/math/special_functions/bessel.hpp>
 # define SCITBX_MATH_BESSEL_HAS_SPHERICAL
@@ -324,6 +325,11 @@ namespace bessel {
   }
 
 
+// boost::math::cyl_bessel_j_zero was added in boost 1.55.0.
+// Not used in libObjCryst.  Support older releases of boost.
+
+#if BOOST_VERSION >= 105500
+
   template <typename FloatType>
   scitbx::af::shared< FloatType >
   bessel_J_zeroes(FloatType const& l, int const& n)
@@ -355,6 +361,7 @@ namespace bessel {
     return result;
   }
 
+#endif  // BOOST_VERSION >= 105500
 
 #endif
 
