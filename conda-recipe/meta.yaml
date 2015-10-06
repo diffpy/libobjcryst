@@ -1,13 +1,11 @@
 package:
   name: libobjcryst
-  version: 1.9.8.post162
+  ## Use __conda_version__.txt.
+  # version: 2015.1
 
 source:
-  git_url: https://github.com/diffpy/libobjcryst.git
-  git_rev: 3dfc2d3a7b0f756ba89fbdfe25975e836a223810
-
-  # fn: libobjcryst-1.9.8.tar.gz
-  # url: https://github.com/diffpy/libobjcryst/releases/download/v1.9.8/libobjcryst-1.9.8.tar.gz
+  # git_url: https://github.com/diffpy/libobjcryst.git
+  git_url: ..
 
 build:
   number: 0
