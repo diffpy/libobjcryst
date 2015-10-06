@@ -39,10 +39,11 @@ before_install:
     esac
 
   - mkdir -p ~/pkgs/
-  - pushd ~/pkgs/
 
+  - $NOMC || pushd ~/pkgs/
   - $NOMC || wget --timestamping ${MYMCREPO}/${MYMCBUNDLE}
   - $NOMC || test -x ~/mc/bin/conda || bash ${MYMCBUNDLE} -b -f -p ~/mc
+  - $NOMC || popd
   - $NOMC || export PATH="${HOME}/mc/bin:${PATH}"
   - $NOMC || conda update conda --yes
   - $NOMC || conda install --yes python=${MYPYTHON_VERSION} conda-build
@@ -54,8 +55,9 @@ before_install:
   - $NOAPT || sudo apt-get update -qq
   - $NOAPT || sudo apt-get install -y
                   libboost-all-dev python-pip build-essential scons
-
-  - popd
+  - $NOAPT || scons sdist
+  - $NOAPT || MYTARBUNDLE="$(ls -t "${PWD}"/*.tar.gz | head -1)"
+  - $NOAPT || tar xzf "${MYTARBUNDLE}" -C ~/pkgs/
 
 
 install:
@@ -68,12 +70,14 @@ install:
   - $NOMC || MYPREFIX="${HOME}/mc/envs/testenv"
   - $NOMC || MYWORKDIR="${HOME}/mc/conda-bld/work"
 
+  - $NOAPT || cd ~/pkgs/"$(basename "${MYTARBUNDLE}" .tar.gz)"/
+  - $NOAPT || scons build=fast
   - $NOAPT || sudo scons build=fast install
   - $NOAPT || MYPREFIX=/usr/local
   - $NOAPT || MYWORKDIR=$PWD
 
   # Ensure libObjCryst cannot be loaded from the work directory.
-  - scons build=fast -Q -C ${MYWORKDIR} --clean lib
+  - scons build=fast -Q -C "${MYWORKDIR}" --clean lib
   - MYINCLUDE="${MYPREFIX}/include"
   - MYLIB="${MYPREFIX}/lib"
   - MYVERSION="${MYINCLUDE}/ObjCryst/version.h"
@@ -94,7 +98,7 @@ install:
 
 
 before_script:
-  - cd examples
+  - cd "${MYWORKDIR}/examples"
 
 
 script:
