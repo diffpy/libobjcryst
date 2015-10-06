@@ -8,16 +8,15 @@ newmatenv.PrependUnique(CPPPATH = ["."])
 
 # Define the required source files
 
-srcfiles = ["newmat1.cpp", "newmat2.cpp", "newmat3.cpp", "newmat4.cpp",
-"newmat5.cpp", "newmat6.cpp", "newmat7.cpp", "newmat8.cpp", "newmatex.cpp",
-"bandmat.cpp", "submat.cpp", "myexcept.cpp", "cholesky.cpp", "evalue.cpp",
-"fft.cpp", "hholder.cpp", "jacobi.cpp", "newfft.cpp", "sort.cpp", "svd.cpp",
-"nm_misc.cpp", "newmatrm.cpp", "newmat9.cpp"]
+srcfiles = '''
+    bandmat.cpp evalue.cpp myexcept.cpp newmat1.cpp newmat2.cpp newmat3.cpp
+    newmat4.cpp newmat5.cpp newmat6.cpp newmat7.cpp newmat8.cpp newmat9.cpp
+    newmatex.cpp sort.cpp submat.cpp
+'''.split()
 
 srcdir = "newmat"
 import os.path
-for i, f in enumerate(srcfiles):
-    srcfiles[i] = os.path.join(srcdir, f)
+srcfiles = [os.path.join(srcdir, f) for f in srcfiles]
 
 # Make the library object
 objects = newmatenv.SharedObject(srcfiles)
