@@ -17,6 +17,11 @@ requirements:
     - boost 1.57.0              # [linux]
     - boost 1.56.0 py27_2       # [osx]
 
+test:
+  commands:
+    # Dummy test, but it ensures there is _test environment needed by travis.
+    - true
+
 about:
   home: https://github.com/diffpy/libobjcryst/
   license: GPLv2
