@@ -14,7 +14,7 @@ build:
 requirements:
   build:
     - scons
-    - boost                     # [linux]
+    - boost 1.57.0              # [linux]
     - boost 1.56.0 py27_2       # [osx]
 
 about:
