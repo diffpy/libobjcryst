@@ -19,6 +19,8 @@ srcfiles += [File("./ObjCryst/version.cpp")]
 
 # Make shared objects
 objects = objcrystenv.SharedObject(srcfiles)
+# Put VFNDebug.os first to define debug level constants
+objects.sort(key=lambda o: not o.name.startswith('VFNDebug'))
 Clean(objects, "ObjCryst")
 
 # Put this back into the global environment
