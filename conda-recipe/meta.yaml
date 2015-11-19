@@ -8,14 +8,13 @@ source:
   git_url: ..
 
 build:
-  number: 0
+  number: 1
   binary_relocation: False      # [linux]
 
 requirements:
   build:
     - scons
-    - boost 1.57.0              # [linux]
-    - boost 1.56.0 py27_2       # [osx]
+    - boost-all 1.59.0
 
 test:
   commands:
