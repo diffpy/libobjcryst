@@ -30,6 +30,9 @@ env["objcrystobjs"] = objects
 env['lib_includes'] += Glob("./ObjCryst/ObjCryst/*.h")
 env['lib_includes'] += Glob("./ObjCryst/RefinableObj/*.h")
 env['lib_includes'] += Glob("./ObjCryst/CrystVector/*.h")
-env['lib_includes'] += Glob("./ObjCryst/Quirks/*.h")
+# these headers are not included from any other headers
+excluded_quirks = set(['Chronometer.h', 'VFNStreamFormat.h', 'sse_mathfun.h'])
+env['lib_includes'] += [f for f in Glob("./ObjCryst/Quirks/*.h")
+        if not f.name in excluded_quirks]
 
 # vim: ft=python
