@@ -1,4 +1,4 @@
-sudo: false
+sudo: required
 
 language: cpp
 
@@ -10,13 +10,8 @@ branches:
   except:
     - /^v[0-9]/
 
-addons:
-  apt:
-    packages:
-    - libboost-all-dev
-    - python-pip
-    - build-essential
-    - scons
+git:
+  depth: 999999
 
 env:
   global:
@@ -32,7 +27,7 @@ matrix:
 
 
 before_install:
-  - git fetch origin --unshallow --tags
+  - git fetch origin --tags
   - if ${MYUSEMC}; then
         NOAPT=true; NOMC=false;
     else
@@ -64,6 +59,9 @@ before_install:
   - $NOMC || conda config --add channels pavoljuhas
 
   - $NOAPT || test "${TRAVIS_OS_NAME}" = "linux"
+  - $NOAPT || sudo apt-get update -qq
+  - $NOAPT || sudo apt-get install -y
+                  libboost-all-dev python-pip build-essential scons
   - $NOAPT || scons sdist
   - $NOAPT || MYTARBUNDLE="$(ls -t "${PWD}"/*.tar.gz | head -1)"
   - $NOAPT || tar xzf "${MYTARBUNDLE}" -C ~/pkgs/
