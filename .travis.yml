@@ -24,7 +24,7 @@ matrix:
 
 
 before_install:
-  - git fetch origin --unshallow --tags
+  - git fetch origin --tags
   - if ${MYUSEMC}; then
         NOAPT=true; NOMC=false;
     else
