@@ -6,13 +6,6 @@ os:
   - linux
   - osx
 
-branches:
-  except:
-    - /^v[0-9]/
-
-git:
-  depth: 999999
-
 env:
   global:
     - MYPYTHON_VERSION=2.7
@@ -24,6 +17,13 @@ matrix:
   exclude:
     - os: osx
       env: MYUSEMC=false
+
+git:
+  depth: 999999
+
+branches:
+  except:
+    - /^v[0-9]/
 
 
 before_install:
