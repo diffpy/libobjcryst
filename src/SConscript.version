@@ -8,13 +8,18 @@ Import('env')
 def build_VersionCode(target, source, env):
     tplcode = source[0].get_contents()
     numversion = (1000000 * ginfo['major'] +
-            1000 * ginfo['minor'] + ginfo['number'])
+            1000 * ginfo['minor'] + ginfo['micro'] +
+            0.0001 * ginfo['number'])
+    libversion = "%.0f" % numversion
+    if ginfo['number']:
+        libversion = "%.4f" % numversion
     if ginfo['prerelease']:
-        numversion = "(-500 + %i)" % numversion
+        libversion = "(-0.5 + %s)" % libversion
     flds = {
-        'LIBOBJCRYST_VERSION' : numversion,
+        'LIBOBJCRYST_VERSION' : libversion,
         'LIBOBJCRYST_VERSION_MAJOR' : ginfo['major'],
         'LIBOBJCRYST_VERSION_MINOR' : ginfo['minor'],
+        'LIBOBJCRYST_VERSION_MICRO' : ginfo['micro'],
         'LIBOBJCRYST_VERSION_STR' : ginfo['version'],
         'LIBOBJCRYST_VERSION_DATE' : ginfo['date'],
         'LIBOBJCRYST_GIT_SHA' : ginfo['commit'],

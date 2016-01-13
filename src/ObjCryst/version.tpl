@@ -16,6 +16,7 @@
 *   LIBOBJCRYST_VERSION,
 *   LIBOBJCRYST_VERSION_MAJOR,
 *   LIBOBJCRYST_VERSION_MINOR,
+*   LIBOBJCRYST_VERSION_MICRO,
 *   LIBOBJCRYST_VERSION_STR,
 *   LIBOBJCRYST_VERSION_DATE
 *   LIBOBJCRYST_GIT_SHA
@@ -30,10 +31,17 @@
 
 #define LIBOBJCRYST_VERSION_MAJOR ${LIBOBJCRYST_VERSION_MAJOR}
 #define LIBOBJCRYST_VERSION_MINOR ${LIBOBJCRYST_VERSION_MINOR}
+#define LIBOBJCRYST_VERSION_MICRO ${LIBOBJCRYST_VERSION_MICRO}
 
-// LIBOBJCRYST_VERSION % 1000 is number of git commits since minor version
-// LIBOBJCRYST_VERSION / 1000 % 1000 is the minor version
-// LIBOBJCRYST_VERSION / 1000000 is the major version
+// round(LIBOBJCRYST_VERSION) / 1000000 is the major version
+// round(LIBOBJCRYST_VERSION) / 1000 % 1000 is the minor version
+// round(LIBOBJCRYST_VERSION) % 1000 is the micro version
+// round(LIBOBJCRYST_VERSION * 10000) % 1000
+//      is number of git commits since the last tag
+//
+// alpha and beta releases have smaller LIBOBJCRYST_VERSION than
+// a completed release.  Numerical comparison of LIBOBJCRYST_VERSION
+// values from two pre-releases may be inaccurate.
 
 #define LIBOBJCRYST_VERSION ${LIBOBJCRYST_VERSION}
 
@@ -54,10 +62,11 @@
 
 struct libobjcryst_version_info {
 
-    static const int version;
+    static const double version;
     static const char* version_str;
     static const int major;
     static const int minor;
+    static const int micro;
     static const char* date;
     static const char* git_sha;
 
