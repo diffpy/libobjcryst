@@ -7,19 +7,25 @@ Import('env')
 
 def build_VersionCode(target, source, env):
     tplcode = source[0].get_contents()
-    numversion = (1000000 * ginfo['major'] +
-            1000 * ginfo['minor'] + ginfo['micro'] +
-            0.0001 * ginfo['number'])
-    libversion = "%.0f" % numversion
-    if ginfo['number']:
-        libversion = "%.4f" % numversion
+    numversion = ginfo['major']
+    numversion = 1000 * numversion + ginfo['minor']
+    numversion = 1000 * numversion + ginfo['micro']
+    numversion = 1000 * numversion + ginfo['patchnumber']
+    # verify that formulas in version.tpl work as advertised
+    emsg = "Inconsistent value of LIBOBJCRYST_VERSION = %i" % numversion
+    assert numversion // 1000000000 == ginfo['major'], emsg
+    assert numversion // 1000000 % 1000 == ginfo['minor'], emsg
+    assert numversion // 1000 % 1000 == ginfo['micro'], emsg
+    assert numversion % 500 == ginfo['patchnumber'], emsg
+    libversion = str(numversion)
     if ginfo['prerelease']:
-        libversion = "(-0.5 + %s)" % libversion
+        libversion = "(-500 + %s)" % libversion
     flds = {
         'LIBOBJCRYST_VERSION' : libversion,
         'LIBOBJCRYST_VERSION_MAJOR' : ginfo['major'],
         'LIBOBJCRYST_VERSION_MINOR' : ginfo['minor'],
         'LIBOBJCRYST_VERSION_MICRO' : ginfo['micro'],
+        'LIBOBJCRYST_VERSION_PATCH' : ginfo['patchnumber'],
         'LIBOBJCRYST_VERSION_STR' : ginfo['version'],
         'LIBOBJCRYST_VERSION_DATE' : ginfo['date'],
         'LIBOBJCRYST_GIT_SHA' : ginfo['commit'],

@@ -17,6 +17,7 @@
 *   LIBOBJCRYST_VERSION_MAJOR,
 *   LIBOBJCRYST_VERSION_MINOR,
 *   LIBOBJCRYST_VERSION_MICRO,
+*   LIBOBJCRYST_VERSION_PATCH,
 *   LIBOBJCRYST_VERSION_STR,
 *   LIBOBJCRYST_VERSION_DATE
 *   LIBOBJCRYST_GIT_SHA
@@ -32,15 +33,18 @@
 #define LIBOBJCRYST_VERSION_MAJOR ${LIBOBJCRYST_VERSION_MAJOR}
 #define LIBOBJCRYST_VERSION_MINOR ${LIBOBJCRYST_VERSION_MINOR}
 #define LIBOBJCRYST_VERSION_MICRO ${LIBOBJCRYST_VERSION_MICRO}
+// number of git commits since the last release tag
+#define LIBOBJCRYST_VERSION_PATCH ${LIBOBJCRYST_VERSION_PATCH}
 
-// round(LIBOBJCRYST_VERSION) / 1000000 is the major version
-// round(LIBOBJCRYST_VERSION) / 1000 % 1000 is the minor version
-// round(LIBOBJCRYST_VERSION) % 1000 is the micro version
-// round(LIBOBJCRYST_VERSION * 10000) % 1000
-//      is number of git commits since the last tag
+// LIBOBJCRYST_VERSION is an integer representation of a full version:
+//
+// LIBOBJCRYST_VERSION / 1000000000 is the major version number
+// LIBOBJCRYST_VERSION / 1000000 % 1000 is the minor version number
+// LIBOBJCRYST_VERSION / 1000 % 1000 is the micro version number
+// LIBOBJCRYST_VERSION % 500 is the patch number
 //
 // alpha and beta releases have smaller LIBOBJCRYST_VERSION than
-// a completed release.  Numerical comparison of LIBOBJCRYST_VERSION
+// a finalized release.  Numerical comparison of LIBOBJCRYST_VERSION
 // values from two pre-releases may be inaccurate.
 
 #define LIBOBJCRYST_VERSION ${LIBOBJCRYST_VERSION}
@@ -62,11 +66,12 @@
 
 struct libobjcryst_version_info {
 
-    static const double version;
+    static const long long version;
     static const char* version_str;
     static const int major;
     static const int minor;
     static const int micro;
+    static const int patch;
     static const char* date;
     static const char* git_sha;
 
