@@ -44,7 +44,7 @@ env.Append(BUILDERS={'BuildVersionCode' :
 vhpp = File('ObjCryst/version.h')
 
 MY_GIT_MISSING_ERROR_MSG = """
-Cannot determine libobjcryst version.  Build from a git repository
+Cannot determine libobjcryst version.  Compile from a git repository
 or use a source archive from
 
     https://github.com/diffpy/libobjcryst/releases
