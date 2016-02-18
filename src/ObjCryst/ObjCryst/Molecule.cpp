@@ -24,6 +24,7 @@
 #include <iterator>
 #include <algorithm>
 #include <iomanip>
+#include <ctime>
 
 #include "ObjCryst/Quirks/VFNStreamFormat.h"
 #include "ObjCryst/ObjCryst/Molecule.h"
