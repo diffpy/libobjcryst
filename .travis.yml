@@ -24,6 +24,7 @@ git:
 branches:
   except:
     - /^v[0-9]/
+    - /^upstream-/
 
 
 before_install:
