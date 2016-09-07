@@ -108,7 +108,7 @@ c++ testlib.cpp -I$P/include -L$P/lib -Wl,-rpath,$P/lib -lObjCryst
 ```
 
 On Mac OS X the Anaconda libobjcryst is built for OS X version
-10.6 which may be incompatible with codes compiled on newer OS.
-To fix this pass `-mmacosx-version-min=10.6` option to the
+10.7 which may be incompatible with codes compiled on newer OS.
+To fix this pass `-mmacosx-version-min=10.7` option to the
 c++ compiler or set it with an environment variable as
-`export MACOSX_DEPLOYMENT_TARGET=10.6`.
+`export MACOSX_DEPLOYMENT_TARGET=10.7`.
