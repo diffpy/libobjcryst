@@ -77,7 +77,7 @@ install:
   - $NOMC || conda install --yes --use-local --file=/tmp/mypackage.txt
   - $NOMC || conda install --yes scons
   - $NOMC || MYPREFIX="${HOME}/mc/envs/testenv"
-  - $NOMC || MYWORKDIR="${HOME}/mc/conda-bld/work"
+  - $NOMC || MYWORKDIR="$(dirname "${MYCONDATESTENV}")/work"
 
   - $NOAPT || cd ~/pkgs/"$(basename "${MYTARBUNDLE}" .tar.gz)"/
   - $NOAPT || scons build=fast
