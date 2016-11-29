@@ -43,6 +43,9 @@ vars = Variables('sconsvars.py')
 vars.Add(EnumVariable('build',
     'compiler settings', 'fast',
     allowed_values=('debug', 'fast')))
+vars.Add(EnumVariable('tool',
+    'C++ compiler toolkit to be used', 'default',
+    allowed_values=('default', 'intelc')))
 vars.Add(BoolVariable('profile',
     'build with profiling information', False))
 vars.Add(BoolVariable('with_shared_cctbx',
