@@ -78,16 +78,14 @@ install:
   - $NOMC || conda install --yes --use-local --file=/tmp/mypackage.txt
   - $NOMC || conda install --yes scons
   - $NOMC || MYPREFIX="${HOME}/mc/envs/testenv"
-  - $NOMC || MYWORKDIR="$(dirname "${MYCONDATESTENV}")/work"
 
   - $NOAPT || cd ~/pkgs/"$(basename "${MYTARBUNDLE}" .tar.gz)"/
   - $NOAPT || scons build=fast
   - $NOAPT || sudo scons build=fast install
-  - $NOAPT || MYPREFIX=/usr/local
-  - $NOAPT || MYWORKDIR=$PWD
-
   # Ensure libObjCryst cannot be loaded from the work directory.
-  - scons build=fast -Q -C "${MYWORKDIR}" --clean lib
+  - $NOAPT || sudo scons build=fast -Q --clean lib
+  - $NOAPT || MYPREFIX=/usr/local
+
   - MYINCLUDE="${MYPREFIX}/include"
   - MYLIB="${MYPREFIX}/lib"
   - MYVERSION="${MYINCLUDE}/ObjCryst/version.h"
@@ -101,14 +99,14 @@ install:
   - $NOMC || export CPATH="${MYINCLUDE}"
   - $NOMC || MYLINKFLAGS="-Wl,-rpath,${MYLIB}"
 
-    # Mac OS X must use the same deployment target as conda-build.
+  # Mac OS X must use the same deployment target as conda-build.
   - if $MYUSEMC && [[ "${TRAVIS_OS_NAME}" == osx ]]; then
         export MACOSX_DEPLOYMENT_TARGET=10.7;
     fi
 
 
 before_script:
-  - cd "${MYWORKDIR}/examples"
+  - cd "${TRAVIS_BUILD_DIR}/examples"
 
 
 script:
