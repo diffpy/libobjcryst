@@ -20,6 +20,7 @@
 *
 */
 #include <algorithm>
+#include <iomanip>
 
 #include "ObjCryst/ObjCryst/Indexing.h"
 #include "ObjCryst/Quirks/VFNDebug.h"
@@ -79,16 +80,16 @@ float EstimateCellVolume(const float dmin, const float dmax, const float nbrefl,
 
 RecUnitCell::RecUnitCell(const float zero,const float p0,const float p1,const float p2,
                          const float p3,const float p4,const float p5,CrystalSystem lattice,
-                         const CrystalCentering cent):
-mlattice(lattice),mCentering(cent)
+                         const CrystalCentering cent, const unsigned int nbspurious):
+mlattice(lattice),mCentering(cent),mNbSpurious(nbspurious)
 {
-   par[0]=zero;
-   par[1]=p0;
-   par[2]=p1;
-   par[3]=p2;
-   par[4]=p3;
-   par[5]=p4;
-   par[6]=p5;
+   this->par[0]=zero;
+   this->par[1]=p0;
+   this->par[2]=p1;
+   this->par[3]=p2;
+   this->par[4]=p3;
+   this->par[5]=p4;
+   this->par[6]=p5;
 }
 
 RecUnitCell::RecUnitCell(const RecUnitCell &old)
@@ -101,6 +102,7 @@ void RecUnitCell::operator=(const RecUnitCell &rhs)
    for(unsigned int i=0;i<7;++i) par[i]=rhs.par[i];
    mlattice=rhs.mlattice;
    mCentering=rhs.mCentering;
+   mNbSpurious=rhs.mNbSpurious;
 }
 
 float RecUnitCell::hkl2d(const float h,const float k,const float l,REAL *derivpar,const unsigned int derivhkl) const
@@ -732,15 +734,16 @@ void PeakList::ImportDhklDSigmaIntensity(istream &is,float defaultsigma)
    while(true)
    {// :TODO: use readline to make sure when the end is reached
       is >>d;
-      if(is.eof()) break;
+      cout<<__FILE__<<":"<<__LINE__<<"  "<<mvHKL.size()<<":d="<<d;
+      if(is.good()==false) break;
       is>>sigma;
-      if(is.eof()) break;
+      if(is.good()==false) break;
       is>>iobs;
       if(sigma<=0) sigma=d*defaultsigma;
       if(iobs<=0) iobs=1.0;
       mvHKL.push_back(hkl(1/d,iobs,1/(d-sigma/2)-1/(d+sigma/2)));
-      cout<<__FILE__<<":"<<__LINE__<<"  "<<mvHKL.size()<<":d="<<d<<"+/-"<<sigma<<", I="<<iobs<<" 1/d="<<1/d<<endl;
-      if(is.eof()) break;
+      cout<<"+/-"<<sigma<<", I="<<iobs<<" 1/d="<<1/d<<endl;
+      if(is.good()==false) break;
    }
    sort(mvHKL.begin(),mvHKL.end(),compareHKL_d);
    cout<<"Imported "<<mvHKL.size()<<" observed reflection positions."<<endl;
@@ -874,12 +877,10 @@ float PeakList::Simulate(float zero, float a, float b, float c,
 
 void PeakList::ExportDhklDSigmaIntensity(std::ostream &os)const
 {
-   char buf[100];
    for(vector<PeakList::hkl>::const_iterator pos=mvHKL.begin();pos!=mvHKL.end();++pos)
    {
       const float sigma=1/(pos->dobs-pos->dobssigma/2)-1/(pos->dobs+pos->dobssigma/2);
-      sprintf(buf,"%6.3f %6.3f %f",1/pos->dobs,sigma,pos->iobs);
-      os<<buf<<endl;
+      os<< std::fixed << setw(6) << setprecision(3) << 1/pos->dobs <<" "<< sigma <<" "<< std::scientific << pos->iobs <<endl;
    }
 }
 
@@ -1365,6 +1366,7 @@ void CellExplorer::Evolution(unsigned int ng,const bool randomize,const float f,
       {
          if(score>mBestScore) mBestScore=score;
          mvSolution.push_back(make_pair(mRecUnitCell,score));
+         mvSolution.back().first.mNbSpurious = mNbSpurious;
          this->ReduceSolutions(true);// We may have solutions from previous runs
       }
    }
@@ -2101,6 +2103,7 @@ unsigned int CellExplorer::RDicVol(RecUnitCell par0,RecUnitCell dpar, unsigned i
                   mBestScore=score;
                }
                mvSolution.push_back(make_pair(mRecUnitCell,score));
+               mvSolution.back().first.mNbSpurious = mNbSpurious;
                mvNbSolutionDepth[depth]+=1;
                if((mvSolution.size()>1100)&&(rand()%1000==0))
                {
@@ -2613,6 +2616,7 @@ void CellExplorer::DicVol(const float minScore,const unsigned int minDepth,const
 
 bool SimilarRUC(const RecUnitCell &c0,const RecUnitCell &c1, const float delta=0.005)
 {
+   if(c0.mNbSpurious != c1.mNbSpurious) return false;
    vector<float> par0=c0.DirectUnitCell();
    vector<float> par1=c1.DirectUnitCell();
    float diff=0;
@@ -2629,7 +2633,7 @@ void CellExplorer::ReduceSolutions(const bool updateReportThreshold)
 {
    const bool verbose=false;
    std::list<std::pair<RecUnitCell,float> > vSolution2;
-
+   // TODO: take into account number of spurious lines for cutoff value.
    // keep only solutions above mBestScore/5
    for(list<pair<RecUnitCell,float> >::iterator pos=mvSolution.begin();pos!=mvSolution.end();)
    {

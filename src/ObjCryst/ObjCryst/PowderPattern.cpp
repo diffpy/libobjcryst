@@ -1065,46 +1065,51 @@ void PowderPatternDiffraction::ExtractLeBail(unsigned int nbcycle)
       mFhklObsSq=100;
    }
    // First get the observed powder pattern, minus the contribution of all other phases.
-   CrystVector_REAL obs,iextract;
+   CrystVector_REAL obs,iextract,calc;
    iextract=mFhklObsSq;
    mFhklObsSq=0;
    mClockFhklObsSq.Click();
+   // Get the observed and calculated powder pattern (excluding this diffraction phase)
    obs=mpParentPowderPattern->GetPowderPatternObs();
    obs-=mpParentPowderPattern->GetPowderPatternCalc();
    mFhklObsSq=iextract;
    mClockFhklObsSq.Click();
-   // NB: nbreflused < number of calculated profiles (see PowderPatternDiffraction::CalcPowderReflProfile())
-   const unsigned long nbrefl=this->GetNbReflBelowMaxSinThetaOvLambda();
-   for(unsigned int k0=nbrefl;k0<this->GetNbRefl();++k0) iextract(k0)=0;
+   // We take here the reflections which are centered below the max(sin(theta)/lambda)
+   // actually more reflections are calculated, but the pattern is only calculated up to
+   // max(sin(theta)/lambda).
+   const unsigned long nbrefl=this->ScatteringData::GetNbReflBelowMaxSinThetaOvLambda();
+   iextract=0;
    for(;nbcycle>0;nbcycle--)
    {
       //cout<<"PowderPatternDiffraction::ExtractLeBail(): cycle #"<<nbcycle<<endl;
+      calc=this->GetPowderPatternCalc();
       for(unsigned int k0=0;k0<nbrefl;++k0)
       {
+         if(mvReflProfile[k0].profile.numElements()==0) continue; // May happen for reflections near limits ?
          REAL s1=0;
          //cout<<mH(k0)<<" "<<mK(k0)<<" "<<mL(k0)<<" , Iobs=??"<<endl;
          long last=mvReflProfile[k0].last,first;
          if(last>=(long)(mpParentPowderPattern->GetNbPointUsed())) last=mpParentPowderPattern->GetNbPointUsed();
          if(mvReflProfile[k0].first<0)first=0;
          else first=(mvReflProfile[k0].first);
-         for(unsigned int i=first;i<=last;++i)
+         const REAL *p1=mvReflProfile[k0].profile.data()+(first-mvReflProfile[k0].first);
+         const REAL *p2=calc.data()+first;
+         const REAL *pobs=obs.data()+first;
+         for(long i=first;i<=last;++i)
          {
-            if(mvReflProfile[k0].profile(i-mvReflProfile[k0].first)<=0) continue;
-            REAL s2=0;
-            for(unsigned int k=0;k<nbrefl;++k)
-            {
-               if((mvReflProfile[k].last<i) || (mvReflProfile[k].profile.numElements()==0)) continue;
-               if(mvReflProfile[k].first>i) break;
-               s2 += mMultiplicity(k)*mIntensityCorr(k)*mvReflProfile[k].profile(i-mvReflProfile[k].first)*mFhklObsSq(k);
-               //cout<<"     "<<mH(k)<<" "<<mK(k)<<" "<<mL(k)<<" :#"<<k<<","<<i<<" "<<mMultiplicity(k)<<" "<<mIntensityCorr(k)
-               //    <<" "<<mvReflProfile[k].profile(i-mvReflProfile[k].first)<<" "<<mFhklObsSq(k)<<" ->"<<s2<<endl;
+            const REAL s2=*p2++;
+            const REAL tmp=*pobs++ * *p1++;
+            if( (s2<1e-8) ) // || (tmp<=0)
+            {// Avoid <0 intensities (should not happen, it means profile is <0)
+               //cout<<"S2? "<< int(mH(k0))<<" "<<int(mK(k0))<<" "<<int(mL(k0)) <<" calc(i="<<i<<")"<<calc(i)<<" obs(i="<<i<<")="<<obs(i)<<", tmp="<<tmp<<" profile(i)="<<mvReflProfile[k0].profile(i-mvReflProfile[k0].first)<<" "<<mFhklObsSq(k0)<<endl;
+               continue ;
             }
-            s1 += obs(i)*mvReflProfile[k0].profile(i-mvReflProfile[k0].first)*mFhklObsSq(k0)/s2;
+            s1 += tmp /s2;
             //cout<<"   "<<s2<<" "<<obs(i)<<" "<<mvReflProfile[k0].profile(i-mvReflProfile[k0].first)<<" "<<mFhklObsSq(k0)<<endl;
          }
-         if((s1>1e-8)&&(!ISNAN_OR_INF(s1))) iextract(k0)=s1;
+         if((s1>1e-8)&&(!ISNAN_OR_INF(s1))) iextract(k0)=s1*mFhklObsSq(k0);
          else iextract(k0)=1e-8;//:KLUDGE: should <0 intensities be allowed ?
-         //if(nbcycle==1) cout<<"  "<<int(mH(k0))<<" "<<int(mK(k0))<<" "<<int(mL(k0))<<" , Iobs="<<iextract(k0)<<endl;
+         //if(nbcycle==1) cout<<" Le Bail "<<int(mH(k0))<<" "<<int(mK(k0))<<" "<<int(mL(k0))<<" , Iobs="<<iextract(k0)<<endl;
       }
       mFhklObsSq=iextract;
       if(this->GetCrystal().GetScatteringComponentList().GetNbComponent()>0)
@@ -1118,11 +1123,11 @@ void PowderPatternDiffraction::ExtractLeBail(unsigned int nbcycle)
             tmp2 += (*p1) * (*p1);
             p1++;
          }
+         //cout<<"SCALING: tmp2="<<tmp2<<",tmp1="<<tmp1<<endl;
          mFhklObsSq*=tmp2/tmp1;
       }
       mClockFhklObsSq.Click();
-      //cout<<"PowderPatternDiffraction::ExtractLeBail():results (scale factor="<<mpParentPowderPattern->GetScaleFactor(*this)*1e6<<")"
-      //    <<endl<< FormatVertVectorHKLFloats<REAL>(mH,mK,mL,this->GetFhklCalcSq(),mFhklObsSq)<<endl;
+      //cout<<"PowderPatternDiffraction::ExtractLeBail():results (scale factor="<<mpParentPowderPattern->GetScaleFactor(*this)*1e6<<")" <<endl<< FormatVertVectorHKLFloats<REAL>(mH,mK,mL,this->GetFhklCalcSq(),mFhklObsSq,10,4,nbrefl)<<endl;
    }
    // Store extracted data in a single crystal data object
    if(mpLeBailData==0) mpLeBailData=new DiffractionDataSingleCrystal(*mpCrystal,false);
@@ -1145,12 +1150,11 @@ void PowderPatternDiffraction::ExtractLeBail(unsigned int nbcycle)
 long PowderPatternDiffraction::GetNbReflBelowMaxSinThetaOvLambda()const
 {
    if(this->IsBeingRefined()) return mNbReflUsed;
-   VFN_DEBUG_MESSAGE("PowderPattern::GetNbReflBelowMaxSinThetaOvLambda()",4)
+   VFN_DEBUG_MESSAGE("PowderPatternDiffraction::GetNbReflBelowMaxSinThetaOvLambda(): "<<mNbReflUsed<<"/"<<mNbRefl<<" [max sin(theta)/lambda="<<mMaxSinThetaOvLambda<<"]",4)
    this->CalcPowderReflProfile();
    const long nbpoint=mpParentPowderPattern->GetNbPointUsed();
    if((mNbReflUsed>0)&&(mNbReflUsed<mNbRefl))
    {
-      //:TODO: handle anisotropic profiles ?
       if(  (mvReflProfile[mNbReflUsed  ].first>nbpoint)
          &&(mvReflProfile[mNbReflUsed-1].first<=nbpoint)) return mNbReflUsed;
    }
@@ -1198,6 +1202,35 @@ void PowderPatternDiffraction::FreezeLatticePar(const bool use)
 }
 
 bool PowderPatternDiffraction::FreezeLatticePar() const {return mFreezeLatticePar;}
+
+unsigned int PowderPatternDiffraction::GetProfileFitNetNbObs()const
+{
+   unsigned int nb=0;
+   unsigned int irefl=0;
+   unsigned int ilast=0;
+   while(this->GetParentPowderPattern().STOL2Pixel(mSinThetaLambda(irefl))<0)
+   {
+      irefl++;
+      if(irefl>=this->GetNbReflBelowMaxSinThetaOvLambda()) break;
+   }
+   REAL stol=mSinThetaLambda(irefl);
+   while(irefl<this->GetNbReflBelowMaxSinThetaOvLambda())
+   {
+      while(mSinThetaLambda(irefl)==stol)
+      {
+         //cout<<int(mH(irefl))<<" "<<int(mK(irefl))<<" "<<int(mL(irefl))<<endl;
+         irefl++;
+         if(irefl>=this->GetNbReflBelowMaxSinThetaOvLambda()) break;
+      }
+      const int nbnew =this->GetParentPowderPattern().STOL2Pixel(stol)-ilast;
+      if(nbnew>1) nb += nbnew-1;
+      //cout<<"     => Added "<< nbnew-1<< "net observed points ("<<this->GetParentPowderPattern().STOL2Pixel(stol)<<"-"<<ilast<<")"<<endl;
+      ilast=this->GetParentPowderPattern().STOL2Pixel(stol);
+      stol = mSinThetaLambda(irefl);
+   }
+   //cout<<"Final number of net observed points: "<<nb<<endl;
+   return nb;
+}
 
 void PowderPatternDiffraction::CalcPowderPattern() const
 {
@@ -1266,15 +1299,15 @@ Applying profiles for "<<nbRefl<<" reflections",2)
             <<"  I="<<intensity<<"  stol="<<mSinThetaLambda(i)\
             <<",pixel #"<<mvReflProfile[i].first<<"->"<<mvReflProfile[i].last,2)
          {
-            const unsigned long first=mvReflProfile[i].first,last=mvReflProfile[i].last;
+            const long first=mvReflProfile[i].first,last=mvReflProfile[i].last;
             const REAL *p2 = mvReflProfile[i].profile.data();
             REAL *p3 = mPowderPatternCalc.data()+first;
-            for(unsigned long j=first;j<=last;j++) *p3++ += *p2++ * intensity;
+            for(long j=first;j<=last;j++) *p3++ += *p2++ * intensity;
             if(useML)
             {
                const REAL *p2 = mvReflProfile[i].profile.data();
                REAL *p3 = mPowderPatternCalcVariance.data()+first;
-               for(unsigned long j=first;j<=last;j++) *p3++ += *p2++ * var;
+               for(long j=first;j<=last;j++) *p3++ += *p2++ * var;
             }
          }
       }
@@ -1358,10 +1391,10 @@ void PowderPatternDiffraction::CalcPowderPattern_FullDeriv(std::set<RefinablePar
                   if(mSinThetaLambda(i+step) > (mSinThetaLambda(i)+1e-5) ) break;
                }
                {
-                  const unsigned long first=mvReflProfile[i].first,last=mvReflProfile[i].last;
+                  const long first=mvReflProfile[i].first,last=mvReflProfile[i].last;
                   const REAL *p2 = mvReflProfile[i].profile.data();
                   REAL *p3 = mPowderPattern_FullDeriv[*par].data()+first;
-                  for(unsigned long j=first;j<=last;j++) *p3++ += *p2++ * intensity;
+                  for(long j=first;j<=last;j++) *p3++ += *p2++ * intensity;
                }
             }
          }
@@ -1395,10 +1428,10 @@ void PowderPatternDiffraction::CalcPowderPattern_FullDeriv(std::set<RefinablePar
                }
                if(mvReflProfile_FullDeriv[*par][i].size()>0)// Some profiles may be unaffected by a given parameter
                {
-                  const unsigned long first=mvReflProfile[i].first,last=mvReflProfile[i].last;
+                  const long first=mvReflProfile[i].first,last=mvReflProfile[i].last;
                   const REAL *p2 = mvReflProfile_FullDeriv[*par][i].data();
                   REAL *p3 = mPowderPattern_FullDeriv[*par].data()+first;
-                  for(unsigned long j=first;j<=last;j++) *p3++ += *p2++ * intensity;
+                  for(long j=first;j<=last;j++) *p3++ += *p2++ * intensity;
                }
             }
          }
@@ -2314,7 +2347,7 @@ void PowderPatternDiffraction::PrepareIntegratedProfile()const
             REAL *fact = &((*pos1)[j]);//this creates the 'j' entry if necessary
             const REAL *p2 = mvReflProfile[i].profile.data()+(first-first0);
             //cout << i<<","<<j<<","<<first<<","<<last<<":"<<*fact<<"/"<<mNbReflUsed<<","<<mNbRefl<<endl;
-            for(int k=first;k<=last;k++) *fact += *p2++;
+            for(long k=first;k<=last;k++) *fact += *p2++;
          }
       }
       pos2->first=firstInterval;
@@ -2410,13 +2443,13 @@ mMaxSinThetaOvLambda(old.mMaxSinThetaOvLambda),mNbPointUsed(old.mNbPointUsed)
 
 PowderPattern::~PowderPattern()
 {
+   gPowderPatternRegistry.DeRegister(*this);
    for(int i=0;i<mPowderPatternComponentRegistry.GetNb();i++)
    {
       mPowderPatternComponentRegistry.GetObj(i).DeRegisterClient(*this);
       this->RemoveSubRefObj(mPowderPatternComponentRegistry.GetObj(i));
       delete &(mPowderPatternComponentRegistry.GetObj(i));
    }
-   gPowderPatternRegistry.DeRegister(*this);
    gTopRefinableObjRegistry.DeRegister(*this);
 }
 const string& PowderPattern::GetClassName() const
@@ -2629,15 +2662,17 @@ const CrystVector_REAL& PowderPattern::GetPowderPatternX()const
    return mX;
 }
 
-const CrystVector_REAL& PowderPattern::GetChi2Cumul()const
+const CrystVector_REAL& PowderPattern::GetChi2Cumul(const int m)const
 {
    VFN_DEBUG_ENTRY("PowderPattern::GetChi2Cumul()",3)
    mChi2Cumul.resize(mNbPoint);
-   if(0 == mOptProfileIntegration.GetChoice())
+   int mode = m;
+   if((mode!=0) && (mode!=1)) mode = mOptProfileIntegration.GetChoice();
+   if(0 == mode)
    {
       this->CalcPowderPatternIntegrated();
       if(mNbIntegrationUsed==0)
-      	mChi2Cumul=0;
+         mChi2Cumul=0;
       else
       {
          const REAL *pObs=mIntegratedObs.data();
@@ -2675,7 +2710,6 @@ const CrystVector_REAL& PowderPattern::GetChi2Cumul()const
       REAL chi2cumul=0,tmp;
       for(unsigned int i=0;i<mNbPointUsed;i++)
       {
-         VFN_DEBUG_MESSAGE("PowderPattern::GetChi2Cumul():"<<mIntegratedPatternMin(i)<<"->"<<mIntegratedPatternMax(i)<<":obs-calc="<<*pObs - *pCalc<<", weight="<<*pWeight,5);
          tmp = (*pObs++ - *pCalc++) ;
          chi2cumul += *pWeight++ * tmp*tmp;
          *pC2Cu++ = chi2cumul;
@@ -5233,7 +5267,14 @@ void PowderPattern::GetGeneGroup(const RefinableObj &obj,
          }
 }
 
-void PowderPattern::SetMaxSinThetaOvLambda(const REAL max){mMaxSinThetaOvLambda=max;}
+void PowderPattern::SetMaxSinThetaOvLambda(const REAL max)
+{
+   mMaxSinThetaOvLambda=max;
+   for(int i=0;i<mPowderPatternComponentRegistry.GetNb();i++)
+   {
+      mPowderPatternComponentRegistry.GetObj(i).SetMaxSinThetaOvLambda(mMaxSinThetaOvLambda);
+   }
+}
 
 REAL PowderPattern::GetMaxSinThetaOvLambda()const{return mMaxSinThetaOvLambda;}
 
@@ -5326,6 +5367,16 @@ PeakList PowderPattern::FindPeaks(const float dmin,const float maxratio,const un
       CrystVector_long width(nbwidth);
       width=0;
       obs=this->GetPowderPatternObs();
+      // Zero excluded regions.
+      for(long i= 0;i<mExcludedRegionMinX.numElements();i++)
+      {
+         long min,max;
+         min=(long)floor(this->X2Pixel(mExcludedRegionMinX(i)));
+         max=(long)ceil (this->X2Pixel(mExcludedRegionMaxX(i)));
+         if(min<0) min = 0;
+         if(max>=obs.numElements()) max = obs.numElements();
+         for(long j=min;j<max;j++) obs(j) = 0;
+      }
       const long nb=obs.numElements();
       for(int j=0;j<nbwidth;j++)
       {
@@ -5374,6 +5425,16 @@ PeakList PowderPattern::FindPeaks(const float dmin,const float maxratio,const un
    // get 2nd derivative
    CrystVector_REAL obsd2;
    obsd2=SavitzkyGolay(this->GetPowderPatternObs(),width_golay,2);
+   // Zero excluded regions.
+   for(long i= 0;i<mExcludedRegionMinX.numElements();i++)
+   {
+      long min,max;
+      min=(long)floor(this->X2Pixel(mExcludedRegionMinX(i)));
+      max=(long)ceil (this->X2Pixel(mExcludedRegionMaxX(i)));
+      if(min<0) min = 0;
+      if(max>=obsd2.numElements()) max = obsd2.numElements();
+      for(long j=min;j<max;j++) obsd2(j) = 0;
+   }
    const float norm=-obsd2.min();
    // Normalize, so that the derivative has the same extent as the observed pattern
    obsd2 *= mPowderPatternObs.max()/(-norm);
@@ -6585,6 +6646,7 @@ void PowderPattern::CalcNbPointUsed()const
    {
       mNbPointUsed=tmp;
       mClockNbPointUsed.Click();
+      VFN_DEBUG_MESSAGE("PowderPattern::CalcNbPointUsed():"<<mNbPointUsed<<" max(sin(theta)/lambda)="<<mMaxSinThetaOvLambda, 3)
    }
 
 }

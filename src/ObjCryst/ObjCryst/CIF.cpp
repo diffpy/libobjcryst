@@ -851,9 +851,9 @@ void CIF::Parse(stringstream &in)
    string block="";// Current block data
    while(!in.eof())
    {
-      stringstream mess;
-      mess<<"CIF: Parsing:"<<in.tellg();
-      (*fpObjCrystInformUser)(mess.str());
+      //stringstream mess;
+      //mess<<"CIF: Parsing:"<<in.tellg();
+      //(*fpObjCrystInformUser)(mess.str());
       while(!isgraph(in.peek()) && !in.eof()) in.get(lastc);
       if(in.eof()) break;
       if(vv) cout<<endl;
@@ -1002,7 +1002,6 @@ Crystal* CreateCrystalFromCIF(CIF &cif,bool verbose,bool checkSymAsXYZ)
 
 Crystal* CreateCrystalFromCIF(CIF &cif,const bool verbose,const bool checkSymAsXYZ, const bool oneScatteringPowerPerElement, const bool connectAtoms)
 {
-   gCrystalRegistry.AutoUpdateUI(false);
    (*fpObjCrystInformUser)("CIF: Opening CIF");
    Chronometer chrono;
    chrono.start();
@@ -1169,15 +1168,19 @@ Crystal* CreateCrystalFromCIF(CIF &cif,const bool verbose,const bool checkSymAsX
          const float t1=chrono.seconds();
          (*fpObjCrystInformUser)((boost::format("CIF: Create Crystal:%s(%s)(dt=%6.3fs)")%pCryst->GetName() % pCryst->GetSpaceGroup().GetName() % t1).str());
 
+         bool doInformUserAllAtoms=true;
+         if(pos->second.mvAtom.size()>30) doInformUserAllAtoms = false;
+         unsigned int ctatom=0;
          for(vector<CIFData::CIFAtom>::const_iterator posat=pos->second.mvAtom.begin();posat!=pos->second.mvAtom.end();++posat)
          {
             if( (posat->mLabel==".") || (posat->mSymbol==".") || (posat->mLabel.find("dummy")!=std::string::npos) || (posat->mSymbol.find("dummy")!=std::string::npos) )
             {
-               (*fpObjCrystInformUser)("CIF: Ignoring DUMMY Atom:"+posat->mLabel+"(symbol="+posat->mSymbol+")");
+               if(doInformUserAllAtoms) (*fpObjCrystInformUser)("CIF: Ignoring DUMMY Atom:"+posat->mLabel+"(symbol="+posat->mSymbol+")");
                continue;
             }
+            ctatom++;
 
-            const float t20=chrono.seconds();
+            //const float t20=chrono.seconds();
             // Try to find an existing scattering power with the same properties, or create a new one
             ScatteringPower* sp=NULL;
             if(oneScatteringPowerPerElement)
@@ -1199,12 +1202,13 @@ Crystal* CreateCrystalFromCIF(CIF &cif,const bool verbose,const bool checkSymAsX
                   vElementBiso[sp].first+=posat->mBiso;
                   vElementBiso[sp].second=1;
                   pCryst->AddScatteringPower(sp);
-                  const float t21=chrono.seconds();
-                  (*fpObjCrystInformUser)((boost::format("CIF: Add scattering power: %s (dt=%6.3fsCrystal creation=%6.3fs total)")% posat->mSymbol % (t21-t20) % t21).str());
+                  //const float t21=chrono.seconds();
+                  //(*fpObjCrystInformUser)((boost::format("CIF: Add scattering power: %s (dt=%6.3fsCrystal creation=%6.3fs total)")% posat->mSymbol % (t21-t20) % t21).str());
                }
             }
             else
             {
+               #if 0
                for(unsigned int i=0;i<pCryst->GetScatteringPowerRegistry().GetNb();++i)
                {
                   if(pCryst->GetScatteringPowerRegistry().GetObj(i).GetSymbol()!=posat->mSymbol) continue;
@@ -1222,8 +1226,9 @@ Crystal* CreateCrystalFromCIF(CIF &cif,const bool verbose,const bool checkSymAsX
                   break;
                }
                if(sp==NULL)
+               #endif
                {
-                  if(verbose) cout<<"Scattering power "<<posat->mLabel<<" not found, creating it..."<<endl;
+                  if(verbose) cout<<"Creating new scattering power for:"<<posat->mLabel<<endl;
                   sp = new ScatteringPowerAtom(posat->mLabel,posat->mSymbol);
                   // Always extract isotropic DP, even with ADPs present
                   // :TODO: if only ADP are listed, calculate isotropic DP
@@ -1234,25 +1239,37 @@ Crystal* CreateCrystalFromCIF(CIF &cif,const bool verbose,const bool checkSymAsX
                      for (int idx=0; idx<6; ++idx) sp->SetBij(idx, posat->mBeta[idx]);
                   }
                   pCryst->AddScatteringPower(sp);
-                  const float t21=chrono.seconds();
-                  (*fpObjCrystInformUser)((boost::format("CIF: Add scattering power: %s (dt=%6.3fsCrystal creation=%6.3fs total)") % posat->mLabel % (t21-t20) % t21).str());
+                  //const float t21=chrono.seconds();
+                  //(*fpObjCrystInformUser)((boost::format("CIF: Add scattering power: %s (dt=%6.3fsCrystal creation=%6.3fs total)") % posat->mLabel % (t21-t20) % t21).str());
                }
             }
-            (*fpObjCrystInformUser)("CIF: Add Atom:"+posat->mLabel+"("+sp->GetName()+")");
+            // (*fpObjCrystInformUser)("CIF: Add Atom:"+posat->mLabel+"("+sp->GetName()+")");
             pCryst->AddScatterer(new Atom(posat->mCoordFrac[0],posat->mCoordFrac[1],posat->mCoordFrac[2],
                                           posat->mLabel,sp,posat->mOccupancy));
             const float t22=chrono.seconds();
-            (*fpObjCrystInformUser)((boost::format("CIF: new Atom: %s (%s) (dt=%6.3fs, Crystal creation=%6.3fs total)") % posat->mLabel % sp->GetName() % (t22-t20) % t22).str());
+            if(doInformUserAllAtoms) (*fpObjCrystInformUser)((boost::format("CIF: new Atom: %s (%s) (Crystal creation=%6.3fs total)") % posat->mLabel % sp->GetName() % t22).str());
+            else if (ctatom%20 == 0)(*fpObjCrystInformUser)((boost::format("CIF: imported %u atoms (Crystal creation=%6.3fs total)") % ctatom % t22).str());
          }
          if(oneScatteringPowerPerElement)
          {
             for(std::map<ScatteringPower*,std::pair<REAL,unsigned int> >::iterator pos=vElementBiso.begin();pos!=vElementBiso.end();++pos)
                pos->first->SetBiso(pos->second.first/pos->second.second);
          }
-         if(connectAtoms) pCryst->ConnectAtoms();
+         (*fpObjCrystInformUser)((boost::format("CIF: Finished importing %u atoms (Crystal creation=%6.3fs total)") % ctatom % chrono.seconds()).str());
+         if(connectAtoms)
+         {
+            (*fpObjCrystInformUser)("CIF: connecting atoms");
+            pCryst->ConnectAtoms();
+            unsigned int ctat=0;
+            unsigned int ctmol=0;
+            for(int i=0;i<pCryst->GetNbScatterer();i++)
+            {
+               if(pCryst->GetScatt(i).GetClassName()=="Atom") ctat +=1;
+               else if(pCryst->GetScatt(i).GetClassName()=="Molecule") ctmol +=1;
+            }
+            (*fpObjCrystInformUser)((boost::format("CIF: finished connecting atoms (%u isolated atoms, %u molecules) (Crystal creation=%6.3fs total)") % ctat % ctmol % chrono.seconds()).str());
+         }
       }
-   gCrystalRegistry.AutoUpdateUI(true);
-   gCrystalRegistry.UpdateUI();
    return pCryst;
 }
 
@@ -1265,6 +1282,7 @@ PowderPattern* CreatePowderPatternFromCIF(CIF &cif)
       {
          pPow=new PowderPattern();
          pPow->ImportPowderPatternCIF(cif);
+         (*fpObjCrystInformUser)((boost::format("CIF: Imported POWDER PATTERN, with %d points") % pPow->GetNbPoint()).str());
       }
    }
    return pPow;
@@ -1277,20 +1295,24 @@ DiffractionDataSingleCrystal* CreateSingleCrystalDataFromCIF(CIF &cif, Crystal *
    {
       if(pos->second.mH.numElements()>0)
       {
+         (*fpObjCrystInformUser)((boost::format("CIF: Importing SINGLE CRYSTAL DIFFRACTION data")).str());
          if(pcryst==0)
          {
             if(gCrystalRegistry.GetNb()>0)
             {  // Use last Crystal created
                pcryst=&(gCrystalRegistry.GetObj(gCrystalRegistry.GetNb()-1));
+               (*fpObjCrystInformUser)((boost::format("CIF: Importing SINGLE CRYSTAL DIFFRACTION data: using last Crystal structure as corresponding crystal [%s]") % pcryst->GetName().c_str()).str());
             }
             else
             {
                pcryst=new Crystal;
-               pcryst->SetName("Dummy");
+               pcryst->SetName("Crystal data for Single Crystal Diffraction data imported from CIF");
+               (*fpObjCrystInformUser)((boost::format("CIF: Importing SINGLE CRYSTAL DIFFRACTION data: creating new empty Crystal structure")).str());
             }
          }
          pData=new DiffractionDataSingleCrystal(*pcryst);
          pData->SetHklIobs(pos->second.mH,pos->second.mK,pos->second.mL,pos->second.mIobs,pos->second.mSigma);
+         (*fpObjCrystInformUser)((boost::format("CIF: Imported SINGLE CRYSTAL DIFFRACTION data, with %d reflections") % pData->GetNbRefl()).str());
       }
    }
    return pData;

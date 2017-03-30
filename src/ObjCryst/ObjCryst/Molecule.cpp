@@ -188,7 +188,7 @@ void ExpandAtomGroupRecursive(MolAtom* atom,
 
 MolAtom::MolAtom(const REAL x, const REAL y, const REAL z,
                  const ScatteringPower *pPow, const string &name, Molecule &parent):
-mName(name),mX(x),mY(y),mZ(z),mOccupancy(1.),mpScattPow(pPow),mpMol(&parent),mIsInRing(false)
+mName(name),mX(x),mY(y),mZ(z),mOccupancy(1.),mpScattPow(pPow),mpMol(&parent),mIsInRing(false),mIsNonFlipAtom(false)
 #ifdef __WX__CRYST__
 ,mpWXCrystObj(0)
 #endif
@@ -249,7 +249,15 @@ void MolAtom::SetOccupancy(const REAL a){ mOccupancy=a;}
 
 bool MolAtom::IsDummy()const{return mpScattPow==0;}
 const ScatteringPower& MolAtom::GetScatteringPower()const{return *mpScattPow;}
-void MolAtom::SetScatteringPower(const ScatteringPower& pow){mpScattPow=&pow;}
+
+void MolAtom::SetScatteringPower(const ScatteringPower& pow)
+{
+   if(mpScattPow!=&pow)
+   {
+      mpScattPow=&pow;
+      this->GetMolecule().GetAtomScattPowClock().Click();
+   }
+}
 
 void MolAtom::XMLOutput(ostream &os,int indent)const
 {
@@ -282,6 +290,7 @@ void MolAtom::XMLOutput(ostream &os,int indent)const
       ss <<mOccupancy;
       tag.AddAttribute("Occup",ss.str());
    }
+   if(mIsNonFlipAtom) tag.AddAttribute("NonFlip","1");
    os <<tag<<endl;
    VFN_DEBUG_EXIT("MolAtom::XMLOutput()",4)
 }
@@ -320,6 +329,11 @@ void MolAtom::XMLInput(istream &is,const XMLCrystTag &tag)
          stringstream ss(tag.GetAttributeValue(i));
          ss >>mOccupancy;
       }
+      if("NonFlip"==tag.GetAttributeName(i))
+      {
+         stringstream ss(tag.GetAttributeValue(i));
+         ss >>mIsNonFlipAtom;
+      }
    }
    this->SetName(name);
    VFN_DEBUG_EXIT("MolAtom::XMLInput()",7)
@@ -327,6 +341,18 @@ void MolAtom::XMLInput(istream &is,const XMLCrystTag &tag)
 
 void MolAtom::SetIsInRing(const bool r)const{mIsInRing=r;}
 bool MolAtom::IsInRing()const{return mIsInRing;}
+
+void MolAtom::SetNonFlipAtom(const bool nonflip)
+{
+   // :KLUDGE: should be using a specific clock ?
+   if(mIsNonFlipAtom != nonflip) this->GetMolecule().GetRigidGroupClock().Click();
+   mIsNonFlipAtom = nonflip;
+}
+
+bool MolAtom::IsNonFlipAtom() const
+{
+   return mIsNonFlipAtom;
+}
 
 #ifdef __WX__CRYST__
 WXCrystObjBasic* MolAtom::WXCreate(wxWindow* parent)
@@ -2139,10 +2165,7 @@ std::string Molecule::GetFormula() const
    for(std::vector<MolAtom*>::const_iterator pos=mvpAtom.begin();pos!=mvpAtom.end();++pos)
    {
       if((*pos)->IsDummy()) continue;
-      string p;
-      if((*pos)->GetScatteringPower().GetClassName()=="ScatteringPowerAtom")
-         p=dynamic_cast<const ScatteringPowerAtom*>(&((*pos)->GetScatteringPower()))->GetSymbol();
-      else p=(*pos)->GetScatteringPower().GetName();
+      string p=(*pos)->GetScatteringPower().GetSymbol();
       if(velts.count(p)==0)
          velts[(*pos)->GetScatteringPower().GetName()]=(*pos)->GetOccupancy();
       else velts[(*pos)->GetScatteringPower().GetName()]+=(*pos)->GetOccupancy();
@@ -2276,15 +2299,15 @@ void Molecule::XMLInput(istream &is,const XMLCrystTag &tag)
       }
       if("MDMoveFreq"==tag.GetAttributeName(i))
       {
-         mMDMoveFreq=atof(tag.GetAttributeValue(i).c_str());
+         mMDMoveFreq=string2floatC(tag.GetAttributeValue(i));
       }
       if("MDMoveEnergy"==tag.GetAttributeName(i))
       {
-         mMDMoveEnergy=atof(tag.GetAttributeValue(i).c_str());
+         mMDMoveEnergy=string2floatC(tag.GetAttributeValue(i));
       }
       if("LogLikelihoodScale"==tag.GetAttributeName(i))
       {
-         mLogLikelihoodScale=atof(tag.GetAttributeValue(i).c_str());
+         mLogLikelihoodScale=string2floatC(tag.GetAttributeValue(i));
       }
    }
    while(true)
@@ -2400,7 +2423,7 @@ void Molecule::BeginOptimization(const bool allowApproximations,const bool enabl
       {
          (*fpObjCrystInformUser)("Optimizing initial conformation of Molecule:"+this->GetName());
          this->OptimizeConformation(100000,(REAL)(mvpRestraint.size()));
-         (*fpObjCrystInformUser)("");
+         (*fpObjCrystInformUser)("Finished optimizing initial conformation of Molecule:"+this->GetName());
       }
       mAutoOptimizeConformation.SetChoice(1);
    }
@@ -2548,7 +2571,8 @@ void Molecule::RandomizeConfiguration()
    {// This is only done once, for a newly-created molecule with atoms not conforming to restraints
       (*fpObjCrystInformUser)("Optimizing initial conformation of Molecule:"+this->GetName());
       this->OptimizeConformation(100000,(REAL)(mvpRestraint.size()));
-      (*fpObjCrystInformUser)("");
+      (*fpObjCrystInformUser)("Finished optimizing initial conformation of Molecule:"+this->GetName());
+      mAutoOptimizeConformation.SetChoice(1);
    }
 
    if(   (!(this->IsBeingRefined()))
@@ -3402,7 +3426,8 @@ void Molecule::GLInitDisplayList(const bool onlyIndependentAtoms,
                                const REAL zMin,const REAL zMax,
                                const bool displayEnantiomer,
                                const bool displayNames,
-                               const bool hideHydrogens)const
+                               const bool hideHydrogens,
+                               const REAL fadeDistance)const
 {
    #ifdef OBJCRYST_GL
    VFN_DEBUG_ENTRY("Molecule::GLInitDisplayList()",3)
@@ -3567,9 +3592,12 @@ void Molecule::GLInitDisplayList(const bool onlyIndependentAtoms,
             z += translate(j,2);
             CrystVector<bool> isinside(x.numElements());
             CrystVector<REAL> borderdist(x.numElements());//distance to display limit
-            if(  ((x.min()<xMax) && (x.max()>xMin))
-               &&((y.min()<yMax) && (y.max()>yMin))
-               &&((z.min()<zMax) && (z.max()>zMin)))
+            const bool molcenter_isinside =    ((mXYZ(0)+translate(j,0))>=xMin) && ((mXYZ(0)+translate(j,0))<=xMax)
+                                            && ((mXYZ(1)+translate(j,1))>=yMin) && ((mXYZ(1)+translate(j,1))<=yMax)
+                                            && ((mXYZ(2)+translate(j,2))>=zMin) && ((mXYZ(2)+translate(j,2))<=zMax);
+            if(  ((x.min()<(xMax+fadeDistance/aa)) && (x.max()>(xMin-fadeDistance/aa)))
+               &&((y.min()<(yMax+fadeDistance/bb)) && (y.max()>(yMin-fadeDistance/bb)))
+               &&((z.min()<(zMax+fadeDistance/cc)) && (z.max()>(zMin-fadeDistance/cc))))
             {
                for(unsigned int k=0;k<mvpAtom.size();k++)
                {
@@ -3587,7 +3615,11 @@ void Molecule::GLInitDisplayList(const bool onlyIndependentAtoms,
                      borderdist(k)=sqrt(borderdist(k));
                   }
                   REAL fout=1.0;
-                  if(isinside(k)==false) fout=exp(-borderdist(k))*this->GetCrystal().GetDynPopCorr(this,k);
+                  if(isinside(k)==false)
+                  {
+                     if ((fadeDistance == 0) || borderdist(k)>fadeDistance) fout = 0;
+                     else fout*=(fadeDistance-borderdist(k))/fadeDistance*this->GetCrystal().GetDynPopCorr(this,k);
+                  }
                   #ifdef __DEBUG__
                   char ch[100];
                   sprintf(ch,"%d %d %d %s %5.2f %5.2f %5.2f d=%5.2f  fout=%5.3f",i,j,k,mvpAtom[k]->GetName().c_str(),x(k),y(k),z(k),borderdist(k),fout);
@@ -3604,7 +3636,7 @@ void Molecule::GLInitDisplayList(const bool onlyIndependentAtoms,
                      const float f=mvpAtom[k]->GetOccupancy()*this->GetOccupancy();
                      if(displayNames)
                      {
-                        if(fout>0.99)
+                        if((fout>0.99) || molcenter_isinside)
                         {
                            GLfloat colourChar [] = {1.0, 1.0, 1.0, f*fout};
                            GLfloat colourCharRing [] = {1.0, 1.0, 0.8, f*fout};
@@ -3656,7 +3688,11 @@ void Molecule::GLInitDisplayList(const bool onlyIndependentAtoms,
                                             n2=rix[&(mvpBond[k]->GetAtom2())];
                         REAL fout=1.0;
                         if((isinside(n1)==false) || (isinside(n2)==false))
-                           fout=exp(-(borderdist(n1)+borderdist(n2))/2)*(this->GetCrystal().GetDynPopCorr(this,n1)+this->GetCrystal().GetDynPopCorr(this,n2))/2;
+                        {
+                           if((fadeDistance==0) || ((borderdist(n1)+borderdist(n2))/2)>fadeDistance) fout = 0;
+                           else fout*=(fadeDistance-(borderdist(n1)+borderdist(n2))/2)/fadeDistance*
+                                       (this->GetCrystal().GetDynPopCorr(this,n1)+this->GetCrystal().GetDynPopCorr(this,n2))/2;
+                        }
                         if(fout<0.01) continue;
 
                         const float r1=mvpBond[k]->GetAtom1().GetScatteringPower().GetColourRGB()[0];
@@ -3716,7 +3752,16 @@ void Molecule::GLInitDisplayList(const bool onlyIndependentAtoms,
                         const unsigned long n1=rix[&(mvpBond[k]->GetAtom1())],
                                             n2=rix[&(mvpBond[k]->GetAtom2())];
                         REAL fout=1.0;
-                        if((isinside(n1)==false) || (isinside(n2)==false)) fout=exp(-(borderdist(n1)+borderdist(n2))/2);
+                        //if((isinside(n1)==false) || (isinside(n2)==false)) fout=exp(-(borderdist(n1)+borderdist(n2))/2);
+                        if((isinside(n1)==false) || (isinside(n2)==false))
+                        {
+                           if ((fadeDistance == 0) || ((borderdist(n1) + borderdist(n2)) / 2)>fadeDistance)
+                              fout = 0;
+                           else
+                              fout=(fadeDistance-(borderdist(n1)+borderdist(n2))/2)/fadeDistance*
+                                    (this->GetCrystal().GetDynPopCorr(this,n1)+this->GetCrystal().GetDynPopCorr(this,n2))/2;
+                        }
+
                         if(fout<0.01) continue;
                         // Is the bond in a rigid group ?
                         bool isRigidGroup=false;
@@ -3896,31 +3941,6 @@ vector<MolAtom*>::iterator Molecule::RemoveAtom(MolAtom &atom, const bool del)
    return pos;
 }
 
-void Molecule::AddNonFlipAtom(MolAtom &atom)
-{
-   VFN_DEBUG_ENTRY("Molecule::AddNonFlipAtom()",5)
-   mvNonFlipAtom.push_back(&atom);
-   //mvNonFlipAtom.push_back(new MolAtom(atom.x,y,z,pPow,thename,*this));
-
-   mClockFlipGroup.Reset();
-   this->UpdateDisplay();
-   VFN_DEBUG_EXIT("Molecule::AddNonFlipAtom()",5)
-}
-void Molecule::removeNonFlipAtom(MolAtom &atom)
-{
-    for(vector<MolAtom*>::iterator pos=mvNonFlipAtom.begin();pos!=mvNonFlipAtom.end();) {
-        if(atom.GetName().compare((*pos)->GetName())==0) {
-            pos = mvNonFlipAtom.erase(pos);
-            break;
-        } else {
-            pos++;
-        }
-    }
-}
-vector<MolAtom*> Molecule::getNonFlipAtomList()
-{
-    return mvNonFlipAtom;
-}
 void Molecule::AddBond(MolAtom &atom1, MolAtom &atom2,
                        const REAL length, const REAL sigma, const REAL delta,
                        const REAL bondOrder,
@@ -4583,6 +4603,9 @@ const RefinableObjClock& Molecule::GetBondListClock()const{return mClockBondList
 
 RefinableObjClock& Molecule::GetAtomPositionClock(){return mClockAtomPosition;}
 const RefinableObjClock& Molecule::GetAtomPositionClock()const{return mClockAtomPosition;}
+
+const RefinableObjClock& Molecule::GetAtomScattPowClock()const { return mClockAtomScattPow;}
+      RefinableObjClock& Molecule::GetAtomScattPowClock() { return mClockAtomScattPow;}
 
       RefinableObjClock& Molecule::GetRigidGroupClock(){return mClockRigidGroup;}
 const RefinableObjClock& Molecule::GetRigidGroupClock()const{return mClockRigidGroup;}
@@ -7135,6 +7158,8 @@ void Molecule::BuildFlipGroup()
              pos1!=pos->mvRotatedChainList.begin()->second.end();++pos1)
             cout<<(*pos1)->GetName()<<"  ";
 
+         cout<<endl;
+
          pos=mvFlipGroup.erase(pos);
       }
       else pos++;
@@ -7142,19 +7167,23 @@ void Molecule::BuildFlipGroup()
    //Exclude flip groups where the central atom is in the non-flip atom list
    for(list<FlipGroup>::iterator pos=mvFlipGroup.begin(); pos!=mvFlipGroup.end();)
    {
-       bool erase = false;
-       for(size_t i = 0; i < mvNonFlipAtom.size(); i++) {
-           if(pos->mpAtom0->GetName().compare(mvNonFlipAtom[i]->GetName())==0) {
-              erase = true;
-              break;
-           }
-       }
-       if(erase) {
-           cout <<"EXCLUDING flip group (central atom is in the non-flip list)"<<endl;
-           pos=mvFlipGroup.erase(pos);
-       } else {
+      if(pos->mpAtom0->IsNonFlipAtom())
+      {
+         cout <<"EXCLUDING flip group (central atom is in the non-flip list): "
+              <<pos->mpAtom0->GetName()<<",exchanging bonds with "
+              <<pos->mpAtom1->GetName()<<" and "
+              <<pos->mpAtom2->GetName()<<", resulting in a 180deg rotation of atoms : ";
+         for(set<MolAtom*>::iterator pos1=pos->mvRotatedChainList.begin()->second.begin();
+            pos1!=pos->mvRotatedChainList.begin()->second.end();++pos1)
+            cout<<(*pos1)->GetName()<<"  ";
+
+         cout<<endl;
+
+         pos=mvFlipGroup.erase(pos);
+      } else
+      {
            pos++;
-       }
+      }
    }
    // List them
    this->SaveParamSet(mLocalParamSet);

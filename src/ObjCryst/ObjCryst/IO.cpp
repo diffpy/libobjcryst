@@ -55,6 +55,16 @@ namespace ObjCryst
 //    Global functions
 //
 ////////////////////////////////////////////////////////////////////////
+
+float string2floatC(const string &s)
+{
+   float v=0;
+   stringstream ss(s);
+   ss.imbue(std::locale::classic());
+   ss>>v;
+   return v;
+}
+
 float InputFloat(istream &is, const char endchar)
 {
    float f;
@@ -234,21 +244,25 @@ void XMLCrystFileLoadAllObject(istream &is)
       {
          Crystal* obj = new Crystal;
          obj->XMLInput(is,tag);
+         (*fpObjCrystInformUser)("XML: finished reading Crystal object:"+obj->GetName());
       }
       if(tag.GetName()=="PowderPattern")
       {
          PowderPattern* obj = new PowderPattern;
          obj->XMLInput(is,tag);
+         (*fpObjCrystInformUser)("XML: finished reading Powder Pattern object:"+obj->GetName());
       }
       if(tag.GetName()=="DiffractionDataSingleCrystal")
       {
          DiffractionDataSingleCrystal* obj = new DiffractionDataSingleCrystal;
          obj->XMLInput(is,tag);
+         (*fpObjCrystInformUser)("XML: finished reading Single Crystal Diffraction object:"+obj->GetName());
       }
       if(tag.GetName()=="GlobalOptimObj")
       {
          MonteCarloObj* obj = new MonteCarloObj;
          obj->XMLInput(is,tag);
+         (*fpObjCrystInformUser)("XML: finished reading Global Optimization object:"+obj->GetName());
       }
    }
    (*fpObjCrystInformUser)("Finished loading XML");
@@ -1276,7 +1290,6 @@ void DiffractionDataSingleCrystal::XMLInput(istream &is,const XMLCrystTag &tagg)
       if("Crystal"==tagg.GetAttributeName(i))
          this->SetCrystal(gCrystalRegistry.GetObj(tagg.GetAttributeValue(i)));
    }
-   (*fpObjCrystInformUser)("XML: Loading Single Crystall data:"+this->GetName());
    while(true)
    {
       XMLCrystTag tag(is);
@@ -1468,7 +1481,6 @@ void DiffractionDataSingleCrystal::XMLInput(istream &is,const XMLCrystTag &tagg)
          this->SortReflectionBySinThetaOverLambda();
       }
    }
-   (*fpObjCrystInformUser)("XML: Finished loading Single Crystal Data:"+this->GetName());
 }
 ////////////////////////////////////////////////////////////////////////
 //
@@ -1825,6 +1837,20 @@ void PowderPatternDiffraction::XMLInput(istream &is,const XMLCrystTag &tagg)
          mpReflectionProfile->XMLInput(is,tag);
          continue;
       }
+      if("ReflectionProfilePseudoVoigtAnisotropic"==tag.GetName())
+      {
+         if(mpReflectionProfile==0)
+         {
+            mpReflectionProfile=new ReflectionProfilePseudoVoigtAnisotropic;
+         }
+         else
+            if(mpReflectionProfile->GetClassName()!="ReflectionProfilePseudoVoigtAnisotropic")
+            {
+               this->SetProfile(new ReflectionProfilePseudoVoigtAnisotropic);
+            }
+         mpReflectionProfile->XMLInput(is,tag);
+         continue;
+      }
       if("ReflectionProfileDoubleExponentialPseudoVoigt"==tag.GetName())
       {
          if(mpReflectionProfile==0)
@@ -2064,7 +2090,6 @@ void PowderPattern::XMLInput(istream &is,const XMLCrystTag &tagg)
    {
       if("Name"==tagg.GetAttributeName(i)) this->SetName(tagg.GetAttributeValue(i));
    }
-   (*fpObjCrystInformUser)("XML: Loading Powder Pattern:"+this->GetName());
    while(true)
    {
       XMLCrystTag tag(is);

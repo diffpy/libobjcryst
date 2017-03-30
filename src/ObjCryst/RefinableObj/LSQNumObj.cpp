@@ -131,7 +131,7 @@ void LSQNumObj::Refine (int nbCycle,bool useLevenbergMarquardt,
    //Prepare for refinement (get non-fixed parameters)
       if(mRefParList.GetNbPar()==0) this->PrepareRefParList();
       mRefParList.PrepareForRefinement();
-      if(!silent) mRefParList.Print();
+      //if(!silent) mRefParList.Print();
       if(mRefParList.GetNbPar()==0) throw ObjCrystException("LSQNumObj::Refine():no parameter to refine !");
 
    //variables
@@ -150,14 +150,7 @@ void LSQNumObj::Refine (int nbCycle,bool useLevenbergMarquardt,
       REAL marquardt=1e-2;
       const REAL marquardtMult=4.;
    //initial Chi^2, needed for Levenberg-Marquardt
-   {
-      calc=this->GetLSQCalc();
-      tmpV1 = mObs;
-      tmpV1 -= calc;
-      tmpV1 *= tmpV1;
-      tmpV1 *= mWeight;
-      mChiSq=tmpV1.sum();
-   }
+   this->CalcChiSquare();
    //store old values
    mIndexValuesSetInitial=mRefParList.CreateParamSet("LSQ Refinement-Initial Values");
    mIndexValuesSetLast=mRefParList.CreateParamSet("LSQ Refinement-Last Cycle Values");
@@ -211,7 +204,7 @@ void LSQNumObj::Refine (int nbCycle,bool useLevenbergMarquardt,
          //cout << designMatrix;
 
       TAU_PROFILE_STOP(timer2);
-      LSQNumObj_Refine_Restart: //Used in case of singular matrix or for Marquardt
+      LSQNumObj_Refine_Restart: //Used in case of singular matrix
       TAU_PROFILE_START(timer3);
 
       //Calculate M and B matrices
@@ -258,12 +251,16 @@ void LSQNumObj::Refine (int nbCycle,bool useLevenbergMarquardt,
 
          }
       TAU_PROFILE_STOP(timer3);
+      bool increaseMarquardt=false;
+      LSQNumObj_Refine_RestartMarquardt: //Used in case of singular matrix or for Marquardt
       TAU_PROFILE_START(timer4);
 
        //Apply LevenBerg-Marquardt factor
          if(true==useLevenbergMarquardt)
          {
-            const REAL lmfact=1.+marquardt;
+            const REAL marquardtOLD=marquardt;
+            if(increaseMarquardt) marquardt=marquardt*marquardtMult;
+            const REAL lmfact=(1+marquardt)/(1+marquardtOLD);
             for(i=0;i<nbVar;i++) M(i,i) *= lmfact;
          }
        // Check for singular values
@@ -422,14 +419,13 @@ void LSQNumObj::Refine (int nbCycle,bool useLevenbergMarquardt,
                   for(unsigned int j=0;j<M.cols();j++) cout<<M(i,j)<<" ";
                   cout<<endl;
                }
-               cout<<endl<<endl<<"D:"<<endl;
+               cout<<endl<<endl<<"D("<<designMatrix.rows()<<"x"<<designMatrix.cols()<<"):"<<endl;
                for(unsigned int i=0;i<designMatrix.rows();i++)
                {
                   for(unsigned int j=0;j<designMatrix.cols();j++) cout<<designMatrix(i,j)<<" ";
                   cout<<endl;
                }
-               exit(0);
-               //throw ObjCrystException("LSQNumObj::Refine():caught a newmat exception during Eigenvalues computing !");
+               throw ObjCrystException("LSQNumObj::Refine():caught a newmat exception during Eigenvalues computing !");
             }
                ColumnVector newmatDelta(nbVar);
                DiagonalMatrix newmatInvW(nbVar);
@@ -627,31 +623,35 @@ void LSQNumObj::Refine (int nbCycle,bool useLevenbergMarquardt,
                if(mChiSq > (oldChiSq*1.0001))
                {
                   mRefParList.RestoreParamSet(mIndexValuesSetLast);
-                  marquardt *= marquardtMult;
+                  increaseMarquardt=true;
                   if(!silent)
                   {
                      cout << "LSQNumObj::Refine(Chi^2="<<oldChiSq<<"->"<<mChiSq
-                          <<")=>new Levenberg-Marquardt factor :"
-                          << FormatFloat(marquardt,18,14) <<endl;
+                          <<")=>Increasing Levenberg-Marquardt factor :"
+                          << FormatFloat(marquardt*marquardtMult,18,14) <<endl;
                   }
                   mChiSq=oldChiSq;
-                  if(marquardt>1e8)
+                  if(marquardt>1e4)
                   {
-                     //mRefParList.RestoreParamSet(mIndexValuesSetInitial);
+                     // :TODO: Revert to previous parameters. Or initial ?
+                     mRefParList.RestoreParamSet(mIndexValuesSetLast);
                      if(callBeginEndOptimization) this->EndOptimization();
                      //if(!silent) mRefParList.Print();
                      return;
                      //throw ObjCrystException("LSQNumObj::Refine():Levenberg-Marquardt diverging !");
                   }
                   TAU_PROFILE_STOP(timer6);
-                  goto LSQNumObj_Refine_Restart;
+                  goto LSQNumObj_Refine_RestartMarquardt;
                }
                else
                {
+                  if(!silent && (marquardt>1e-2))
+                  {
+                     cout << "LSQNumObj::Refine(Chi^2="<<oldChiSq<<"->"<<mChiSq
+                          <<")=>Decreasing Levenberg-Marquardt factor :" << FormatFloat(marquardt/marquardtMult,18,14) <<endl;
+                  }
                   marquardt /= marquardtMult;
                   if(marquardt<1e-2) marquardt=1e-2;
-                  if(!silent) cout << "LSQNumObj::Refine():new Levenberg-Marquardt factor :" ;
-                  if(!silent) cout << FormatFloat(marquardt,18,14) <<endl;
                }
             }
          }
@@ -690,7 +690,7 @@ void LSQNumObj::Refine (int nbCycle,bool useLevenbergMarquardt,
             tmpV2 *= mWeight;
             mRw=sqrt(tmpV1.sum()/tmpV2.sum());
       //OK, finished
-         if(!silent) cout << "finished cycle #"<<cycle <<"/"<<nbCycle <<". Rw="<<Rw_ini<<"->"<<mRw<<",    Chi^2="<<mChiSq<<endl;
+         if(!silent) cout << "finished cycle #"<<cycle <<"/"<<nbCycle <<". Rw="<<Rw_ini<<"->"<<mRw<<",    Chi^2="<<ChisSqPreviousCycle<<"->"<<mChiSq<<endl;
          if (mSaveReportOnEachCycle) this->WriteReportToFile();
 
       if(!silent) this->PrintRefResults();
@@ -700,11 +700,111 @@ void LSQNumObj::Refine (int nbCycle,bool useLevenbergMarquardt,
    if(callBeginEndOptimization) this->EndOptimization();
 }
 
+bool LSQNumObj::SafeRefine(std::list<RefinablePar*> vnewpar, std::list<const RefParType*> vnewpartype,
+                                 REAL maxChi2factor,
+                                 int nbCycle, bool useLevenbergMarquardt,
+                                 const bool silent, const bool callBeginEndOptimization,
+                                 const float minChi2var)
+{
+   if(callBeginEndOptimization) this->BeginOptimization();
+   // :TODO: update mObs and mWeight in a centralized way... Not in BeginOptimization() (not always called)
+   mObs=this->GetLSQObs();
+   mWeight=this->GetLSQWeight();
+
+   //Prepare for refinement (get non-fixed parameters)
+   if(mRefParList.GetNbPar()==0) this->PrepareRefParList();
+   mRefParList.PrepareForRefinement();
+   if(mRefParList.GetNbPar()==0) throw ObjCrystException("LSQNumObj::SafeRefine():no parameter to refine !");
+
+   this->CalcChiSquare();
+   const REAL chi2_0 = mChiSq;
+   for(std::list<RefinablePar*>::iterator pos=vnewpar.begin(); pos!=vnewpar.end(); pos++)
+   {
+      this->SetParIsFixed(**pos, false);
+   }
+   for(std::list<const RefParType*>::iterator pos=vnewpartype.begin(); pos!=vnewpartype.end(); pos++)
+   {
+      this->SetParIsFixed(*pos, false);
+   }
+   bool diverged = false;
+   try
+   {
+      this->Refine(nbCycle, useLevenbergMarquardt, silent, false, minChi2var);
+   }
+   catch(const ObjCrystException &except)
+   {
+      diverged = true;
+      cout << "Refinement did not converge !";
+   }
+   const REAL deltachi2 = (mChiSq-chi2_0)/(chi2_0+1e-6);
+   if(callBeginEndOptimization) this->EndOptimization();
+   if(deltachi2>maxChi2factor)
+   {
+      cout << "Refinement did not converge ! Chi2 increase("<<chi2_0<<"->"<<mChiSq<<") by a factor: "<< deltachi2<<endl;
+      diverged = true;
+   }
+   if(diverged)
+   {
+      mRefParList.RestoreParamSet(mIndexValuesSetInitial);
+      for(std::list<RefinablePar*>::iterator pos=vnewpar.begin(); pos!=vnewpar.end(); pos++)
+      {
+         this->SetParIsFixed(**pos, true);
+      }
+      for(std::list<const RefParType*>::iterator pos=vnewpartype.begin(); pos!=vnewpartype.end(); pos++)
+      {
+         this->SetParIsFixed(*pos, true);
+      }
+      this->CalcRfactor();
+      this->CalcRwFactor();
+      this->CalcChiSquare();
+      cout <<"=> REVERTING to initial parameters values and fixing new parameters"<<endl;
+      return false;
+   }
+   return true;
+}
+
 CrystMatrix_REAL LSQNumObj::CorrelMatrix()const{return mCorrelMatrix;};
+
+void LSQNumObj::CalcRfactor()const
+{
+   CrystVector_REAL calc, tmpV1, tmpV2;
+   calc=this->GetLSQCalc();
+   tmpV1 = this->GetLSQObs();
+   tmpV1 -= calc;
+   tmpV1 *= tmpV1;
+   tmpV2 = this->GetLSQObs();
+   tmpV2 *= tmpV2;
+   mR=sqrt(tmpV1.sum()/tmpV2.sum());
+}
 
 REAL LSQNumObj::Rfactor()const{return mR;};
 
+void LSQNumObj::CalcRwFactor()const
+{
+   CrystVector_REAL calc, tmpV1, tmpV2;
+   calc=this->GetLSQCalc();
+   tmpV1 = this->GetLSQObs();
+   tmpV1 -= calc;
+   tmpV1 *= tmpV1;
+   tmpV2 = this->GetLSQObs();
+   tmpV2 *= tmpV2;
+   tmpV1 *= mWeight;
+   tmpV2 *= mWeight;
+   mRw=sqrt(tmpV1.sum()/tmpV2.sum());
+}
+
 REAL LSQNumObj::RwFactor()const{return mRw;};
+
+void LSQNumObj::CalcChiSquare()const
+{
+   CrystVector_REAL calc, tmpV1;
+   calc=this->GetLSQCalc();
+   tmpV1 = mObs;
+   tmpV1 -= calc;
+   tmpV1 *= tmpV1;
+   tmpV1 *= mWeight;
+   mChiSq=tmpV1.sum();
+}
 
 REAL LSQNumObj::ChiSquare()const{return mChiSq;};
 

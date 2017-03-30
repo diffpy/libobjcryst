@@ -102,6 +102,7 @@ Atom* Atom::CreateCopy() const
 Atom::~Atom()
 {
    VFN_DEBUG_MESSAGE("Atom::~Atom():("<<mName<<")",5)
+   if(mpScattPowAtom!=0) mpScattPowAtom->DeRegisterClient(*this);
 }
 
 const string& Atom::GetClassName()const
@@ -296,7 +297,8 @@ void Atom::GLInitDisplayList(const bool onlyIndependentAtoms,
                              const REAL zMin,const REAL zMax,
                              const bool displayEnantiomer,
                              const bool displayNames,
-                             const bool hideHydrogens)const
+                             const bool hideHydrogens,
+                             const REAL fadeDistance)const
 {
    #ifdef OBJCRYST_GL
    VFN_DEBUG_MESSAGE("Atom::GLInitDisplayList():"<<this->GetName(),5)
@@ -426,7 +428,11 @@ void Atom::GLInitDisplayList(const bool onlyIndependentAtoms,
             // NB about dyn pop corr: it's not taken into account for atoms inside the view range,
             // to avoid transparency for fully occupied atoms.
             // :TODO: Maybe it should for partially occupied atoms ?
-            if(isinside==false) fout*=exp(-borderdist)*this->GetCrystal().GetDynPopCorr(this,0);
+            if(isinside==false)
+            {
+               if ((fadeDistance == 0) || borderdist>fadeDistance) fout = 0;
+               else fout*=(fadeDistance-borderdist)/fadeDistance*this->GetCrystal().GetDynPopCorr(this,0);
+            }
             if(fout>0.01)
             {
                const GLfloat colourAtom [] = {r, g, b, f*fout};
@@ -469,6 +475,18 @@ bool Atom::IsDummy()const { if(0==mScattCompList(0).mpScattPow) return true; ret
 
 const ScatteringPower& Atom::GetScatteringPower()const
 { return *mpScattPowAtom;}
+
+void Atom::SetScatteringPower(const ScatteringPower &p)
+{
+   if(mpScattPowAtom!=&p)
+   {
+      if(mpScattPowAtom!=0) mpScattPowAtom->DeRegisterClient(*this);
+      mpScattPowAtom = &p;
+      mScattCompList(0).mpScattPow=mpScattPowAtom;
+      mClockScatterer.Click();
+      if(mpScattPowAtom!=0) mpScattPowAtom->RegisterClient(*this);
+   }
+}
 
 void Atom::GetGeneGroup(const RefinableObj &obj,
                                 CrystVector_uint & groupIndex,

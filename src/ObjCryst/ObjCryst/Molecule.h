@@ -109,6 +109,14 @@ class MolAtom
       /// of the Molecule.
       void SetIsInRing(const bool r)const;
       bool IsInRing()const;
+      /** Set a flag to prevent the atom's absolute configuration to be changed.
+      * \param nonflip: if true, the atom.
+      *
+      * \internal This should only be changed by Molecule::AddNonFlipAtom() and Molecule::RemoveNonFlipAtom()
+      */
+      void SetNonFlipAtom(const bool nonflip);
+      /// Can this atom be flipped (return=false) or should its absolute configuration be kept (return=true)
+      bool IsNonFlipAtom() const;
    private:
       /// Name for this atom
       string mName;
@@ -129,6 +137,8 @@ class MolAtom
       Molecule *mpMol;
       /// Is the atom in a ring ?
       mutable bool mIsInRing;
+      /// Can the atom be flipped (this is used for optically active atom which should keep their absolute configuration
+      bool mIsNonFlipAtom;
    #ifdef __WX__CRYST__
    public:
       WXCrystObjBasic *mpWXCrystObj;
@@ -777,7 +787,8 @@ class Molecule: public Scatterer
                                      const REAL zMin=-.1,const REAL zMax=1.1,
                                      const bool displayEnantiomer=false,
                                      const bool displayNames=false,
-                                     const bool hideHydrogens=false)const;
+                                     const bool hideHydrogens=false,
+                                     const REAL fadeDistance=0)const;
       /** Add an atom
       *
       *
@@ -793,10 +804,6 @@ class Molecule: public Scatterer
       * objects.
       */
       vector<MolAtom*>::iterator RemoveAtom(MolAtom&, const bool del = true);
-
-      void AddNonFlipAtom(MolAtom &atom);
-      void removeNonFlipAtom(MolAtom &atom);
-      vector<MolAtom*> getNonFlipAtomList();
 
       /** Add a bond
       *
@@ -984,6 +991,10 @@ class Molecule: public Scatterer
       RefinableObjClock& GetAtomPositionClock();
       /// Get the clock associated to the atomic positions
       const RefinableObjClock& GetAtomPositionClock()const;
+      /// Get the clock associated to the scattering powers
+      const RefinableObjClock& GetAtomScattPowClock()const;
+      /// Get the clock associated to the scattering powers
+      RefinableObjClock& GetAtomScattPowClock();
       /// Get the clock associated to the list of rigid groups
       ///(clicked also whenever a rigid group is modified)
       RefinableObjClock& GetRigidGroupClock();
@@ -1121,8 +1132,6 @@ class Molecule: public Scatterer
       * this is mutable since it only reflects the list of atoms.
       */
       mutable ScatteringComponentList mScattCompList;
-
-      vector<MolAtom*> mvNonFlipAtom;
       /** The list of atoms
       *
       */

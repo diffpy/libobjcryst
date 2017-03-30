@@ -234,13 +234,16 @@ class Crystal:public UnitCell
       * at the position of the scatterers (to actually see them, they will have to
       * be translated with respect to the drawing of the scatterers).
       * \param hideHydrogens: if true, do not display hydrogens/deuterium and their bonds
+      * \param fadeDistance: atoms which are beyond the display limits are still showm, but
+      * with transparency which is progressively fading up to a certain distance.
       */
       virtual void GLInitDisplayList(const bool onlyIndependentAtoms=false,
                                      const REAL xMin=-.1,const REAL xMax=1.1,
                                      const REAL yMin=-.1,const REAL yMax=1.1,
                                      const REAL zMin=-.1,const REAL zMax=1.1,
                                      const bool displayNames=false,
-                                     const bool hideHydrogens=false)const;
+                                     const bool hideHydrogens=false,
+                                     const REAL fadeDistance=0)const;
 
       /** \internal \brief Compute the 'Dynamical population correction for all atoms.
       * Atoms which are considered "equivalent" (ie currently with the same Z number)
@@ -381,6 +384,16 @@ class Crystal:public UnitCell
       * \warning: experimental, unstable
       */
       void ConnectAtoms(const REAL min_relat_dist=0.4, const REAL max_relat_dist=1.3, const bool warnuser_fail=false);
+      /** Merge all equal scattering powers
+      *
+      * \param oneScatteringPowerPerElement: if true, all scattering powers corresponding to the same elemnt of the periodic
+      * classification will be merged into one, with the averaged isotropic Debye-Waller factor. Otherwise, the scattering
+      * powers will be merged only if the Debye Waller factors (isotropic and anisotropic, if any) are identical.
+      *
+      * \warning: this currently only works if the Crystal is only made of Atoms and ScatteringPowerAtoms (it is used at the end
+      * of a CIF import).
+      */
+      void MergeEqualScatteringPowers(const bool oneScatteringPowerPerElement);
    private:
       /** Init options.
       *
