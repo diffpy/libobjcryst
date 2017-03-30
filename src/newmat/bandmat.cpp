@@ -28,8 +28,8 @@ namespace NEWMAT {
 #define REPORT {}
 #endif
 
-static inline int my_min(int x, int y) { return x < y ? x : y; }
-static inline int my_max(int x, int y) { return x > y ? x : y; }
+//static inline int my_min(int x, int y) { return x < y ? x : y; }
+//static inline int my_max(int x, int y) { return x > y ? x : y; }
 
 
 BandMatrix::BandMatrix(const BaseMatrix& M)
