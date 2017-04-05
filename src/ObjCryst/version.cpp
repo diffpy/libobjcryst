@@ -18,11 +18,7 @@
 
 #include "version.h"
 
-// Append LL suffix to the LIBOBJCRYST_VERSION number.
-#define APPEND(x, y) x ## y
-#define LL(x) APPEND(x, LL)
-
-const long long libobjcryst_version_info::version = LL(LIBOBJCRYST_VERSION);
+const long long libobjcryst_version_info::version = LIBOBJCRYST_VERSION;
 const char* libobjcryst_version_info::version_str = LIBOBJCRYST_VERSION_STR;
 const int libobjcryst_version_info::major = LIBOBJCRYST_VERSION_MAJOR;
 const int libobjcryst_version_info::minor = LIBOBJCRYST_VERSION_MINOR;
