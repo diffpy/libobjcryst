@@ -79,8 +79,8 @@ objcrystobjs = env["objcrystobjs"]
 # This builds the shared library
 libobjcryst = env.SharedLibrary("libObjCryst",
         objcrystobjs + cctbxobjs + newmatobjs)
-Default(libobjcryst)
-Alias('lib', libobjcryst)
+lib = Alias('lib', [libobjcryst, env['lib_includes']])
+Default(lib)
 
 # Installation targets.
 
