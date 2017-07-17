@@ -3,4 +3,3 @@
 /.travis.yml  export-ignore
 /conda-recipe/  export-ignore
 /devutils/  export-ignore
-/src/ObjCryst/version.tpl  export-ignore
