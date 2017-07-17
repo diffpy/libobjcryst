@@ -7,28 +7,28 @@ Import('env')
 
 def build_VersionCode(target, source, env):
     tplcode = source[0].get_contents()
-    numversion = ginfo['major']
-    numversion = 1000 * numversion + ginfo['minor']
-    numversion = 1000 * numversion + ginfo['micro']
-    numversion = 1000 * numversion + ginfo['patchnumber']
+    numversion = gver['major']
+    numversion = 1000 * numversion + gver['minor']
+    numversion = 1000 * numversion + gver['micro']
+    numversion = 1000 * numversion + gver['patchnumber']
     # verify that formulas in version.tpl work as advertised
     emsg = "Inconsistent value of LIBOBJCRYST_VERSION = %i" % numversion
-    assert numversion // 1000000000 == ginfo['major'], emsg
-    assert numversion // 1000000 % 1000 == ginfo['minor'], emsg
-    assert numversion // 1000 % 1000 == ginfo['micro'], emsg
-    assert numversion % 500 == ginfo['patchnumber'], emsg
+    assert numversion // 1000000000 == gver['major'], emsg
+    assert numversion // 1000000 % 1000 == gver['minor'], emsg
+    assert numversion // 1000 % 1000 == gver['micro'], emsg
+    assert numversion % 500 == gver['patchnumber'], emsg
     libversion = str(numversion) + "LL"
-    if ginfo['prerelease']:
+    if gver['prerelease']:
         libversion = "(-500 + %s)" % libversion
     flds = {
         'LIBOBJCRYST_VERSION' : libversion,
-        'LIBOBJCRYST_VERSION_MAJOR' : ginfo['major'],
-        'LIBOBJCRYST_VERSION_MINOR' : ginfo['minor'],
-        'LIBOBJCRYST_VERSION_MICRO' : ginfo['micro'],
-        'LIBOBJCRYST_VERSION_PATCH' : ginfo['patchnumber'],
-        'LIBOBJCRYST_VERSION_STR' : ginfo['version'],
-        'LIBOBJCRYST_VERSION_DATE' : ginfo['date'],
-        'LIBOBJCRYST_GIT_SHA' : ginfo['commit'],
+        'LIBOBJCRYST_VERSION_MAJOR' : gver['major'],
+        'LIBOBJCRYST_VERSION_MINOR' : gver['minor'],
+        'LIBOBJCRYST_VERSION_MICRO' : gver['micro'],
+        'LIBOBJCRYST_VERSION_PATCH' : gver['patchnumber'],
+        'LIBOBJCRYST_VERSION_STR' : gver['version'],
+        'LIBOBJCRYST_VERSION_DATE' : gver['date'],
+        'LIBOBJCRYST_GIT_SHA' : gver['commit'],
     }
     versiontemplate = string.Template(tplcode)
     versioncode = versiontemplate.safe_substitute(flds)
@@ -43,23 +43,13 @@ env.Append(BUILDERS={'BuildVersionCode' :
 
 vhpp = File('ObjCryst/version.h')
 
-MY_GIT_MISSING_ERROR_MSG = """
-Cannot determine libobjcryst version.  Compile from a git repository
-or use a source archive from
-
-    https://github.com/diffpy/libobjcryst/releases
-"""
-
-# If version.h exists do not use git
+# If version.h does not exists, build it from git metadata
 if not os.path.isfile(str(vhpp.srcnode())):
-    from libobjcrystbuildutils import gitinfo
+    from libobjcrystbuildutils import getversion
     vtpl = File('ObjCryst/version.tpl')
-    ginfo = gitinfo()
-    if not ginfo:
-        print MY_GIT_MISSING_ERROR_MSG
-        Exit(1)
+    gver = getversion()
     vhpp, = env.BuildVersionCode(['ObjCryst/version.h'], vtpl)
-    env.Depends(vhpp, env.Value(ginfo['version'] + ginfo['commit']))
+    env.Depends(vhpp, env.Value(gver['version'] + gver['commit']))
 
 env['lib_includes'] += [vhpp]
 
