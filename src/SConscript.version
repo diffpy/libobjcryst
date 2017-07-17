@@ -4,6 +4,16 @@ import string
 Import('env')
 
 
+def get_version_or_die():
+    from libobjcrystbuildutils import getversion
+    try:
+        rv = getversion()
+    except RuntimeError as e:
+        print(e)
+        Exit(1)
+    return rv
+
+
 def build_VersionCode(target, source, env):
     tplcode = source[0].get_contents()
     numversion = gver['major']
@@ -34,7 +44,6 @@ def build_VersionCode(target, source, env):
     open(target[0].path, 'w').write(versioncode)
     return None
 
-
 env.Append(BUILDERS={'BuildVersionCode' :
         Builder(action=build_VersionCode, suffix='.h', src_suffix='.tpl')})
 
@@ -44,9 +53,8 @@ vhpp = File('ObjCryst/version.h')
 
 # If version.h does not exists, build it from git metadata
 if not os.path.isfile(str(vhpp.srcnode())):
-    from libobjcrystbuildutils import getversion
     vtpl = File('ObjCryst/version.tpl')
-    gver = getversion()
+    gver = get_version_or_die()
     vhpp, = env.BuildVersionCode(['ObjCryst/version.h'], vtpl)
     env.Depends(vhpp, env.Value(gver['version'] + gver['commit']))
 
