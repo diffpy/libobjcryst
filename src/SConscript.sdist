@@ -17,7 +17,7 @@ def add_version_and_compress(target, source, env):
         if ti.name.endswith('src/ObjCryst/version.cpp'):
             break
     assert ti.name.endswith('version.cpp'), \
-        "diffpy/version.cpp not found in tar archive."
+        "src/ObjCryst/version.cpp not found in tar archive."
     # add the generated version.h file to the archive.
     vp = source[0].path
     ti.name = ti.name[:-4] + '.h'
