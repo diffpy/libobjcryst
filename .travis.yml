@@ -29,6 +29,8 @@ branches:
 
 before_install:
   - MYNAME=libobjcryst
+    # travis virtual hosts have 2 cores as per https://goo.gl/DQy4oW
+  - MYNCPU=2
   - umask 022
   - git fetch origin --tags
   - if ${MYUSEMC}; then
@@ -79,7 +81,7 @@ install:
   - $NOMC || MYPREFIX="${HOME}/mc/envs/testenv"
 
   - $NOAPT || cd ~/pkgs/"$(basename "${MYTARBUNDLE}" .tar.gz)"/
-  - $NOAPT || scons build=fast
+  - $NOAPT || scons -j $MYNCPU build=fast
   - $NOAPT || sudo scons build=fast install
   # Ensure libObjCryst cannot be loaded from the work directory.
   - $NOAPT || sudo scons build=fast -Q --clean lib
