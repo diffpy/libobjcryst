@@ -50,9 +50,9 @@ before_install:
         exit 2 ;;
     esac
 
-  - mkdir -p ~/pkgs/
+  - mkdir -p ~/pkgs
 
-  - $NOMC || pushd ~/pkgs/
+  - $NOMC || pushd ~/pkgs
   - $NOMC || wget --timestamping ${MYMCREPO}/${MYMCBUNDLE}
   - $NOMC || test -x ~/mc/bin/conda || bash ${MYMCBUNDLE} -b -f -p ~/mc
   - $NOMC || popd
@@ -80,7 +80,7 @@ install:
   - $NOMC || conda install --yes scons
   - $NOMC || MYPREFIX="${HOME}/mc/envs/testenv"
 
-  - $NOAPT || cd ~/pkgs/"$(basename "${MYTARBUNDLE}" .tar.gz)"/
+  - $NOAPT || cd ~/pkgs/"$(basename "${MYTARBUNDLE}" .tar.gz)"
   - $NOAPT || scons -j $MYNCPU build=fast
   - $NOAPT || sudo scons build=fast install
   # Ensure libObjCryst cannot be loaded from the work directory.
