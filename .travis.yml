@@ -13,11 +13,6 @@ env:
     - MYUSEMC=true
     - MYUSEMC=false
 
-matrix:
-  exclude:
-    - os: osx
-      env: MYUSEMC=false
-
 git:
   depth: 999999
 
@@ -33,10 +28,14 @@ before_install:
   - MYNCPU=2
   - umask 022
   - git fetch origin --tags
+  - NOSYS=true; NOAPT=true; NOBREW=true; NOMC=true
   - if ${MYUSEMC}; then
-        NOAPT=true; NOMC=false;
-    else
-        NOAPT=false; NOMC=true;
+        NOMC=false;
+    elif [[ ${TRAVIS_OS_NAME} == linux ]]; then
+        NOAPT=false; NOSYS=false;
+        MYPIPFLAGS="--user";
+    elif [[ ${TRAVIS_OS_NAME} == osx ]]; then
+        NOBREW=false; NOSYS=false;
         MYPIPFLAGS="--user";
     fi
   - MYMCREPO=https://repo.continuum.io/miniconda
@@ -62,13 +61,20 @@ before_install:
   - $NOMC || conda create --name=testenv --yes python=${MYPYTHON_VERSION}
   - $NOMC || conda config --add channels diffpy
 
-  - $NOAPT || test "${TRAVIS_OS_NAME}" = "linux"
+  - $NOAPT || test "${TRAVIS_OS_NAME}" = "linux" || exit $?
   - $NOAPT || sudo apt-get update -qq
   - $NOAPT || sudo apt-get install -y
                   libboost-all-dev python-pip build-essential scons
-  - $NOAPT || scons sdist
-  - $NOAPT || MYTARBUNDLE="$(ls -t "${PWD}"/*.tar.gz | head -1)"
-  - $NOAPT || tar xzf "${MYTARBUNDLE}" -C ~/pkgs/
+
+  - $NOBREW || test "${TRAVIS_OS_NAME}" = "osx" || exit $?
+  - $NOBREW || brew update
+  - $NOBREW || brew install scons
+
+  - $NOSYS || scons sdist
+  - $NOSYS || MYTARBUNDLE="$(ls -t "${PWD}"/*.tar.gz | head -1)"
+  - $NOSYS || pushd ~/pkgs
+  - $NOSYS || tar xzf "${MYTARBUNDLE}"
+  - $NOSYS || popd
 
 
 install:
@@ -80,13 +86,16 @@ install:
   - $NOMC || conda install --yes scons
   - $NOMC || MYPREFIX="${HOME}/mc/envs/testenv"
 
-  - $NOAPT || cd ~/pkgs/"$(basename "${MYTARBUNDLE}" .tar.gz)"
-  - $NOAPT || scons -j $MYNCPU build=fast
-  - $NOAPT || sudo scons build=fast install
+  - MYSUDO=
+  - $NOAPT || MYSUDO=sudo
+  - $NOSYS || cd ~/pkgs/"$(basename "${MYTARBUNDLE}" .tar.gz)"
+  - $NOSYS || scons -j $MYNCPU build=fast
+  - $NOSYS || $MYSUDO scons build=fast install
   # Ensure libObjCryst cannot be loaded from the work directory.
-  - $NOAPT || sudo scons build=fast -Q --clean lib
-  - $NOAPT || MYPREFIX=/usr/local
+  - $NOSYS || $MYSUDO scons -Q --clean build=fast lib
+  - $NOSYS || MYPREFIX=/usr/local
 
+  # Verify version of the installed library.
   - MYINCLUDE="${MYPREFIX}/include"
   - MYLIB="${MYPREFIX}/lib"
   - MYVERSION="${MYINCLUDE}/ObjCryst/version.h"
