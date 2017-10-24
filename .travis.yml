@@ -107,11 +107,6 @@ install:
   - $NOMC || export CPATH="${MYINCLUDE}"
   - $NOMC || MYLINKFLAGS="-Wl,-rpath,${MYLIB}"
 
-  # Mac OS X must use the same deployment target as conda-build.
-  - if $MYUSEMC && [[ "${TRAVIS_OS_NAME}" == osx ]]; then
-        export MACOSX_DEPLOYMENT_TARGET=10.7;
-    fi
-
 
 before_script:
   - cd "${TRAVIS_BUILD_DIR}/examples"
