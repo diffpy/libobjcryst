@@ -94,7 +94,7 @@ namespace cctbx { namespace sgtbx {
     if (type == 0) type = rot_mx::type();
     if (type > 0) return  type;
     if (type % 2) return -type * 2;
-                  return -type;
+    return -type;
   }
 
   rot_mx rot_mx::accumulate(int type) const

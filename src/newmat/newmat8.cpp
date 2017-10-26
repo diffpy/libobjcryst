@@ -712,7 +712,8 @@ LogAndSign CroutMatrix::log_determinant() const
       if (!(--i)) break;
       s += dd;
    }
-   if (!d) sum.ChangeSign(); return sum;
+   if (!d) sum.ChangeSign();
+   return sum;
 
 }
 

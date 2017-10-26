@@ -667,7 +667,9 @@ void SymmetricBandMatrix::GetRow(MatrixRowCol& mrc)
       if (+(mrc.cw*StoreOnExit))
          Throw(InternalException("SymmetricBandMatrix::GetRow(MatrixRowCol&)"));
       int w = w1+lower_val; s += w-ncols_val; Real* RowCopy;
-      if (s>0) w -= s; mrc.storage = w; int w2 = w-w1;
+      if (s>0) w -= s;
+      mrc.storage = w;
+      int w2 = w-w1;
       if (!(mrc.cw*HaveStore))
       {
          REPORT
@@ -708,7 +710,9 @@ void SymmetricBandMatrix::GetCol(MatrixRowCol& mrc)
       if (+(mrc.cw*StoreOnExit))
          Throw(InternalException("SymmetricBandMatrix::GetCol(MatrixRowCol&)"));
       int w = w1+lower_val; s += w-ncols_val; Real* ColCopy;
-      if (s>0) w -= s; mrc.storage = w; int w2 = w-w1;
+      if (s>0) w -= s;
+      mrc.storage = w;
+      int w2 = w-w1;
 
       if ( +(mrc.cw*HaveStore) ) { REPORT ColCopy = mrc.data; }
       else
@@ -758,7 +762,9 @@ void SymmetricBandMatrix::GetCol(MatrixColX& mrc)
       mrc.skip = s;
 
       int w = w1+lower_val; s += w-ncols_val;
-      if (s>0) w -= s; mrc.storage = w; int w2 = w-w1;
+      if (s>0) w -= s;
+      mrc.storage = w;
+      int w2 = w-w1;
 
       Real* ColCopy = mrc.data = mrc.store+mrc.skip;
 
