@@ -7,11 +7,10 @@ os:
   - osx
 
 env:
-  global:
-    - MYPYTHON_VERSION=2.7
-  matrix:
-    - MYUSEMC=true
-    - MYUSEMC=false
+  - MYUSEMC=true MYPYTHON_VERSION=2.7
+  - MYUSEMC=true MYPYTHON_VERSION=3.5
+  - MYUSEMC=true MYPYTHON_VERSION=3.6
+  - MYUSEMC=false
 
 git:
   depth: 999999
@@ -78,12 +77,11 @@ before_install:
 
 
 install:
-  - $NOMC || conda build conda-recipe
-  - $NOMC || conda render --output conda-recipe |
+  - $NOMC || conda build --python=${MYPYTHON_VERSION} conda-recipe
+  - $NOMC || conda render --python=${MYPYTHON_VERSION} --output conda-recipe |
                 sed 's,.*/,,; s/[.]tar[.]bz2$//; s/-/=/g' > /tmp/mypackage.txt
   - $NOMC || source activate testenv
   - $NOMC || conda install --yes --use-local --file=/tmp/mypackage.txt
-  - $NOMC || conda install --yes scons
   - $NOMC || MYPREFIX="${HOME}/mc/envs/testenv"
 
   - MYSUDO=
@@ -108,11 +106,6 @@ install:
   - $NOMC || export LIBRARY_PATH="${MYLIB}"
   - $NOMC || export CPATH="${MYINCLUDE}"
   - $NOMC || MYLINKFLAGS="-Wl,-rpath,${MYLIB}"
-
-  # Mac OS X must use the same deployment target as conda-build.
-  - if $MYUSEMC && [[ "${TRAVIS_OS_NAME}" == osx ]]; then
-        export MACOSX_DEPLOYMENT_TARGET=10.7;
-    fi
 
 
 before_script:
