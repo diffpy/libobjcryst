@@ -549,7 +549,8 @@ void Crystal::GLInitDisplayList(const bool onlyIndependentAtoms,
                                 const REAL zMin,const REAL zMax,
                                 const bool displayNames,
                                 const bool hideHydrogens,
-                                const REAL fadeDistance)const
+                                const REAL fadeDistance,
+                                const bool fullMoleculeInLimits)const
 {
    VFN_DEBUG_ENTRY("Crystal::GLInitDisplayList()",5)
    #ifdef OBJCRYST_GL
@@ -605,10 +606,10 @@ void Crystal::GLInitDisplayList(const bool onlyIndependentAtoms,
             const GLfloat colour0 [] = {0.00, 0.00, 0.00, 0.00};
             const GLfloat colour1 [] = {0.50, 0.50, 0.50, 1.00};
             const GLfloat colour2 [] = {1.00, 1.00, 1.00, 1.00};
-            glMaterialfv(GL_FRONT, GL_AMBIENT,   colour2);
+            glMaterialfv(GL_FRONT, GL_AMBIENT,   colour1);
             glMaterialfv(GL_FRONT, GL_DIFFUSE,   colour0);
             glMaterialfv(GL_FRONT, GL_SPECULAR,  colour0);
-            glMaterialfv(GL_FRONT, GL_EMISSION,  colour2);
+            glMaterialfv(GL_FRONT, GL_EMISSION,  colour1);
             glMaterialfv(GL_FRONT, GL_SHININESS, colour0);
             REAL x,y,z;
             x=1.2-xc;y=-yc;z=-zc;
@@ -627,8 +628,8 @@ void Crystal::GLInitDisplayList(const bool onlyIndependentAtoms,
             crystGLPrint("c");
          // Cell
             glMaterialfv(GL_FRONT, GL_AMBIENT,   colour1);
-            glMaterialfv(GL_FRONT, GL_DIFFUSE,   colour2);
-            glMaterialfv(GL_FRONT, GL_SPECULAR,  colour2);
+            glMaterialfv(GL_FRONT, GL_DIFFUSE,   colour1);
+            glMaterialfv(GL_FRONT, GL_SPECULAR,  colour1);
             glMaterialfv(GL_FRONT, GL_EMISSION,  colour0);
             glMaterialfv(GL_FRONT, GL_SHININESS, colour0);
             this->FractionalToOrthonormalCoords(xc,yc,zc);
@@ -698,7 +699,7 @@ void Crystal::GLInitDisplayList(const bool onlyIndependentAtoms,
             for(int i=0;i<mScattererRegistry.GetNb();i++)
                this->GetScatt(i).GLInitDisplayList(onlyIndependentAtoms,
                                                    xMin,xMax,yMin,yMax,zMin,zMax,
-                                                   displayEnantiomer,displayNames,hideHydrogens,fadeDistance);
+                                                   displayEnantiomer,displayNames,hideHydrogens,fadeDistance,fullMoleculeInLimits);
          }
       glPopMatrix();
    #else

@@ -576,7 +576,7 @@ template<class T> void CrystMatrix<T>::resizeAndPreserve(const long ySize,const 
 /*
 template<class T> void CrystMatrix<T>::operator=(const T num)
 {
-   register T *p=mpData;
+   T *p=mpData;
    for(int i=0;i<mNumElements;i++) *p++ = num;
 }
 */
