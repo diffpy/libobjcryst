@@ -37,7 +37,7 @@ def build_VersionCode(target, source, env):
         'LIBOBJCRYST_VERSION_PATCH' : gver['patchnumber'],
         'LIBOBJCRYST_VERSION_STR' : gver['version'],
         'LIBOBJCRYST_VERSION_DATE' : gver['date'],
-        'LIBOBJCRYST_GIT_SHA' : gver['commit'],
+        'LIBOBJCRYST_GIT_COMMIT' : gver['commit'],
     }
     versiontemplate = string.Template(tplcode)
     versioncode = versiontemplate.safe_substitute(flds)

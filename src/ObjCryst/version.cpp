@@ -25,6 +25,7 @@ const int libobjcryst_version_info::minor = LIBOBJCRYST_VERSION_MINOR;
 const int libobjcryst_version_info::micro = LIBOBJCRYST_VERSION_MICRO;
 const int libobjcryst_version_info::patch = LIBOBJCRYST_VERSION_PATCH;
 const char* libobjcryst_version_info::date = LIBOBJCRYST_VERSION_DATE;
-const char* libobjcryst_version_info::git_sha = LIBOBJCRYST_GIT_SHA;
+const char* libobjcryst_version_info::git_commit = LIBOBJCRYST_GIT_COMMIT;
+const char* libobjcryst_version_info::git_sha = libobjcryst_version_info::git_commit;
 
 // End of file

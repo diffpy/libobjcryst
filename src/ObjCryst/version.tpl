@@ -20,7 +20,7 @@
 *   LIBOBJCRYST_VERSION_PATCH,
 *   LIBOBJCRYST_VERSION_STR,
 *   LIBOBJCRYST_VERSION_DATE
-*   LIBOBJCRYST_GIT_SHA
+*   LIBOBJCRYST_GIT_COMMIT
 *
 * Declaration of libobjcryst_version_info struct for version data resolved
 * at runtime.
@@ -57,9 +57,14 @@
 
 #define LIBOBJCRYST_VERSION_DATE "${LIBOBJCRYST_VERSION_DATE}"
 
-// LIBOBJCRYST_GIT_SHA is a full git commit hash for the current version
+// LIBOBJCRYST_GIT_COMMIT is a full git commit hash for the current version
 
-#define LIBOBJCRYST_GIT_SHA "${LIBOBJCRYST_GIT_SHA}"
+#define LIBOBJCRYST_GIT_COMMIT "${LIBOBJCRYST_GIT_COMMIT}"
+
+// LIBOBJCRYST_GIT_SHA is deprecated.  Use LIBOBJCRYST_GIT_COMMIT instead.
+#define LIBOBJCRYST_GIT_SHA \
+    _Pragma ("GCC warning \"macro LIBOBJCRYST_GIT_SHA is deprecated\"") \
+    LIBOBJCRYST_GIT_COMMIT
 
 // libobjcryst_version_info will hold runtime version data, which may be
 // different from client compile-time values.
@@ -73,7 +78,9 @@ struct libobjcryst_version_info {
     static const int micro;
     static const int patch;
     static const char* date;
-    static const char* git_sha;
+    static const char* git_commit;
+    // git_sha is deprecated.  Use git_commit instead.
+    static const char* git_sha __attribute__ ((deprecated));
 
 };
 

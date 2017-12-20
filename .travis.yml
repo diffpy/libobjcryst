@@ -97,7 +97,7 @@ install:
   - MYINCLUDE="${MYPREFIX}/include"
   - MYLIB="${MYPREFIX}/lib"
   - MYVERSION="${MYINCLUDE}/ObjCryst/version.h"
-  - MYGIT_REV=$(grep '^#define LIBOBJCRYST_GIT_SHA' "$MYVERSION" | cut -d '"' -f 2)
+  - MYGIT_REV=$(grep '^#define LIBOBJCRYST_GIT_COMMIT' "$MYVERSION" | cut -d '"' -f 2)
   - if [[ "${TRAVIS_COMMIT}" != "${MYGIT_REV}" ]]; then
         echo "Version mismatch ${TRAVIS_COMMIT} vs ${MYGIT_REV}.";
         exit 1;
