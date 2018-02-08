@@ -781,6 +781,8 @@ class Molecule: public Scatterer
       virtual string GetComponentName(const int i) const;
       virtual ostream& POVRayDescription(ostream &os,
                                          const CrystalPOVRayOptions &options)const;
+
+#ifdef OBJCRYST_GL
       virtual void GLInitDisplayList(const bool onlyIndependentAtoms=false,
                                      const REAL xMin=-.1,const REAL xMax=1.1,
                                      const REAL yMin=-.1,const REAL yMax=1.1,
@@ -790,6 +792,8 @@ class Molecule: public Scatterer
                                      const bool hideHydrogens=false,
                                      const REAL fadeDistance=0,
                                      const bool fullMoleculeInLimits=false)const;
+#endif  // OBJCRYST_GL
+
       /** Add an atom
       *
       *
@@ -1184,6 +1188,10 @@ class Molecule: public Scatterer
          RefinableObjClock mClockBondAngleList;
          RefinableObjClock mClockDihedralAngleList;
          RefinableObjClock mClockRigidGroup;
+         /// This clock is the parent of mClockAtomList, mClockBondList, mClockBondAngleList,
+         /// mClockDihedralAngleList and mClockRigidGroup. It can be used to determine if
+         /// either the list of atoms or restraints have changed.
+         RefinableObjClock mClockRestraint;
          RefinableObjClock mClockAtomPosition;
          RefinableObjClock mClockAtomScattPow;
          RefinableObjClock mClockOrientation;

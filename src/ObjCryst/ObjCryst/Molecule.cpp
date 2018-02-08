@@ -2092,6 +2092,13 @@ mDeleteSubObjInDestructor(old.mDeleteSubObjInDestructor), mIsSelfOptimizing(fals
    mClockScatterer.AddChild(mClockAtomScattPow);
    mClockScatterer.AddChild(mClockOrientation);
 
+   mClockRestraint.AddChild(mClockAtomList);
+   mClockRestraint.AddChild(mClockBondList);
+   mClockRestraint.AddChild(mClockBondAngleList);
+   mClockRestraint.AddChild(mClockDihedralAngleList);
+   mClockRestraint.AddChild(mClockRingList);
+   mClockRestraint.AddChild(mClockRigidGroup);
+
    stringstream str;
    old.XMLOutput(str);
    XMLCrystTag tag(str);
@@ -2576,19 +2583,21 @@ void Molecule::RandomizeConfiguration()
    }
 
    if(   (!(this->IsBeingRefined()))
-      && (mvStretchModeTorsion.size()==0)
-      &&(mvStretchModeBondAngle.size()==0)
-      &&(mvStretchModeBondLength.size()==0)
-      &&(mvStretchModeTwist.size()==0)
-      &&(mvMDAtomGroup.size()==0))
+      &&(  (mClockStretchModeTorsion<mClockRestraint)
+//         ||(mClockStretchModeTwist<mClockAtomList)
+//         ||(mClockStretchModeBondAngle<mClockScatterer)
+//         ||(mClockStretchModeBondLength<mClockScatterer)
+         ||(mClockMDAtomGroup<mClockRestraint)))
    {
       //This will build stretch modes & MD groups
       if(mFlexModel.GetChoice()!=1)
       {
          this->BuildStretchModeTorsion();
-         this->TuneGlobalOptimRotationAmplitude();
          //this->BuildStretchModeGroups();
          this->BuildMDAtomGroups();
+         // WARNING: TuneGlobalOptimRotationAmplitude() will call RandomizeConfiguration(),
+         // so make sure we do not enter this code again by calling first BuildStretchModeTorsion and BuildMDAtomGroups
+         this->TuneGlobalOptimRotationAmplitude();
       }
    }
 
@@ -3420,6 +3429,7 @@ ostream& Molecule::POVRayDescription(ostream &os,const CrystalPOVRayOptions &opt
    return os;
 }
 
+#ifdef OBJCRYST_GL
 void Molecule::GLInitDisplayList(const bool onlyIndependentAtoms,
                                const REAL xMin,const REAL xMax,
                                const REAL yMin,const REAL yMax,
@@ -3430,7 +3440,6 @@ void Molecule::GLInitDisplayList(const bool onlyIndependentAtoms,
                                const REAL fadeDistance,
                                const bool fullMoleculeInLimits)const
 {
-   #ifdef OBJCRYST_GL
    VFN_DEBUG_ENTRY("Molecule::GLInitDisplayList()",3)
    if(mvpAtom.size()==0)
    {
@@ -3828,8 +3837,8 @@ void Molecule::GLInitDisplayList(const bool onlyIndependentAtoms,
    }//else
    gluDeleteQuadric(pQuadric);
    VFN_DEBUG_EXIT("Molecule::GLInitDisplayList()",3)
-   #endif //GLCryst
 }
+#endif  // OBJCRYST_GL
 
 void Molecule::AddAtom(const REAL x, const REAL y, const REAL z,
                        const ScatteringPower *pPow, const string &name,
@@ -5271,11 +5280,14 @@ void BuildRingRecursive(MolAtom * currentAtom,
    {
       atomlist.push_back(currentAtom);
       map<MolAtom *,set<MolAtom *> >::const_iterator c=connect.find(currentAtom);
-      set<MolAtom *>::const_iterator pos;
-      for(pos=c->second.begin();pos!=c->second.end();++pos)
+      if(c != connect.end())
       {
-         if(*pos==previousAtom) continue;
-         BuildRingRecursive(*pos,currentAtom,connect,atomlist,ringlist);
+         set<MolAtom *>::const_iterator pos;
+         for(pos=c->second.begin();pos!=c->second.end();++pos)
+         {
+            if(*pos==previousAtom) continue;
+            BuildRingRecursive(*pos,currentAtom,connect,atomlist,ringlist);
+         }
       }
       atomlist.pop_back(); //??
    }
