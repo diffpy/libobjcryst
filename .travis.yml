@@ -27,6 +27,7 @@ branches:
 
 before_install:
   - MYNAME=libobjcryst
+  - MYCOMMIT="$(git rev-parse HEAD)"
     # travis virtual hosts have 2 cores as per https://goo.gl/DQy4oW
   - MYNCPU=2
   - umask 022
@@ -102,8 +103,8 @@ install:
   - MYLIB="${MYPREFIX}/lib"
   - MYVERSION="${MYINCLUDE}/ObjCryst/version.h"
   - MYGIT_REV=$(grep '^#define LIBOBJCRYST_GIT_COMMIT' "$MYVERSION" | cut -d '"' -f 2)
-  - if [[ "${TRAVIS_COMMIT}" != "${MYGIT_REV}" ]]; then
-        echo "Version mismatch ${TRAVIS_COMMIT} vs ${MYGIT_REV}.";
+  - if [[ "${MYCOMMIT}" != "${MYGIT_REV}" ]]; then
+        echo "Version mismatch ${MYCOMMIT} vs ${MYGIT_REV}.";
         exit 1;
     fi
 
