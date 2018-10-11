@@ -35,7 +35,7 @@ sudo apt-get install build-essential scons libboost-dev
 ```
 
 libobjcryst is also available as a pre-compiled package for
-[Anaconda Python](https://www.continuum.io/downloads) and it
+[Anaconda Python](https://www.anaconda.com/download) and it
 gets automatically installed together with pyobjcryst for
 Anaconda.
 
