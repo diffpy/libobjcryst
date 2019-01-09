@@ -19,8 +19,7 @@ requirements:
 
 test:
   commands:
-    # Dummy test, but it ensures there is _test environment needed by travis.
-    - true
+    - test -f $PREFIX/lib/libObjCryst${SHLIB_EXT}
 
 about:
   home: https://github.com/diffpy/libobjcryst/
