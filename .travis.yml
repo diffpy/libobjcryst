@@ -111,7 +111,7 @@ install:
         exit 1;
     fi
 
-  - $NOMC || MYCXXFLAGS="-I${MYINCLUDE} ${CXXFLAGS}"
+  - $NOMC || MYCOMPILEFLAGS="-I${MYINCLUDE} ${CXXFLAGS} ${CPPFLAGS}"
   - $NOMC || MYLINKFLAGS="-L${MYLIB} ${LDFLAGS} -Wl,-rpath,${MYLIB}"
 
 
@@ -120,7 +120,7 @@ before_script:
 
 
 script:
-  - $CXX -o testlib $MYCXXFLAGS testlib.cpp -lObjCryst $MYLINKFLAGS
+  - $CXX -o testlib $MYCOMPILEFLAGS testlib.cpp -lObjCryst $MYLINKFLAGS
   - ./testlib
 
 
