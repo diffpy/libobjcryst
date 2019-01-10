@@ -44,9 +44,13 @@ before_install:
   - MYMCREPO=https://repo.continuum.io/miniconda
   - case ${TRAVIS_OS_NAME} in
     linux)
-        MYMCBUNDLE=Miniconda3-latest-Linux-x86_64.sh ;;
+        MYMCBUNDLE=Miniconda3-latest-Linux-x86_64.sh;
+        MYCXXCOMPILER=gxx_linux-64
+        ;;
     osx)
-        MYMCBUNDLE=Miniconda3-latest-MacOSX-x86_64.sh ;;
+        MYMCBUNDLE=Miniconda3-latest-MacOSX-x86_64.sh;
+        MYCXXCOMPILER=clangxx_osx-64
+        ;;
     *)
         echo "Unsupported operating system." >&2;
         exit 2 ;;
@@ -61,7 +65,7 @@ before_install:
   - $NOMC || source ~/mc/bin/activate root
   - $NOMC || conda update --yes conda
   - $NOMC || conda install --yes conda-build jinja2
-  - $NOMC || conda create --name=testenv --yes python=${MYPYTHON_VERSION}
+  - $NOMC || conda create --name=testenv --yes $MYCXXCOMPILER
   - $NOMC || conda config --add channels diffpy
 
   - $NOAPT || test "${TRAVIS_OS_NAME}" = "linux" || exit $?
@@ -107,9 +111,8 @@ install:
         exit 1;
     fi
 
-  - $NOMC || export LIBRARY_PATH="${MYLIB}"
-  - $NOMC || export CPATH="${MYINCLUDE}"
-  - $NOMC || MYLINKFLAGS="-Wl,-rpath,${MYLIB}"
+  - $NOMC || MYCOMPILEFLAGS="-I${MYINCLUDE} ${CXXFLAGS} ${CPPFLAGS}"
+  - $NOMC || MYLINKFLAGS="-L${MYLIB} ${LDFLAGS} -Wl,-rpath,${MYLIB}"
 
 
 before_script:
@@ -117,7 +120,7 @@ before_script:
 
 
 script:
-  - $CXX -o testlib testlib.cpp -lObjCryst $MYLINKFLAGS
+  - $CXX -o testlib $MYCOMPILEFLAGS testlib.cpp -lObjCryst $MYLINKFLAGS
   - ./testlib
 
 
