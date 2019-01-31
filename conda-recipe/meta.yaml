@@ -19,7 +19,7 @@ requirements:
     - python
     - scons
   host:
-    - libboost 1.67.0
+    - libboost {{ boost }}
 
 test:
   commands:
