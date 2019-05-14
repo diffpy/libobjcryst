@@ -1,6 +1,6 @@
 # Release notes
 
-## Unreleased – Version 2017.2.2
+## Version 2017.2.2 – 2019-05-14
 
 ### Changed
 
