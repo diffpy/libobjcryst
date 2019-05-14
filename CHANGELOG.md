@@ -1,5 +1,17 @@
 # Release notes
 
+## Unreleased – Version 2017.2.2
+
+### Changed
+
+- Throw `invalid_argument` when space group lookup fails.
+- Sync with upstream-objcryst v2017.2-37-g5ae17765.
+
+### Fixed
+
+- Infinite recursion in `SpaceGroup("bad")` and `ChangeSpaceGroup("bad")`.
+
+
 ## Version 2017.2.1 – 2019-03-08
 
 Notable differences from version 2017.1.1.
