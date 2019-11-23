@@ -16,7 +16,6 @@ build:
 requirements:
   build:
     - {{ compiler('cxx') }}
-    - python
     - scons
   host:
     - libboost {{ boost }}
