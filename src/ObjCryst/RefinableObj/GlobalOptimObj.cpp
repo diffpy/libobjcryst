@@ -299,6 +299,59 @@ long& OptimizationObj::NbTrialPerRun() {return mNbTrialPerRun;}
 
 const long& OptimizationObj::NbTrialPerRun() const {return mNbTrialPerRun;}
 
+unsigned int OptimizationObj::GetNbOption()const
+{
+   return mOptionRegistry.GetNb();
+}
+
+ObjRegistry<RefObjOpt>& OptimizationObj::GetOptionList()
+{
+   return mOptionRegistry;
+}
+
+RefObjOpt& OptimizationObj::GetOption(const unsigned int i)
+{
+   VFN_DEBUG_MESSAGE("RefinableObj::GetOption()"<<i,3)
+   //:TODO: Check
+   return mOptionRegistry.GetObj(i);
+}
+
+RefObjOpt& OptimizationObj::GetOption(const string & name)
+{
+   VFN_DEBUG_MESSAGE("OptimizationObj::GetOption()"<<name,3)
+   const long i=mOptionRegistry.Find(name);
+   if(i<0)
+   {
+      this->Print();
+      throw ObjCrystException("OptimizationObj::GetOption(): cannot find option: "+name+" in object:"+this->GetName());
+   }
+   return mOptionRegistry.GetObj(i);
+}
+
+const RefObjOpt& OptimizationObj::GetOption(const unsigned int i)const
+{
+   VFN_DEBUG_MESSAGE("RefinableObj::GetOption()"<<i,3)
+   //:TODO: Check
+   return mOptionRegistry.GetObj(i);
+}
+
+const RefObjOpt& OptimizationObj::GetOption(const string & name)const
+{
+   VFN_DEBUG_MESSAGE("OptimizationObj::GetOption()"<<name,3)
+   const long i=mOptionRegistry.Find(name);
+   if(i<0)
+   {
+      this->Print();
+      throw ObjCrystException("OptimizationObj::GetOption(): cannot find option: "+name+" in object:"+this->GetName());
+   }
+   return mOptionRegistry.GetObj(i);
+}
+
+const ObjRegistry<RefinableObj>& OptimizationObj::GetRefinedObjList() const
+{
+   return mRefinedObjList;
+}
+
 void OptimizationObj::PrepareRefParList()
 {
    VFN_DEBUG_ENTRY("OptimizationObj::PrepareRefParList()",6)
@@ -375,6 +428,7 @@ void OptimizationObj::InitOptions()
       needInitNames=false;//Only once for the class
    }
    mXMLAutoSave.Init(6,&xmlAutoSaveName,xmlAutoSaveChoices);
+   this->AddOption(&mXMLAutoSave);
    VFN_DEBUG_MESSAGE("OptimizationObj::InitOptions():End",5)
 }
 
@@ -402,6 +456,13 @@ void OptimizationObj::BuildRecursiveRefObjList()
          RefObjRegisterRecursive(mRefinedObjList.GetObj(i),mRecursiveRefinedObjList);
       VFN_DEBUG_EXIT("OptimizationObj::BuildRecursiveRefObjList()",5)
    }
+}
+
+void OptimizationObj::AddOption(RefObjOpt *opt)
+{
+   VFN_DEBUG_ENTRY("OptimizationObj::AddOption()",5)
+   mOptionRegistry.Register(*opt);
+   VFN_DEBUG_EXIT("OptimizationObj::AddOption()",5)
 }
 
 //#################################################################################
@@ -2087,6 +2148,11 @@ void MonteCarloObj::InitOptions()
    mAnnealingScheduleMutation.Init(6,&AnnealingScheduleMutationName,AnnealingScheduleChoices);
    mSaveTrackedData.Init(2,&saveTrackedDataName,saveTrackedDataChoices);
    mAutoLSQ.Init(3,&runAutoLSQName,runAutoLSQChoices);
+   this->AddOption(&mGlobalOptimType);
+   this->AddOption(&mAnnealingScheduleTemp);
+   this->AddOption(&mAnnealingScheduleMutation);
+   this->AddOption(&mSaveTrackedData);
+   this->AddOption(&mAutoLSQ);
    VFN_DEBUG_MESSAGE("MonteCarloObj::InitOptions():End",5)
 }
 

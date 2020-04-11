@@ -715,6 +715,19 @@ template<class T> class ObjRegistry
       *
       */
       void UpdateUI();
+      /** STL access to object size
+      */
+      std::size_t size() const;
+      /** low-level access to the underlying vector begin().
+      * Const access as we do not want the number and order of objects to change,
+      * but the objects themselves can be modified.
+      */
+      typename vector<T*>::const_iterator begin() const;
+      /** low-level access to the underlying vector end().
+      * Const access as we do not want the number and order of objects to change,
+      * but the objects themselves can be modified.
+      */
+      typename vector<T*>::const_iterator end() const;
    private:
       /// The registry of objects
       vector<T*> mvpRegistry;
@@ -1129,12 +1142,18 @@ class RefinableObj
       /// time there is a 'new, significant' configuration to report.
       virtual void UpdateDisplay()const;
       //Options
+         /// Access to the options list
+         ObjRegistry<RefObjOpt>& GetOptionList();
          /// Number of Options for this object
          unsigned int GetNbOption()const;
          /// Access to the options
          RefObjOpt& GetOption(const unsigned int i);
+         /// Access to the options by name
+         RefObjOpt& GetOption(const string & name);
          /// const access to the options
          const RefObjOpt& GetOption(const unsigned int i)const;
+         /// const access to the options by name
+         const RefObjOpt& GetOption(const string & name)const;
       // Genetic
          /** \brief Get the gene group assigned to each parameter.
          *

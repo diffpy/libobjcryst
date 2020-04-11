@@ -983,11 +983,13 @@ template<class T> void ObjRegistry<T>::DeleteAll()
 
 template<class T> T& ObjRegistry<T>::GetObj(const unsigned int i)
 {
+   if(i>=this->GetNb()) throw ObjCrystException("ObjRegistry<T>::GetObj(i): i >= nb!");
    return *(mvpRegistry[i]);
 }
 
 template<class T> const T& ObjRegistry<T>::GetObj(const unsigned int i) const
 {
+   if(i>=this->GetNb()) throw ObjCrystException("ObjRegistry<T>::GetObj(i): i >= nb!");
    return *(mvpRegistry[i]);
 }
 
@@ -1114,6 +1116,21 @@ template<class T> void ObjRegistry<T>::UpdateUI()
             mpWXRegistry->Add(this->GetObj(i).WXCreate(mpWXRegistry));
    }
    #endif
+}
+
+template<class T> std::size_t ObjRegistry<T>::size() const
+{
+   return (std::size_t) mvpRegistry.size();
+}
+
+template<class T> typename vector<T*>::const_iterator ObjRegistry<T>::begin() const
+{
+   return mvpRegistry.begin();
+}
+
+template<class T> typename vector<T*>::const_iterator ObjRegistry<T>::end() const
+{
+   return mvpRegistry.end();
 }
 
 #ifdef __WX__CRYST__
@@ -1846,6 +1863,11 @@ void RefinableObj::ResetParList()
    VFN_DEBUG_MESSAGE("RefinableObj::ResetParList():End.",3)
 }
 
+ObjRegistry<RefObjOpt>& RefinableObj::GetOptionList()
+{
+    return mOptionRegistry;
+}
+
 unsigned int RefinableObj::GetNbOption()const
 {
    return mOptionRegistry.GetNb();
@@ -1858,10 +1880,34 @@ RefObjOpt& RefinableObj::GetOption(const unsigned int i)
    return mOptionRegistry.GetObj(i);
 }
 
+RefObjOpt& RefinableObj::GetOption(const string & name)
+{
+    VFN_DEBUG_MESSAGE("RefinableObj::GetOption()"<<name,3)
+    const long i=mOptionRegistry.Find(name);
+    if(i<0)
+    {
+        this->Print();
+        throw ObjCrystException("RefinableObj::GetOption(): cannot find option: "+name+" in object:"+this->GetName());
+    }
+    return mOptionRegistry.GetObj(i);
+}
+
 const RefObjOpt& RefinableObj::GetOption(const unsigned int i)const
 {
    //:TODO: Check
    return mOptionRegistry.GetObj(i);
+}
+
+const RefObjOpt& RefinableObj::GetOption(const string & name)const
+{
+    VFN_DEBUG_MESSAGE("RefinableObj::GetOption()"<<name,3)
+    const long i=mOptionRegistry.Find(name);
+    if(i<0)
+    {
+        this->Print();
+        throw ObjCrystException("RefinableObj::GetOption(): cannot find option: "+name+" in object:"+this->GetName());
+    }
+    return mOptionRegistry.GetObj(i);
 }
 
 void RefinableObj::GetGeneGroup(const RefinableObj &obj,
