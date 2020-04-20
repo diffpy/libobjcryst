@@ -21,6 +21,7 @@
 *
 */
 #include <ctime>
+#include <boost/format.hpp>
 #include "ObjCryst/RefinableObj/RefinableObj.h"
 #include "ObjCryst/Quirks/VFNStreamFormat.h"
 #include "ObjCryst/Quirks/VFNDebug.h"
@@ -899,6 +900,7 @@ template<class T> void ObjRegistry<T>::Register(T &obj)
       return;
    }
    mvpRegistry.push_back(&obj);
+   mvpRegistryList.push_back(&obj);
    mListClock.Click();
    #ifdef __WX__CRYST__
    if((0!=mpWXRegistry) && mAutoUpdateUI)
@@ -929,6 +931,10 @@ template<class T> void ObjRegistry<T>::DeRegister(T &obj)
    if(0!=mpWXRegistry) mpWXRegistry->Remove(obj.WXGet());
    #endif
    mvpRegistry.erase(pos);
+   
+   typename list<T*>::iterator pos2=find(mvpRegistryList.begin(),mvpRegistryList.end(),&obj);
+   mvpRegistryList.erase(pos2);
+   
    mListClock.Click();
    VFN_DEBUG_EXIT("ObjRegistry("<<mName<<")::Deregister(&obj)",2)
 }
@@ -950,6 +956,10 @@ template<class T> void ObjRegistry<T>::DeRegister(const string &objName)
    if(0!=mpWXRegistry) mpWXRegistry->Remove((*pos)->WXGet());
    #endif
    mvpRegistry.erase(pos);
+
+   typename list<T*>::iterator pos2=find(mvpRegistryList.begin(),mvpRegistryList.end(),mvpRegistry[i]);
+   mvpRegistryList.erase(pos2);
+
    mListClock.Click();
    VFN_DEBUG_EXIT("ObjRegistry("<<mName<<")::Deregister(name):",2)
 }
@@ -966,6 +976,7 @@ template<class T> void ObjRegistry<T>::DeRegisterAll()
    }
    #endif
    mvpRegistry.clear();
+   mvpRegistryList.clear();
    mListClock.Click();
    VFN_DEBUG_EXIT("ObjRegistry("<<mName<<")::DeRegisterAll():",5)
 }
@@ -977,6 +988,7 @@ template<class T> void ObjRegistry<T>::DeleteAll()
    typename vector<T*>::iterator pos;
    for(pos=reg.begin();pos!=reg.end();++pos) delete *pos;
    mvpRegistry.clear();
+   mvpRegistryList.clear();
    mListClock.Click();
    VFN_DEBUG_EXIT("ObjRegistry("<<mName<<")::DeleteAll():",5)
 }
@@ -1027,7 +1039,7 @@ template<class T> void ObjRegistry<T>::Print()const
    cout <<mName<<" :"<<this->GetNb()<<" object registered:" <<endl;
 
    for(long i=0;i<this->GetNb();++i)
-      cout <<i<<"("<<this->GetObj(i).GetName()<<")"<<endl;
+      cout << boost::format("#%3d:%s(%s)") %i %this->GetObj(i).GetClassName() %this->GetObj(i).GetName()<<endl;
 }
 
 template<class T> void ObjRegistry<T>::SetName(const string &name){ mName=name;}
@@ -1131,6 +1143,16 @@ template<class T> typename vector<T*>::const_iterator ObjRegistry<T>::begin() co
 template<class T> typename vector<T*>::const_iterator ObjRegistry<T>::end() const
 {
    return mvpRegistry.end();
+}
+
+template<class T> typename list<T*>::const_iterator ObjRegistry<T>::list_begin() const
+{
+   return mvpRegistryList.begin();
+}
+
+template<class T> typename list<T*>::const_iterator ObjRegistry<T>::list_end() const
+{
+   return mvpRegistryList.end();
 }
 
 #ifdef __WX__CRYST__
