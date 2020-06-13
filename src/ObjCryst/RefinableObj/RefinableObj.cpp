@@ -21,6 +21,7 @@
 *
 */
 #include <ctime>
+#include <boost/format.hpp>
 #include "ObjCryst/RefinableObj/RefinableObj.h"
 #include "ObjCryst/Quirks/VFNStreamFormat.h"
 #include "ObjCryst/Quirks/VFNDebug.h"
@@ -899,6 +900,7 @@ template<class T> void ObjRegistry<T>::Register(T &obj)
       return;
    }
    mvpRegistry.push_back(&obj);
+   mvpRegistryList.push_back(&obj);
    mListClock.Click();
    #ifdef __WX__CRYST__
    if((0!=mpWXRegistry) && mAutoUpdateUI)
@@ -929,6 +931,10 @@ template<class T> void ObjRegistry<T>::DeRegister(T &obj)
    if(0!=mpWXRegistry) mpWXRegistry->Remove(obj.WXGet());
    #endif
    mvpRegistry.erase(pos);
+   
+   typename list<T*>::iterator pos2=find(mvpRegistryList.begin(),mvpRegistryList.end(),&obj);
+   mvpRegistryList.erase(pos2);
+   
    mListClock.Click();
    VFN_DEBUG_EXIT("ObjRegistry("<<mName<<")::Deregister(&obj)",2)
 }
@@ -950,6 +956,10 @@ template<class T> void ObjRegistry<T>::DeRegister(const string &objName)
    if(0!=mpWXRegistry) mpWXRegistry->Remove((*pos)->WXGet());
    #endif
    mvpRegistry.erase(pos);
+
+   typename list<T*>::iterator pos2=find(mvpRegistryList.begin(),mvpRegistryList.end(),mvpRegistry[i]);
+   mvpRegistryList.erase(pos2);
+
    mListClock.Click();
    VFN_DEBUG_EXIT("ObjRegistry("<<mName<<")::Deregister(name):",2)
 }
@@ -966,6 +976,7 @@ template<class T> void ObjRegistry<T>::DeRegisterAll()
    }
    #endif
    mvpRegistry.clear();
+   mvpRegistryList.clear();
    mListClock.Click();
    VFN_DEBUG_EXIT("ObjRegistry("<<mName<<")::DeRegisterAll():",5)
 }
@@ -977,17 +988,20 @@ template<class T> void ObjRegistry<T>::DeleteAll()
    typename vector<T*>::iterator pos;
    for(pos=reg.begin();pos!=reg.end();++pos) delete *pos;
    mvpRegistry.clear();
+   mvpRegistryList.clear();
    mListClock.Click();
    VFN_DEBUG_EXIT("ObjRegistry("<<mName<<")::DeleteAll():",5)
 }
 
 template<class T> T& ObjRegistry<T>::GetObj(const unsigned int i)
 {
+   if(i>=this->GetNb()) throw ObjCrystException("ObjRegistry<T>::GetObj(i): i >= nb!");
    return *(mvpRegistry[i]);
 }
 
 template<class T> const T& ObjRegistry<T>::GetObj(const unsigned int i) const
 {
+   if(i>=this->GetNb()) throw ObjCrystException("ObjRegistry<T>::GetObj(i): i >= nb!");
    return *(mvpRegistry[i]);
 }
 
@@ -1025,7 +1039,7 @@ template<class T> void ObjRegistry<T>::Print()const
    cout <<mName<<" :"<<this->GetNb()<<" object registered:" <<endl;
 
    for(long i=0;i<this->GetNb();++i)
-      cout <<i<<"("<<this->GetObj(i).GetName()<<")"<<endl;
+      cout << boost::format("#%3d:%s(%s)") %i %this->GetObj(i).GetClassName() %this->GetObj(i).GetName()<<endl;
 }
 
 template<class T> void ObjRegistry<T>::SetName(const string &name){ mName=name;}
@@ -1114,6 +1128,31 @@ template<class T> void ObjRegistry<T>::UpdateUI()
             mpWXRegistry->Add(this->GetObj(i).WXCreate(mpWXRegistry));
    }
    #endif
+}
+
+template<class T> std::size_t ObjRegistry<T>::size() const
+{
+   return (std::size_t) mvpRegistry.size();
+}
+
+template<class T> typename vector<T*>::const_iterator ObjRegistry<T>::begin() const
+{
+   return mvpRegistry.begin();
+}
+
+template<class T> typename vector<T*>::const_iterator ObjRegistry<T>::end() const
+{
+   return mvpRegistry.end();
+}
+
+template<class T> typename list<T*>::const_iterator ObjRegistry<T>::list_begin() const
+{
+   return mvpRegistryList.begin();
+}
+
+template<class T> typename list<T*>::const_iterator ObjRegistry<T>::list_end() const
+{
+   return mvpRegistryList.end();
 }
 
 #ifdef __WX__CRYST__
@@ -1846,6 +1885,11 @@ void RefinableObj::ResetParList()
    VFN_DEBUG_MESSAGE("RefinableObj::ResetParList():End.",3)
 }
 
+ObjRegistry<RefObjOpt>& RefinableObj::GetOptionList()
+{
+    return mOptionRegistry;
+}
+
 unsigned int RefinableObj::GetNbOption()const
 {
    return mOptionRegistry.GetNb();
@@ -1858,10 +1902,34 @@ RefObjOpt& RefinableObj::GetOption(const unsigned int i)
    return mOptionRegistry.GetObj(i);
 }
 
+RefObjOpt& RefinableObj::GetOption(const string & name)
+{
+    VFN_DEBUG_MESSAGE("RefinableObj::GetOption()"<<name,3)
+    const long i=mOptionRegistry.Find(name);
+    if(i<0)
+    {
+        this->Print();
+        throw ObjCrystException("RefinableObj::GetOption(): cannot find option: "+name+" in object:"+this->GetName());
+    }
+    return mOptionRegistry.GetObj(i);
+}
+
 const RefObjOpt& RefinableObj::GetOption(const unsigned int i)const
 {
    //:TODO: Check
    return mOptionRegistry.GetObj(i);
+}
+
+const RefObjOpt& RefinableObj::GetOption(const string & name)const
+{
+    VFN_DEBUG_MESSAGE("RefinableObj::GetOption()"<<name,3)
+    const long i=mOptionRegistry.Find(name);
+    if(i<0)
+    {
+        this->Print();
+        throw ObjCrystException("RefinableObj::GetOption(): cannot find option: "+name+" in object:"+this->GetName());
+    }
+    return mOptionRegistry.GetObj(i);
 }
 
 void RefinableObj::GetGeneGroup(const RefinableObj &obj,
