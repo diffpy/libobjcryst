@@ -1008,13 +1008,13 @@ Crystal* CreateCrystalFromCIF(CIF &cif,const bool verbose,const bool checkSymAsX
    (*fpObjCrystInformUser)("CIF: Opening CIF");
    Chronometer chrono;
    chrono.start();
-
+   
    // If oneScatteringPowerPerElement==true, we hold this to compute the average Biso per element
    std::map<ScatteringPower*,std::pair<REAL,unsigned int> > vElementBiso;
 
    bool import_multiple = true;
    if(pCryst!=NULL) import_multiple = false;
-
+   
    for(map<string,CIFData>::iterator pos=cif.mvData.begin();pos!=cif.mvData.end();++pos)
       if(pos->second.mvLatticePar.size()==6)
       {
@@ -1097,11 +1097,11 @@ Crystal* CreateCrystalFromCIF(CIF &cif,const bool verbose,const bool checkSymAsX
              <<endl;
          (*fpObjCrystInformUser)("CIF: Create Crystal=");
          if(pCryst==NULL)
-           pCryst=new Crystal(pos->second.mvLatticePar[0],pos->second.mvLatticePar[1],pos->second.mvLatticePar[2],
-                                       pos->second.mvLatticePar[3],pos->second.mvLatticePar[4],pos->second.mvLatticePar[5],spg);
+            pCryst=new Crystal(pos->second.mvLatticePar[0],pos->second.mvLatticePar[1],pos->second.mvLatticePar[2],
+                               pos->second.mvLatticePar[3],pos->second.mvLatticePar[4],pos->second.mvLatticePar[5],spg);
          else
-          pCryst->Init(pos->second.mvLatticePar[0],pos->second.mvLatticePar[1],pos->second.mvLatticePar[2],
-                       pos->second.mvLatticePar[3],pos->second.mvLatticePar[4],pos->second.mvLatticePar[5],spg, "");
+            pCryst->Init(pos->second.mvLatticePar[0],pos->second.mvLatticePar[1],pos->second.mvLatticePar[2],
+                         pos->second.mvLatticePar[3],pos->second.mvLatticePar[4],pos->second.mvLatticePar[5],spg, "");
          if(  (pos->second.mSpacegroupSymbolHall=="")
             &&(pos->second.mvSymmetry_equiv_pos_as_xyz.size()>0)
             &&(pos->second.mSpacegroupHermannMauguin!="")
