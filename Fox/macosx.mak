@@ -23,33 +23,20 @@ endif
 
 libfftw: ../static-libs/lib/libfftw3f.a
 
-# MySQL
-../mysql-5.6.24.tar.gz:
-	cd .. && $(DOWNLOAD_COMMAND) http://dev.mysql.com/get/Downloads/MySQL-5.6/mysql-5.6.24.tar.gz
 
-#:TODO: find a way to only compile the static version of libmysqlclient ?
-../static-libs/lib/libmysqlclient.a: ../mysql-5.6.24.tar.gz
-	cd .. && tar -xzf mysql-5.6.24.tar.gz
-	cd ../mysql-5.6.24 && MACOSX_DEPLOYMENT_TARGET=10.5 cmake -DCMAKE_INSTALL_PREFIX=$(PWD)/../static-libs && MACOSX_DEPLOYMENT_TARGET=10.5 $(MAKE) -j4 install
-	rm -f $(PWD)/../static-libs/lib/libmysql*.dylib
-	rm -Rf ../mysql-5.6.24
+../wxWidgets-3.1.4.tar.bz2:
+	cd .. && $(DOWNLOAD_COMMAND)  https://github.com/wxWidgets/wxWidgets/releases/download/v3.1.4/wxWidgets-3.1.4.tar.bz2
 
-libmysql: ../static-libs/lib/libmysqlclient.a
-
-
-../wxWidgets-3.0.2.tar.bz2:
-	cd .. && curl -O  ftp://ftp.wxwidgets.org/pub/3.0.2/wxWidgets-3.0.2.tar.bz2
-
-../static-libs/bin/wx-config: ../wxWidgets-3.0.2.tar.bz2
-	cd .. && tar -xjf wxWidgets-3.0.2.tar.bz2
-	cd ../wxWidgets-3.0.2 && ./configure --with-opengl --disable-webviewwebkit --enable-optimise --disable-shared  --enable-monolithic --prefix=$(PWD)/../static-libs && make -j4 install
-	rm -Rf ../wxWidgets-3.0.2
+../static-libs/bin/wx-config: ../wxWidgets-3.1.4.tar.bz2
+	cd .. && tar -xjf wxWidgets-3.1.4.tar.bz2
+	cd ../wxWidgets-3.1.4 && ./configure --with-opengl --disable-debug --disable-webviewwebkit --enable-optimise --disable-shared  --enable-monolithic --disable-mediactrl --without-libtiff --enable-cxx11 --prefix=$(PWD)/../static-libs && make -j4 install
+	rm -Rf ../wxWidgets-3.1.4
 
 libwx: ../static-libs/bin/wx-config
 
 default: Fox
 
-Fox: libfftw libwx ../cctbx ../newmat libmysql
+Fox: libfftw libwx ../cctbx ../newmat
 	xcodebuild -project Fox.xcodeproj -target Fox -configuration Deployment
 
 Fox-nogui: ../cctbx ../newmat

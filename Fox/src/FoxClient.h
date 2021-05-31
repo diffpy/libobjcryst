@@ -40,21 +40,40 @@
 #define __FOX_CLIENT__
 
 #define __CLIENT_LOGS 1
-/*
-class streamReceiveThread : public wxThread
+const wxEventType wxEVT_PROCESS_MY = wxNewEventType();
+
+class ProcessMyEvent : public wxEvent
 {
 public:
-     streamReceiveThread(wxString *message, wxSocketBase* pSocket, wxMutex *mtx);
-     ~streamReceiveThread();
+    ProcessMyEvent(void* pSender)
+    {
+        SetId(-1);
+        SetEventType(wxEVT_PROCESS_MY);
+        m_sender = pSender;
+        m_exit = false;
+        m_pid = -1;
+        m_status = -1;
+    }
 
-     virtual void *Entry();
-     virtual void OnExit();
-protected:
-    wxString *message;
-    wxSocketBase *pSocket;
-    wxMutex *pMutex;
+    virtual wxEvent* Clone() const
+    {
+        return new ProcessMyEvent(*this);
+    }
+
+    void*           m_sender;
+    int             m_pid;
+    int             m_status;
+    wxString        m_dir;
+    bool            m_exit;
 };
-*/
+
+struct ClientJob
+{
+   int ID;
+   int nb_done;
+   wxTimeSpan average_calc_time;
+};
+
 class FoxProcess
 {
 public:
@@ -69,6 +88,9 @@ public:
     bool isRunning();
     void setJobID(int id);
     int  getJobID();
+    void setStarted(wxDateTime t);
+    wxDateTime getStartingTime();
+    int getProgressInPercents(wxTimeSpan avCalcTime);
 
 private:
 
@@ -76,6 +98,7 @@ private:
     wxString tmpDIR;
     bool     running;
     int      jobID;
+    wxDateTime startingtime;
 };
 class GrdRslt
 {
@@ -90,6 +113,8 @@ public:
 	bool pending;
 };
 
+
+
 class FoxClient: public wxEvtHandler
 {
 
@@ -97,11 +122,14 @@ public:
      FoxClient(wxString working_dir);
      ~FoxClient();
      bool ConnectClient(int nbOfTrial, wxString hostname);
-     void OnSendResults(wxTimerEvent& event);
+     void OnTimerEvent(wxTimerEvent& event);
+     void DoManyThingsOnTimer();
+     //void OnSendResults(wxTimerEvent& event);
      void OnSocketEvent(wxSocketEvent &event);
      void WriteProtocol();
      bool IsClientConnected();
      void Disconnect();
+     void OnProcessEvent(ProcessMyEvent& pEvent);
      void onProcessTerminate(int pid, int status, wxString dir);
      wxString getWorkingDir();
 
@@ -116,36 +144,39 @@ public:
      //Do not use it for getting nb of all processes!!!
      int getNbOfUnusedProcesses();
 
+     //Thread-safe way to get info about all processes
+     //Returns copy of the processes, that can be used without mutex
+     void get_copy_of_processes(vector<FoxProcess> &FP, vector<ClientJob> &CJ);
+
      //kill all running processes
      void KillProcesses();
 
 
-     bool   m_Connecting;
+     //bool   m_Connecting;
      bool   m_exit;
+   void WriteMessageLog(wxString msg);
 
 protected:
    wxString getJob(wxString inmsg, long pos);
-   bool SendResult(wxString result);
-   void answerToAsk(vector<wxString> ask);
-   void SaveResult(wxString fileName, wxString Cost, int ID);
-   void WriteMessageLog(wxString msg);
-   bool AnalyzeMessage(wxSocketBase* tmpSock);
-   int  WriteStringToSocket(wxSocketBase *pSocket, std::string s);
-   int  ReadStringFromSocket(wxSocketBase *pSocket, std::string &message);
+   void SendCurrentState();
+   void SaveResult(wxString fileName, wxString Cost, int ID, bool error);
+   
+   bool AnalyzeMessage(wxString msg);
+
    void SaveDataAsFile(wxString out, wxString filename);
    bool LoadFile(wxString filename, wxString &in);
    wxString getMyHostname();
    wxString addToPath(wxString str1, wxString str2);
 
    //reconnect client
-   void Reconnect();
+   //void Reconnect();
 
    //it runs new job, return 0 if successful
    //job - content of the file, id - job id,
    int runNewJob(wxString job, int id, int nbTrial, bool rand);
 
    //send not-accepted jobs back to the server
-   void rejectJobs(std::vector<int> ids);
+   //void rejectJobs(std::vector<int> ids);
 
    //get file name "out-Cost-%f.xml", dir - directory with file
    wxString getOutputFile(wxString dir);
@@ -162,15 +193,13 @@ protected:
    wxSocketClient       * mpClient;
    wxString               m_hostname;
    wxTimer              * m_sendingTimer;
-   wxMutex              * m_DataMutex;
-   wxMutex              * m_ResultsMutex;
    vector<FoxProcess>     m_processes;
    vector<GrdRslt>        m_results;
-
-   //int                    m_ID;
    int                    m_nbOfAvailCPUs;
    IOSocket               m_IOSocket;
    wxString               m_working_dir;
+   wxCriticalSection      m_ProcessCriticalSection;
+   vector<ClientJob>      m_ListOfProcessedJobs;
    DECLARE_EVENT_TABLE()
 };
 class MyProcess : public wxProcess

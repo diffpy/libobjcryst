@@ -138,9 +138,6 @@ GLvoid crystGLPrint(const string &s)
    glEnable (GL_BLEND);
 }
 
-/// Conversion from ZScatterer to the newer Molecule object. (in WXZScatterer.cpp)
-Molecule *ZScatterer2Molecule(ZScatterer *scatt);
-
 // dialog to get a bounding box
   class UserSelectBoundingBox : public wxDialog {
   public:
@@ -384,9 +381,9 @@ BEGIN_EVENT_TABLE(WXCrystal,wxWindow)
    EVT_MENU(ID_CRYSTAL_MENU_SCATT_DUPLICSCATTERER,    WXCrystal::OnMenuDuplicateScatterer)
    EVT_MENU(ID_CRYSTAL_MENU_SHOW_SCATTPOW_WIN,        WXCrystal::OnMenuShowScattPowWindow)
    EVT_UPDATE_UI(ID_CRYST_UPDATEUI,                   WXRefinableObj::OnUpdateUI)
-   EVT_GRID_CMD_CELL_CHANGE(ID_CRYSTAL_WIN_SCATTPOW,  WXCrystal::OnEditGridScattPow)
-   EVT_GRID_CMD_CELL_CHANGE(ID_CRYSTAL_WIN_ANTIBUMP,  WXCrystal::OnEditGridScattPowAntiBump)
-   EVT_GRID_CMD_CELL_CHANGE(ID_CRYSTAL_WIN_BONDVALENCE,WXCrystal::OnEditGridScattPowBondValence)
+   EVT_GRID_CMD_CELL_CHANGED(ID_CRYSTAL_WIN_SCATTPOW,  WXCrystal::OnEditGridScattPow)
+   EVT_GRID_CMD_CELL_CHANGED(ID_CRYSTAL_WIN_ANTIBUMP,  WXCrystal::OnEditGridScattPowAntiBump)
+   EVT_GRID_CMD_CELL_CHANGED(ID_CRYSTAL_WIN_BONDVALENCE,WXCrystal::OnEditGridScattPowBondValence)
 //   EVT_MENU(ID_CRYSTAL_MENU_SHOW_PDF,                 WXCrystal::OnMenuPDF)
 END_EVENT_TABLE()
 
@@ -1414,7 +1411,11 @@ void WXCrystal::OnMenuAddScatterer(wxCommandEvent &event)
       mol->RestraintStatus(cout);
       scatt=mol;
    }
-   if(scatt!=0) mpCrystal->AddScatterer(scatt);
+   if(scatt!=0)
+   {
+      mpCrystal->AddScatterer(scatt);
+      mpCrystal->UpdateDisplay();
+   }
    VFN_DEBUG_MESSAGE("WXCrystal::OnMenuAddScatterer():calling Layout()",6)
    //this->CrystUpdate();
    this->Layout();
@@ -2745,7 +2746,7 @@ void UnitCellMapGLList::Draw()const
       // and non-orthogonal unit cells
       glMaterialf( GL_FRONT, GL_SHININESS, 0.0);
 
-      const GLfloat colorBack [] = {mColour[0]/3., mColour[1]/3., mColour[2]/3., mColour[3]};
+      const GLfloat colorBack [] = {mColour[0]/3.0f, mColour[1]/3.0f, mColour[2]/3.0f, mColour[3]};
       glMaterialfv(GL_BACK, GL_AMBIENT, colorBack);
       glMaterialfv(GL_BACK, GL_DIFFUSE, colorBack);
       glMaterialfv(GL_BACK, GL_SPECULAR, colorBack);
@@ -3371,8 +3372,7 @@ void WXGLCrystalCanvas::OnEraseBackground(wxEraseEvent& event)
 
 void WXGLCrystalCanvas::OnKeyDown(wxKeyEvent& event)
 {
-   VFN_DEBUG_MESSAGE("WXGLCrystalCanvas::OnKeyDown()",2)
-   cout<<"WXGLCrystalCanvas::OnKeyDown(): KeyCode: "<<event.GetKeyCode()<<endl;
+   VFN_DEBUG_MESSAGE("WXGLCrystalCanvas::OnKeyDown():"<<event.GetKeyCode(),2)
    switch(event.GetKeyCode())
    {
       case(45):// +
@@ -4815,26 +4815,32 @@ END_EVENT_TABLE()
   // 1st row
   inputSizer->Add(new wxStaticText(this, -1, _T("a")), 0, wxALIGN_CENTRE_VERTICAL);
   inputSizer->Add(mpXminCtrl = new wxTextCtrl(this, -1,
-					      wxString::Format(_T("%f"),bbox.xMin)),
+                                              wxString::Format(_T("%f"),bbox.xMin), wxDefaultPosition,
+                                              wxDefaultSize, 0, wxTextValidator(wxFILTER_NUMERIC)),
 					      0, wxALIGN_CENTRE_VERTICAL);
   inputSizer->Add(mpXmaxCtrl = new wxTextCtrl(this, -1,
-					      wxString::Format(_T("%f"),bbox.xMax)),
+                                              wxString::Format(_T("%f"),bbox.xMax), wxDefaultPosition,
+                                              wxDefaultSize, 0, wxTextValidator(wxFILTER_NUMERIC)),
 					      0, wxALIGN_CENTRE_VERTICAL);
   // 2nd row
   inputSizer->Add(new wxStaticText(this, -1, _T("b")), 0, wxALIGN_CENTRE_VERTICAL);
   inputSizer->Add(mpYminCtrl = new wxTextCtrl(this, -1,
-					      wxString::Format(_T("%f"),bbox.yMin)),
+                                              wxString::Format(_T("%f"),bbox.yMin), wxDefaultPosition,
+                                              wxDefaultSize, 0, wxTextValidator(wxFILTER_NUMERIC)),
 					      0, wxALIGN_CENTRE_VERTICAL);
   inputSizer->Add(mpYmaxCtrl = new wxTextCtrl(this, -1,
-					      wxString::Format(_T("%f"),bbox.yMax)),
+                                              wxString::Format(_T("%f"),bbox.yMax), wxDefaultPosition,
+                                              wxDefaultSize, 0, wxTextValidator(wxFILTER_NUMERIC)),
 					      0, wxALIGN_CENTRE_VERTICAL);
   // 3rd row
   inputSizer->Add(new wxStaticText(this, -1, _T("c")), 0, wxALIGN_CENTRE_VERTICAL);
   inputSizer->Add(mpZminCtrl = new wxTextCtrl(this, -1,
-					      wxString::Format(_T("%f"),bbox.zMin)),
+                                              wxString::Format(_T("%f"),bbox.zMin), wxDefaultPosition,
+                                              wxDefaultSize, 0, wxTextValidator(wxFILTER_NUMERIC)),
 					      0, wxALIGN_CENTRE_VERTICAL);
   inputSizer->Add(mpZmaxCtrl = new wxTextCtrl(this, -1,
-					      wxString::Format(_T("%f"),bbox.zMax)),
+                                              wxString::Format(_T("%f"),bbox.zMax), wxDefaultPosition,
+                                              wxDefaultSize, 0, wxTextValidator(wxFILTER_NUMERIC)),
 					      0, wxALIGN_CENTRE_VERTICAL);
   // button section
   wxFlexGridSizer *buttonSizer = new wxFlexGridSizer(1, 2, 10, 10);
@@ -4930,17 +4936,20 @@ END_EVENT_TABLE()
   // 1st row
   inputSizer->Add(new wxStaticText(this, -1, _T("x")), 0, wxALIGN_CENTRE_VERTICAL);
   inputSizer->Add(mpXCtrl = new wxTextCtrl(this, -1,
-					   wxString::Format(_T("%.3f"),xyz.x), wxDefaultPosition, wxDefaultSize, wxTE_CENTRE, wxTextValidator(wxFILTER_NUMERIC)),
+                                           wxString::Format(_T("%.3f"),xyz.x), wxDefaultPosition, wxDefaultSize,
+                                           wxTE_CENTRE, wxTextValidator(wxFILTER_NUMERIC)),
 					   0, wxALIGN_CENTRE_VERTICAL);
   // 2nd row
   inputSizer->Add(new wxStaticText(this, -1, _T("y")), 0, wxALIGN_CENTRE_VERTICAL);
   inputSizer->Add(mpYCtrl = new wxTextCtrl(this, -1,
-					   wxString::Format(_T("%.3f"),xyz.y), wxDefaultPosition, wxDefaultSize, wxTE_CENTRE, wxTextValidator(wxFILTER_NUMERIC)),
+                                           wxString::Format(_T("%.3f"),xyz.y), wxDefaultPosition, wxDefaultSize,
+                                           wxTE_CENTRE, wxTextValidator(wxFILTER_NUMERIC)),
 					   0, wxALIGN_CENTRE_VERTICAL);
   // 3rd row
   inputSizer->Add(new wxStaticText(this, -1, _T("z")), 0, wxALIGN_CENTRE_VERTICAL);
   inputSizer->Add(mpZCtrl = new wxTextCtrl(this, -1,
-					   wxString::Format(_T("%.3f"),xyz.z), wxDefaultPosition, wxDefaultSize, wxTE_CENTRE, wxTextValidator(wxFILTER_NUMERIC)),
+					   wxString::Format(_T("%.3f"),xyz.z), wxDefaultPosition, wxDefaultSize,
+                                           wxTE_CENTRE, wxTextValidator(wxFILTER_NUMERIC)),
 					   0, wxALIGN_CENTRE_VERTICAL);
   // button section
   wxFlexGridSizer *buttonSizer = new wxFlexGridSizer(1, 2, 10, 10);

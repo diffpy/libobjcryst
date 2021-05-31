@@ -55,17 +55,22 @@ public:
 private:
 
    void OnConnectTimer(wxTimerEvent& event);
+   void OnUpdateProcessTimer(wxTimerEvent& event);
+   void UpdateListOfProcesses(vector<FoxProcess> p);
    void InitClient();
 
    FoxClient    * m_FoxClient;
    wxWindow     * m_parent;
-   wxTextCtrl   * m_EventsWindow;
+   //wxTextCtrl   * m_EventsWindow;
    wxTextCtrl   * m_nbCPUs;
    //wxTextCtrl   * m_TryConnectWindow;
    wxButton     * m_ConnectButton;
    wxTimer      * m_ConnectTimer;
+   wxTimer      * m_UpdateProcessTimer;
    bool           m_connecting;
    wxString       m_working_dir;
+   wxGrid       * m_process_table;
+   wxGrid       * m_job_table;
 
       DECLARE_EVENT_TABLE()
 };

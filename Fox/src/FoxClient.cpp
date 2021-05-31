@@ -11,9 +11,18 @@ using namespace std;
 static const long GRID_CLIENT_SOCKET_ID=                  WXCRYST_ID();
 static const long ID_UPDATE_TIMER_CLIENT=                   WXCRYST_ID();
 static const long ID_SEND_TIMER=                         WXCRYST_ID();
+
+#define EVT_PROCESS_MY(func) DECLARE_EVENT_TABLE_ENTRY( wxEVT_PROCESS_MY, -1, -1, (wxObjectEventFunction) (wxEventFunction) (ProcessEventFunction) & func, (wxObject *) NULL ),
+
+typedef void (wxEvtHandler::*ProcessEventFunction)(ProcessMyEvent&);
+
+
+
 BEGIN_EVENT_TABLE(FoxClient, wxEvtHandler)
    EVT_SOCKET(GRID_CLIENT_SOCKET_ID,                FoxClient::OnSocketEvent)
-   EVT_TIMER(ID_SEND_TIMER,                  FoxClient::OnSendResults)
+   //EVT_TIMER(ID_SEND_TIMER,                  FoxClient::OnSendResults)
+    EVT_TIMER(ID_SEND_TIMER,                  FoxClient::OnTimerEvent)
+    EVT_PROCESS_MY(FoxClient::OnProcessEvent)
     //EVT_UPDATE_UI(ID_CRYST_UPDATEUI,                FoxClient::OnUpdateUI)
 END_EVENT_TABLE()
 
@@ -26,7 +35,14 @@ MyProcess::MyProcess(FoxClient *parent, const wxString& cmd, wxString dir)
 }
 void MyProcess::OnTerminate(int pid, int status)
 {
-    m_parent->onProcessTerminate(pid, status, m_dir);
+    ProcessMyEvent *e = new ProcessMyEvent(this);
+    e->m_exit = true;
+    e->m_pid = pid;
+    e->m_dir = m_dir;
+    e->m_status = status;
+    //m_parent->AddPendingEvent( e );
+    m_parent->QueueEvent(e);
+    //m_parent->onProcessTerminate(pid, status, m_dir);
     delete this;
 }
 ///////////////////////////////////////////////
@@ -35,6 +51,8 @@ FoxProcess::FoxProcess(wxString tmpDir)
     tmpDIR = tmpDir;
     running = false;
     pid = -1;
+    jobID = -1;
+    startingtime = wxDateTime::Now();//just to initiate it
 }
 FoxProcess::~FoxProcess()
 {
@@ -71,6 +89,22 @@ int FoxProcess::getJobID()
 {
     return jobID;
 }
+void FoxProcess::setStarted(wxDateTime t)
+{
+    startingtime = t;
+}
+wxDateTime FoxProcess::getStartingTime()
+{
+    return startingtime;
+}
+int FoxProcess::getProgressInPercents(wxTimeSpan avCalcTime)
+{
+    wxDateTime ct = wxDateTime::Now();
+    wxTimeSpan duration = ct - startingtime;
+    int p = (int) (100*(duration.GetSeconds().ToDouble() / avCalcTime.GetSeconds().ToDouble()));
+    if(p>100) p=100;
+    return p;
+}
 ///////////////////////////////////////////////
 GrdRslt::GrdRslt(int ID, wxString cost, wxString content)
 {
@@ -93,12 +127,12 @@ wxEvtHandler()
    m_working_dir = working_dir;
    wxString dirName = addToPath(getWorkingDir(), _T("processes"));
    if(!wxDirExists(dirName)) wxMkdir(dirName);
-   m_DataMutex = new wxMutex();
-   m_ResultsMutex = new wxMutex();
+   //m_DataMutex = new wxMutex();
+   //m_ResultsMutex = new wxMutex();
+   //m_ProcessMutex = new wxMutex();
    mpClient = new wxSocketClient();
-   m_Connecting = false;
+   //m_Connecting = false;
    m_sendingTimer = new wxTimer(this, ID_SEND_TIMER);
-   m_sendingTimer->Start(30*1000, false);
    m_exit = false;
    m_nbOfAvailCPUs = wxThread::GetCPUCount();
    resetProcesses(m_nbOfAvailCPUs);
@@ -110,23 +144,15 @@ FoxClient::~FoxClient()
       delete m_sendingTimer;
    }
 
-   delete m_DataMutex;
-   delete m_ResultsMutex;
-
    if (mpClient != 0) {
       mpClient->Destroy();
-	  //delete mpClient;
 	  mpClient = 0;
    }
-   //if(mpClient!=0) mpClient->Destroy();
-
 }
 void FoxClient::setNbOfAvailCPUs(int nb)
 {
-    if(m_DataMutex->Lock()!=wxMUTEX_NO_ERROR) return;
     m_nbOfAvailCPUs = nb;
     resetProcesses(m_nbOfAvailCPUs);
-    m_DataMutex->Unlock();
 }
 int FoxClient::getNbOfAvailCPUs()
 {
@@ -134,6 +160,8 @@ int FoxClient::getNbOfAvailCPUs()
 }
 void FoxClient::resetProcesses(int nbProcesses)
 {
+    wxCriticalSectionLocker locker(m_ProcessCriticalSection);
+    
     m_processes.clear();
     for(int i=0;i<nbProcesses;i++) {
       wxString dir;
@@ -170,24 +198,59 @@ void FoxClient::WriteMessageLog(wxString msg)
 #endif
    (*fpObjCrystInformUser)(msg.ToStdString());
 }
+void FoxClient::OnProcessEvent(ProcessMyEvent& pEvent)
+{
+    onProcessTerminate(pEvent.m_pid, pEvent.m_status, pEvent.m_dir);
+}
 void FoxClient::onProcessTerminate(int pid, int status, wxString dir)
 {
+   int nb=0;
+   //WriteMessageLog(_T("Going to lock"));
+   wxCriticalSectionLocker locker(m_ProcessCriticalSection);
+   //WriteMessageLog(_T("Going to locked"));
+
    wxString st = _T("");
    st.Printf(_T("pid=%d, status=%d, dir="), pid, status);
    WriteMessageLog(_T("Process terminated: ") + st + dir);
-   int ID;
+   int ID=-1;
+   wxDateTime startingtime;
    //identify process ID
+   
    for(int i=0;i<m_processes.size();i++) {
        if(m_processes[i].getPid() == pid) {
            m_processes[i].setRunning(false);
            m_processes[i].setPid(-1);
            ID = m_processes[i].getJobID();
+           startingtime = m_processes[i].getStartingTime();
            break;
        }
    }
+   //saving the time of duration
+   bool saved = false;
+   for(int i=0;i<m_ListOfProcessedJobs.size();i++) {
+       if(ID==m_ListOfProcessedJobs[i].ID) {
+           wxLongLong Avtime = m_ListOfProcessedJobs[i].average_calc_time.GetSeconds();
+           wxTimeSpan newt = wxDateTime::Now() - startingtime;
+           double p = (Avtime.ToDouble()*m_ListOfProcessedJobs[i].nb_done + newt.GetSeconds().ToDouble()) / ((double) m_ListOfProcessedJobs[i].nb_done+1.0);
+           m_ListOfProcessedJobs[i].average_calc_time = wxTimeSpan::Seconds(p);
+           m_ListOfProcessedJobs[i].nb_done++;
+           saved = true;
+       }
+   }
+   if(!saved) {
+       ClientJob cj;
+       cj.ID = ID;
+       cj.nb_done = 1;
+       cj.average_calc_time = wxDateTime::Now() - startingtime;
+       m_ListOfProcessedJobs.push_back(cj);
+   }
+   
+   
+   //WriteMessageLog(_T("onProcessTerminate: Mutex Unlocked"));
    //if some error return
    if(status!=0) {
-       WriteMessageLog(_T("process terminated with an error => no result will be sent to the server"));
+       WriteMessageLog(_T("process terminated with an error => empty result will be sent to the server"));
+       SaveResult("", "-1", ID, true);
        return;
    }
 
@@ -195,18 +258,23 @@ void FoxClient::onProcessTerminate(int pid, int status, wxString dir)
    wxString cost = getCost(filename);
    #ifdef WIN32
    //save result to the memory
-   SaveResult(dir + _T("\\") + filename, cost, ID);
+   SaveResult(dir + _T("\\") + filename, cost, ID, false);
    //delete output and input files
    wxRemoveFile(dir + _T("\\") + filename);
    wxRemoveFile(dir + _T("\\input.xml"));
+
    #else
    //save result to the memory
-   SaveResult(dir + _T("/") + filename, cost, ID);
+   SaveResult(dir + _T("/") + filename, cost, ID, false);
    //delete output and input files
    wxRemoveFile(dir + _T("/") + filename);
    wxRemoveFile(dir + _T("/input.xml"));
    wxRemoveFile(dir + _T("/out.txt"));
    #endif
+   //WriteMessageLog(_T("Leaving the locked part..."));
+
+   //wxMutexError qre = mmh.Unlock();
+   //WriteMessageLog(_T("Mutex unlocked"+wxString::Format("%d", qre)));
 }
 wxString FoxClient::getOutputFile(wxString dir)
 {
@@ -232,30 +300,10 @@ bool FoxClient::IsClientConnected()
    if(mpClient!=0)   return mpClient->IsConnected();
    else return false;
 }
-void FoxClient::Reconnect()
-{
-    //stop timer
-    if(m_sendingTimer!=NULL) {
-       m_sendingTimer->Stop();
-    }
-    WriteMessageLog(_T("Reconnecting..."));
-    Disconnect();
 
-    //clear results
-    //m_results.clear();
-
-    //wait a few seconds...
-    wxSleep(10);
-    ConnectClient(3, m_hostname);
-
-    //start timer
-    if(m_sendingTimer!=NULL) {
-        m_sendingTimer->Start(30*1000, false);
-    }
-}
 void FoxClient::KillProcesses()
 {
-    if(m_DataMutex->Lock()!=wxMUTEX_NO_ERROR) return;
+    wxCriticalSectionLocker locker(m_ProcessCriticalSection);
     WriteMessageLog(_T("Killing processes"));
     for(int i=0;i<m_processes.size();i++) {
         if(m_processes[i].isRunning()) {
@@ -266,29 +314,28 @@ void FoxClient::KillProcesses()
             WriteMessageLog(tmp);
         }
     }
-    m_DataMutex->Unlock();
 }
 void FoxClient::Disconnect()
 {
-    if(m_DataMutex->Lock()!=wxMUTEX_NO_ERROR) return;
     WriteMessageLog(_T("Disconnecting"));
+    //m_sendingTimer->Stop();
     if(mpClient!=0) {
        mpClient->Destroy();
-       //delete mpClient;
        mpClient = 0;
     }
-    m_DataMutex->Unlock();
 }
 bool FoxClient::ConnectClient(int nbOfTrial, wxString hostname)
 {
-   m_Connecting = true;
+   //m_Connecting = true;
    WriteMessageLog(_T("Client try to connect"));
    wxIPV4address ip;
    int i=0;
 
    m_hostname = hostname;
    ip.Service(2854);
-   if(!ip.Hostname(m_hostname)) return false;
+   if(!ip.Hostname(m_hostname)) {
+       return false;
+   }
 
    if(mpClient==0) mpClient = new wxSocketClient();
    mpClient->SetEventHandler(*this, GRID_CLIENT_SOCKET_ID);
@@ -303,66 +350,70 @@ bool FoxClient::ConnectClient(int nbOfTrial, wxString hostname)
       mpClient->Connect(ip, false);
       mpClient->WaitOnConnect(3,0);
       if(i==nbOfTrial) break;
-      if(!m_Connecting) break;
+      //if(!m_Connecting) break;
       if(m_exit) break;
-   }while(!mpClient->IsConnected());
-
+   } while(!mpClient->IsConnected());
+   
+   //m_Connecting = false;
+   
    if (mpClient->IsConnected()){
       mpClient->SaveState();
+      //better to run it just once and then start it again after all precedures are done
+      m_sendingTimer->Start(10*1000, true);
+      WriteMessageLog(_T("Client is connected to the server"));
       return true;
    }
    else {
-      mpClient->Close();
+     mpClient->Close();
      return false;
    }
-   m_Connecting = false;
 }
 
 void FoxClient::OnSocketEvent(wxSocketEvent &event)
 {
-
-   WriteMessageLog(_T("OnSocketEvent Begin"));
+   //WriteMessageLog(_T("OnSocketEvent Begin"));
    wxSocketBase *tmpSock = event.GetSocket();
 
-   if(m_DataMutex->Lock()!=wxMUTEX_NO_ERROR) return;
    tmpSock->SetNotify(wxSOCKET_LOST_FLAG);
 
    switch(event.GetSocketEvent())
    {
      case wxSOCKET_INPUT:
         {
-           WriteMessageLog(_T("INPUT"));
-           if(!this->AnalyzeMessage(tmpSock)) {
-               WriteMessageLog(_T("analyzemessage return false!!!!"));
-           }
-           WriteMessageLog(_T("INPUT_END"));
+           //WriteMessageLog(_T("INPUT - This should never happen!"));
+
+           //WriteMessageLog(_T("INPUT_END"));
            break;
         }
      case wxSOCKET_LOST:
         {
           //ClientEvent("Connection failed.\n");
-          WriteMessageLog(_T("LOST"));
+           //WriteMessageLog(_T("LOST - This can sometimes happen!"));
+           //m_sendingTimer->Stop();
+           if(mpClient!=0) {
+               mpClient->Destroy();
+               mpClient = NULL;
+           }
            break;
         }
      case wxSOCKET_OUTPUT:
          {
-             WriteMessageLog(_T("OUTPUT"));
+             //WriteMessageLog(_T("OUTPUT - This should never happen!"));
              break;
          }
      default:
        break;
    }
    tmpSock->SetNotify(wxSOCKET_LOST_FLAG | wxSOCKET_INPUT_FLAG | wxSOCKET_OUTPUT_FLAG);
-   m_DataMutex->Unlock();
-   WriteMessageLog(_T("OnSocketEvent End"));
+   //WriteMessageLog(_T("OnSocketEvent End"));
 }
-bool FoxClient::AnalyzeMessage(wxSocketBase* tmpSock)
+ 
+bool FoxClient::AnalyzeMessage(wxString msg)
 {
    wxString ID, nbTrial, nbRuns, Rand;
-   string inmsg;
    stringstream in_string;
 
-   bool newJob = false, ask=false;
+   bool newJob = false;
    vector<wxString> asks;
    vector<wxString> jobs;
    vector<long> jobRuns;
@@ -370,49 +421,44 @@ bool FoxClient::AnalyzeMessage(wxSocketBase* tmpSock)
    vector<long> ids;
    vector<bool> rands;
 
-   if(!m_IOSocket.ReadStringFromSocket(tmpSock, inmsg)) {
-       WriteMessageLog(m_IOSocket.getError());
-       Reconnect();
-       return false;
-   }
-   SaveDataAsFile(wxString::FromAscii(inmsg.c_str()), addToPath(getWorkingDir(), _T("client_msg_in.txt")));
+   SaveDataAsFile(msg, addToPath(getWorkingDir(), _T("client_msg_in.txt")));
    //jobs = getJobs(inmsg);
-   in_string<<inmsg;
-   WriteMessageLog(_T("Start parsing file"));
+   in_string<<msg;
+   //WriteMessageLog(_T("Start parsing file"));
    while(true) {
           XMLCrystTag tag;
           in_string>>tag;
           if(true==in_string.eof()) break;
           if( ("ClientJob"==tag.GetName()) && (!tag.IsEndTag()) ){
 
-             WriteMessageLog(_T("New job found"));
+             //WriteMessageLog(_T("New job found"));
              newJob = true;
              long runs=0, trial=0, id=0, rand;
              for(int i=tag.GetNbAttribute()-1;i>=0;i--){
                 if(tag.GetAttributeName(i)=="ID"){
-                   WriteMessageLog(_T("ID found"));
+                   //WriteMessageLog(_T("ID found"));
                    ID = wxString::FromAscii(tag.GetAttributeValue(i).c_str());
                    if(!ID.ToLong((long *) &id)) WriteMessageLog(_T("Can't convert ID attribute to long"));
                 }
                 if(tag.GetAttributeName(i)=="nbTrials"){
-                   WriteMessageLog(_T("nbTrials found"));
+                   //WriteMessageLog(_T("nbTrials found"));
                    nbTrial = wxString::FromAscii(tag.GetAttributeValue(i).c_str());
                    if(!nbTrial.ToLong((long *) &trial)) WriteMessageLog(_T("Can't convert nbTrials attribute to long"));
                 }
                 if(tag.GetAttributeName(i)=="nbOfRuns") {
-                    WriteMessageLog(_T("nbOfRuns found"));
+                    //WriteMessageLog(_T("nbOfRuns found"));
                     wxString nbRuns = wxString::FromAscii(tag.GetAttributeValue(i).c_str());
                     if(!nbRuns.ToLong((long *) &runs)) WriteMessageLog(_T("Can't convert nbOfRuns attribute to long"));
                 }
                 if(tag.GetAttributeName(i)=="rand") {
-                    WriteMessageLog(_T("rand found"));
+                    //WriteMessageLog(_T("rand found"));
                     wxString Rand = wxString::FromAscii(tag.GetAttributeValue(i).c_str());
                     if(!Rand.ToLong((long *) &rand)) WriteMessageLog(_T("Can't convert rand attribute to long"));
                 }
 
              }
              long pos = in_string.tellg();
-             wxString tmp = getJob(wxString::FromAscii(inmsg.c_str()), pos);
+             wxString tmp = getJob(msg, pos);
              if(tmp.Cmp(_T(""))!=0) {
                  jobs.push_back(tmp);
                  jobRuns.push_back(runs);
@@ -423,88 +469,83 @@ bool FoxClient::AnalyzeMessage(wxSocketBase* tmpSock)
                  WriteMessageLog(_T("ERROR: job was not load"));
              }
           }
-          if("ask"==tag.GetName()){
-              WriteMessageLog(_T("ask found"));
-              ask = true;
-              for(int i=tag.GetNbAttribute()-1;i>=0;i--){
-                  //saving asks to the array
-                  asks.push_back(wxString::FromAscii( tag.GetAttributeName(i).c_str() ));
-              }
-          }
-   }
-
-   if(ask) {
-       answerToAsk(asks);
    }
 
    if(newJob){
-	WriteMessageLog(_T("if new job..."));
+	WriteMessageLog(_T("New job was received from server"));
         std::vector<int> jobsForRejecting;
         for(int i=0;i<jobs.size();i++) {
             for(int run=0;run<jobRuns[i];run++) {
-                //if job not run, reject it...
+                //if job does not run, reject it...
                 if(runNewJob(jobs[i], ids[i], (int) trials[i], rands[i])!=0) {
                     jobsForRejecting.push_back(ids[i]);
                 }
-                wxSleep(2);
             }
         }
-        rejectJobs(jobsForRejecting);
+        //TODO
+        //rejectJobs(jobsForRejecting);
    }
    return true;
 }
 wxString FoxClient::getMyHostname()
 {
-
     wxIPV4address addr;
     addr.Hostname(wxGetFullHostName());
     return addr.IPAddress();
-    /*
-     wxIPV4address local;
-     mpClient->GetLocal(local);
-     return local.IPAddress();
-     */
 }
-void FoxClient::answerToAsk(vector<wxString> ask)
+void FoxClient::SendCurrentState()
 {
-    WriteMessageLog(_T("Answering to ask..."));
-    if(ask.size()==0) {
-        WriteMessageLog(_T("No ask found, can't answer=> error...?"));
-        return;
-    }
+    //WriteMessageLog(_T("Sending a current state info to server"));
 
     wxString out;
     //starting tag
-    out = _T("<FoxGrid>\n <answer ");
+    out = _T("<FoxGrid>\n <currentstate ");
+    out << _T("name=\"") << getMyHostname() << _T("\" ");
+    out << _T("freeCPUs=\"") << getNbOfUnusedProcesses() << _T("\" ");
+    out << _T("availableCPUs=\"") << getNbOfAvailCPUs() << _T("\" ");
+    out += _T(" />\n");
 
-    for(int i=0;i<ask.size();i++) {
-        //set nb of avail CPUs
-        if(ask[i].Cmp(_T("nbOfAvailCPUs"))==0) {
-            WriteMessageLog(_T("Answering to 'nbOfAvailCPUs'"));
-            out << _T("nbOfAvailCPUs=\"") << getNbOfUnusedProcesses() << _T("\" ");
-        }
-        if(ask[i].Cmp(_T("info"))==0) {
-            WriteMessageLog(_T("Answering to 'info'"));
-            out << _T("name=\"") << getMyHostname() << _T("\" ");
-            out << _T("AllCPUs=\"") << wxThread::GetCPUCount() << _T("\" ");
+    bool newResults = false;
+    //send all result with value sent=false
+    for(int i=0;i<m_results.size();i++) {
+        if(m_results[i].sent==false && m_results[i].pending==false) {
+            //WriteMessageLog(_T("Result found - will be sent as well"));
+            out << m_results[i].content+_T("\n");
+            m_results[i].pending=true;
+            newResults = true;
         }
     }
-    //end tag
-    out += _T(" />\n</FoxGrid>\n");
+    out << _T("</FoxGrid>\n");
 
-    WriteMessageLog(_T("Saving answer to the file"));
-    SaveDataAsFile(out, addToPath(getWorkingDir(), _T("client_out.txt")));
+    if(newResults) {
+        WriteMessageLog(_T("Sending result(s) to server"));
+    }
 
-    WriteMessageLog(_T("waiting 2 seconds..."));
-    wxSleep(2);
-    WriteMessageLog(_T("sending message..."));
-    if(!m_IOSocket.WriteStringToSocket(mpClient, string(out.ToAscii()))) {
+    //WriteMessageLog(_T("Saving answer to the file"));
+    //SaveDataAsFile(out, addToPath(getWorkingDir(), _T("client_out.txt")));
+
+    //WriteMessageLog(_T("sending message..."));
+    if(!m_IOSocket.WriteStringToSocket(mpClient, out)) {
         WriteMessageLog(m_IOSocket.getError());
-        WriteMessageLog(_T("answer was not send"));
-        Reconnect();
+        WriteMessageLog(_T("ERROR: answer was not send"));
+        //change back status of results and send it later...
+        for(int i=0;i<m_results.size();i++) {
+            if(m_results[i].sent==false && m_results[i].pending==true) {
+                m_results[i].pending=false;
+            }
+        }
+        //Reconnect();
+    } else {
+        //if sent, change the status of results
+        for(int i=0;i<m_results.size();i++) {
+            if(m_results[i].sent==false && m_results[i].pending==true) {
+                m_results[i].sent=true;
+                m_results[i].pending=false;
+            }
+        }
     }
 
-    WriteMessageLog(_T("Answer to ask...end"));
+    //WriteMessageLog(_T("Message sent"));
 }
 wxString FoxClient::getJob(wxString inmsg, long pos)
 {
@@ -519,27 +560,55 @@ wxString FoxClient::getJob(wxString inmsg, long pos)
     job = in.Left(p);
     return job;
 }
+void FoxClient::get_copy_of_processes(vector<FoxProcess> &FP, vector<ClientJob> &CJ)
+{
+    //WriteMessageLog("get_copy_of_processes: Locking");
+    FP.clear();
+    CJ.clear();
+    wxCriticalSectionLocker locker(m_ProcessCriticalSection);  
+    //WriteMessageLog("get_copy_of_processes: Locked");
+    for(int i=0;i<m_processes.size();i++) {
+        FP.push_back(m_processes[i]);
+    }
+    for(int i=0;i<m_ListOfProcessedJobs.size();i++) {
+        CJ.push_back(m_ListOfProcessedJobs[i]);
+    }
+    //WriteMessageLog("get_copy_of_processes: Locking");
+    
+}
 int FoxClient::getNbOfUnusedProcesses()
 {
+    //WriteMessageLog("getNbOfUnusedProcesses: Locking");
+    wxCriticalSectionLocker locker(m_ProcessCriticalSection);
+    //WriteMessageLog("getNbOfUnusedProcesses: Locked");
     int nb=0;
     for(int i=0;i<m_processes.size();i++) {
         if (!m_processes[i].isRunning()) nb++;
     }
+    //WriteMessageLog("getNbOfUnusedProcesses: Unlocked");
     return nb;
 }
 FoxProcess * FoxClient::getUnusedProcess()
-{
+{//this function itself can't lock m_ProcessMutex, because it returns pointer
+ //the mutex has to be used by the caller
+    
     for(int i=0;i<m_processes.size();i++) {
-        if(!m_processes[i].isRunning()) return &m_processes[i];
+        if(!m_processes[i].isRunning()) {
+            return &m_processes[i];
+        }
     }
     return 0;
 }
 int FoxClient::runNewJob(wxString job, int id, int nbTrial, bool rand)
 {
-    WriteMessageLog(_T("run new job"));
+    WriteMessageLog(_T("running new job"));
+    //we have to use protection for m_processes here!
+    //if(m_ProcessMutex->Lock()!=wxMUTEX_NO_ERROR) return -1;
+    wxCriticalSectionLocker locker(m_ProcessCriticalSection);
+
     FoxProcess *proc = getUnusedProcess();
     if(proc!=0) {
-        WriteMessageLog(_T("process found"));
+        //WriteMessageLog(_T("process found"));
         #ifdef WIN32
         //saving input file to the temporary directory
         SaveDataAsFile(job,proc->getTmpDir() + _T("\\input.xml"));
@@ -547,14 +616,14 @@ int FoxClient::runNewJob(wxString job, int id, int nbTrial, bool rand)
         //wxFile *batFile = new wxFile(proc->getTmpDir() + _T("\\!run.bat"), wxFile::write);
         //creating bat file content
         wxString cmd_content;
-		wxString appname = wxApp::GetInstance()->argv[0];
+        wxString appname = wxApp::GetInstance()->argv[0];
         if(rand) {
-			cmd_content.Printf(_T("%3$s %1$s\\input.xml --nogui -n %2$d --randomize -o %1$s\\out#cost.xml"), proc->getTmpDir(), nbTrial, appname);
+			cmd_content.Printf(_T("%3$s   \"%1$s\\input.xml\" --nogui -n %2$d --randomize -o \"%1$s\\out#cost.xml\""), proc->getTmpDir(), nbTrial, appname);
         } else {
-            cmd_content.Printf(_T("%3$s %1$s\\input.xml --nogui -n %2$d -o %1$s\\out#cost.xml"), proc->getTmpDir(), nbTrial, appname);
+            cmd_content.Printf(_T("%3$s \"%1$s\\input.xml\" --nogui -n %2$d -o \"%1$s\\out#cost.xml\""), proc->getTmpDir(), nbTrial, appname);
         }
         #else
-        WriteMessageLog(_T("saving data as file - input.xml"));
+        //WriteMessageLog(_T("saving data as file - input.xml"));
         SaveDataAsFile(job, proc->getTmpDir() + _T("/input.xml"));
         wxFile *batFile = new wxFile();
         batFile->Create(proc->getTmpDir() + _T("/run.sh"), true, wxS_IRUSR|wxS_IWUSR|wxS_IXUSR|wxS_IRGRP|wxS_IWGRP|wxS_IXGRP|wxS_IROTH|wxS_IWOTH|wxS_IXOTH);
@@ -569,9 +638,9 @@ int FoxClient::runNewJob(wxString job, int id, int nbTrial, bool rand)
         wxString tr;
         tr.Printf(_T("%d"), nbTrial);
         if(rand) {
-            content = appname+_T(" ")+proc->getTmpDir()+_T("/input.xml --nogui -n ")+tr+_T(" --randomize --silent -o ")+proc->getTmpDir()+_T("/out#cost.xml > ")+proc->getTmpDir()+_T("/out.txt");
+            content = appname+_T(" \"")+proc->getTmpDir()+_T("/input.xml\" --nogui -n ")+tr+_T(" --randomize --silent -o \"")+proc->getTmpDir()+_T("/out#cost.xml\" > \"")+proc->getTmpDir()+_T("/out.txt\"");
         } else {
-            content = appname+_T(" ")+proc->getTmpDir()+_T("/input.xml --nogui -n ")+tr+_T(" --silent -o ")            +proc->getTmpDir()+_T("/out#cost.xml > ")+proc->getTmpDir()+_T("/out.txt");
+            content = appname+_T(" \"")+proc->getTmpDir()+_T("/input.xml\" --nogui -n ")+tr+_T(" --silent -o \"")            +proc->getTmpDir()+_T("/out#cost.xml\" > \"")+proc->getTmpDir()+_T("/out.txt\"");
         }
         //wxString path_to_input;
         //path_to_input = proc->getTmpDir();
@@ -594,55 +663,35 @@ int FoxClient::runNewJob(wxString job, int id, int nbTrial, bool rand)
         #ifdef WIN32
         //wxString cmd = proc->getTmpDir() + _T("\\!run.bat");
         #else
-        wxString cmd_content = _T("sh ")+ proc->getTmpDir() + _T("/run.sh");
+        wxString cmd_content = _T("sh \"")+ proc->getTmpDir() + _T("/run.sh\"");
         #endif
-        WriteMessageLog(_T("creating process"));
+        //WriteMessageLog(_T("creating process"));
         wxProcess *process = new MyProcess(this, cmd_content, proc->getTmpDir());
-        WriteMessageLog(_T("executing process"));
+        //WriteMessageLog(_T("executing process"));
         int pid = wxExecute(cmd_content, wxEXEC_ASYNC|wxEXEC_MAKE_GROUP_LEADER, process);
         if ( !pid ) {
             delete process;
             WriteMessageLog(_T("Process not started: ") + cmd_content);
+            //m_ProcessMutex->Unlock();
             return -1;
         } else {
             proc->setPid(pid);
             proc->setRunning(true);
             proc->setJobID(id);
+            proc->setStarted(wxDateTime::Now());
             wxString tmp;
             tmp.Printf(_T("%d"), pid);
             WriteMessageLog(_T("Process started: pid=") + tmp + _T(", dir=") + cmd_content);
+            //m_ProcessMutex->Unlock();
             return 0;
         }
     } else {
         WriteMessageLog(_T("No unsused process is available, job will be rejected to server"));
+        //m_ProcessMutex->Unlock();
         return -1;
     }
+    //m_ProcessMutex->Unlock();
     return 0;
-}
-void FoxClient::rejectJobs(std::vector<int> ids)
-{
-    if(ids.size()==0) return;
-
-    WriteMessageLog(_T("Rejecting jobs..."));
-    wxString out;
-    out.Printf(_T("<FoxGrid>\n"), ids.size());
-
-    for(int i=0;i<ids.size();i++) {
-        wxString jobTag;
-        jobTag.Printf(_T("  <rejectedJob id=\"%d\" />\n"), ids[i]);
-        out+=jobTag;
-    }
-    out+=_T("</FoxGrid>\n");
-    WriteMessageLog(_T("Saving output message to the file"));
-    SaveDataAsFile(out, addToPath(getWorkingDir(), _T("client_out.txt")));
-
-    WriteMessageLog(_T("sending message..."));
-    wxSleep(2);
-    if(!m_IOSocket.WriteStringToSocket(mpClient, string(out.ToAscii()))) {
-        WriteMessageLog(m_IOSocket.getError());
-        Reconnect();
-    }
-    WriteMessageLog(_T("Rejecting jobs...end"));
 }
 void FoxClient::SaveDataAsFile(wxString out, wxString filename)
 {
@@ -681,111 +730,70 @@ bool FoxClient::LoadFile(wxString filename, wxString &in)
    free(buffer);
    return true;
 }
-void FoxClient::SaveResult(wxString fileName, wxString Cost, int ID)
+void FoxClient::SaveResult(wxString fileName, wxString Cost, int ID, bool error)
 {
-    if(m_ResultsMutex->Lock()!=wxMUTEX_NO_ERROR) return;
-    WriteMessageLog(_T("Saving Result..."));
+    WriteMessageLog(_T("Saving new result"));
     wxString in;
-    if(!LoadFile(fileName, in)) {
-        WriteMessageLog(_T("can't load the file"));
-        m_ResultsMutex->Unlock();
+    if(!error) {
+        if(!LoadFile(fileName, in)) {
+            WriteMessageLog(_T("can't load the file"));
+            return;
+        }
+        wxString out;
+        out.Printf(_T("<result ID=\"%d\" Cost=\"%s\">\n"), ID, Cost.c_str());
+        out += in;
+        out += _T("</result>\n");
+        
+        GrdRslt res(ID, Cost, out);
+        m_results.push_back(res);
+    } else {
+        wxString out;
+        out.Printf(_T("<result ID=\"%d\" Cost=\"-1\">\n"), ID);
+        out += in;
+        out += _T("</result>\n");
+
+        GrdRslt res(ID, Cost, out);
+        m_results.push_back(res);
+    }
+    
+    //WriteMessageLog(_T("Result saved"));
+}
+void FoxClient::OnTimerEvent(wxTimerEvent& event)
+{
+    DoManyThingsOnTimer();
+    //timer should be called  only for one shot. 
+    //Imagine, that the communication with server is not done and another timer event occur...
+    m_sendingTimer->Start(10*1000, true);
+}
+void FoxClient::DoManyThingsOnTimer()
+{
+    //stop timer until this function finishes - then we have to run it again
+    
+    if(mpClient == NULL) {  
+        
         return;
     }
-    wxString out;
-    out.Printf(_T("<result ID=\"%d\" Cost=\"%s\">\n"), ID, Cost.c_str());
-    out += in;
-    out += _T("</result>\n");
+    if (!mpClient->IsConnected()) {
+        //TODO: try to connect...
 
-    GrdRslt res(ID, Cost, out);
-    m_results.push_back(res);
-    WriteMessageLog(_T("Result saved"));
-    m_ResultsMutex->Unlock();
-}
-void FoxClient::OnSendResults(wxTimerEvent& event)
-{
-    WriteMessageLog(_T("OnSendResult"));
-    if(m_ResultsMutex->Lock()!=wxMUTEX_NO_ERROR) return;
-    wxString message=_T("<FoxGrid>\n");
-    bool newResults = false;
-
-    //send all result with value sent=false
-    for(int i=0;i<m_results.size();i++) {
-        if(m_results[i].sent==false && m_results[i].pending==false) {
-            WriteMessageLog(_T("result found"));
-            message+=m_results[i].content+_T("\n");
-            m_results[i].pending=true;
-            newResults = true;
-        }
+        return;
     }
-    message+=_T("</FoxGrid>\n");
-    m_ResultsMutex->Unlock();
+    //1. send info to server (regularly)
+    SendCurrentState();
 
-    //if some result send it
-    if(newResults) {
-        //if results were sent
-        if(SendResult(message)) {
-			WriteMessageLog(_T("result(s) sent"));
-			if (m_ResultsMutex->Lock() != wxMUTEX_NO_ERROR) {
-				WriteMessageLog(_T("Error: Mutex Locked (FoxClient::OnSendResults)"));
-				WriteMessageLog(_T("Results will be sent again!"));
-				return;
-			}
-            for(int i=0;i<m_results.size();i++) {
-                if(m_results[i].pending) {
-                    m_results[i].sent=true;
-					m_results[i].pending = false;
-                }
-            }
-			m_ResultsMutex->Unlock();
-
-        } else {
-			if (m_ResultsMutex->Lock() != wxMUTEX_NO_ERROR) {
-				WriteMessageLog(_T("Error: Mutex Locked (FoxClient::OnSendResults)"));
-				return;
-			}
-			for (int i = 0; i<m_results.size(); i++) {
-				if(m_results[i].pending) {
-					m_results[i].sent = false;
-					m_results[i].pending = false;
-				}
-			}
-			m_ResultsMutex->Unlock();
-            WriteMessageLog(_T("result(s) NOT sent, they will be sent again later..."));
-        }
+    //2. wait for answer
+    wxString msg;
+    if(!m_IOSocket.ReadStringFromSocket(mpClient, msg)) {
+        return;
     }
-}
-bool FoxClient::SendResult(wxString result)
-{
-   WriteMessageLog(_T("New Result"));
-   if(m_DataMutex->Lock()!=wxMUTEX_NO_ERROR) return false;
-
-   if(mpClient==0) {
-        m_DataMutex->Unlock();
-        return false;
-   }
-   if(!mpClient->IsConnected())
-   {
-      //todo:
-      m_DataMutex->Unlock();
-      return false;
-   }
-   if(mpClient->IsConnected())
-   {
-      mpClient->SetNotify(wxSOCKET_LOST_FLAG);
-      WriteMessageLog(_T("Saving output message to the file"));
-      SaveDataAsFile(result, addToPath(getWorkingDir(), _T("client_out.txt")));
-
-      WriteMessageLog(_T("sending message"));
-      if(!m_IOSocket.WriteStringToSocket(mpClient, string(result.ToAscii()))) {
-          WriteMessageLog(m_IOSocket.getError());
-          m_DataMutex->Unlock();
-          mpClient->SetNotify(wxSOCKET_LOST_FLAG | wxSOCKET_INPUT_FLAG | wxSOCKET_OUTPUT_FLAG);
-          Reconnect();
-          return false;
-      }
-      WriteMessageLog(_T("Sending result end"));
-      mpClient->SetNotify(wxSOCKET_LOST_FLAG | wxSOCKET_INPUT_FLAG | wxSOCKET_OUTPUT_FLAG);
-   }
-   m_DataMutex->Unlock();
-   return true;
+    /*
+    WriteMessageLog("List of jobs done:");
+    for(int i=0;i<m_ListOfProcessedJobs.size();i++) {
+        WriteMessageLog(wxString::Format("JobID = %d, Avtime = %d s, nbdone = %d", m_ListOfProcessedJobs[i].ID, m_ListOfProcessedJobs[i].average_calc_time.GetSeconds().ToLong(), m_ListOfProcessedJobs[i].nb_done));
+    }
+    */
+    //3. analyze answer, todo
+    if(!AnalyzeMessage(msg)) {
+        return;
+    }
 }

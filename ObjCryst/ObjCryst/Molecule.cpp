@@ -27,6 +27,7 @@
 
 #include "ObjCryst/Quirks/VFNStreamFormat.h"
 #include "ObjCryst/ObjCryst/Molecule.h"
+#include "ObjCryst/ObjCryst/ZScatterer.h"
 #include "ObjCryst/RefinableObj/GlobalOptimObj.h"
 
 #ifdef OBJCRYST_GL
@@ -936,6 +937,9 @@ void MolBondAngle::SetAtom3(MolAtom& at){mvpAtom[2]=&at;}
 //MolAtom& MolBondAngle::GetAtom1(){return *(mvpAtom[0]);}
 //MolAtom& MolBondAngle::GetAtom2(){return *(mvpAtom[1]);}
 //MolAtom& MolBondAngle::GetAtom3(){return *(mvpAtom[2]);}
+std::size_t MolBondAngle::size() const {return mvpAtom.size();}
+vector<MolAtom*>::const_iterator MolBondAngle::begin() const {return mvpAtom.begin();}
+vector<MolAtom*>::const_iterator MolBondAngle::end() const  {return mvpAtom.end();}
 #ifdef __WX__CRYST__
 WXCrystObjBasic* MolBondAngle::WXCreate(wxWindow* parent)
 {
@@ -1293,6 +1297,9 @@ MolAtom& MolDihedralAngle::GetAtom1(){return *(mvpAtom[0]);}
 MolAtom& MolDihedralAngle::GetAtom2(){return *(mvpAtom[1]);}
 MolAtom& MolDihedralAngle::GetAtom3(){return *(mvpAtom[2]);}
 MolAtom& MolDihedralAngle::GetAtom4(){return *(mvpAtom[3]);}
+std::size_t MolDihedralAngle::size() const {return mvpAtom.size();}
+vector<MolAtom*>::const_iterator MolDihedralAngle::begin() const {return mvpAtom.begin();}
+vector<MolAtom*>::const_iterator MolDihedralAngle::end() const  {return mvpAtom.end();}
 #ifdef __WX__CRYST__
 WXCrystObjBasic* MolDihedralAngle::WXCreate(wxWindow* parent)
 {
@@ -2173,8 +2180,8 @@ std::string Molecule::GetFormula() const
       if((*pos)->IsDummy()) continue;
       string p=(*pos)->GetScatteringPower().GetSymbol();
       if(velts.count(p)==0)
-         velts[(*pos)->GetScatteringPower().GetName()]=(*pos)->GetOccupancy();
-      else velts[(*pos)->GetScatteringPower().GetName()]+=(*pos)->GetOccupancy();
+         velts[p]=(*pos)->GetOccupancy();
+      else velts[p]+=(*pos)->GetOccupancy();
    }
    stringstream s;
    s<<std::setprecision(2);
@@ -3785,9 +3792,9 @@ void Molecule::GLInitDisplayList(const bool onlyIndependentAtoms,
                            }
                         }
                         const float f=(mvpBond[k]->GetAtom1().GetOccupancy()+mvpBond[k]->GetAtom2().GetOccupancy())/2*this->GetOccupancy();
-                        const GLfloat colour_bondnonfree[]= { 0.2*fout, .2*fout, .2*fout, f*fout };
-                        const GLfloat colour_bondrigid[]=   { 0.5*fout, .3*fout, .3*fout, f*fout };
-                        const GLfloat colour_bondfree[]=    { 0.8*fout, .8*fout, .8*fout, f*fout };
+                        const GLfloat colour_bondnonfree[]= { 0.2f*fout, .2f*fout, .2f*fout, f*fout };
+                        const GLfloat colour_bondrigid[]=   { 0.5f*fout, .3f*fout, .3f*fout, f*fout };
+                        const GLfloat colour_bondfree[]=    { 0.8f*fout, .8f*fout, .8f*fout, f*fout };
                         if(isRigidGroup)
                            glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,colour_bondrigid);
                         else
@@ -7896,5 +7903,148 @@ WXCrystObjBasic* Molecule::WXCreate(wxWindow* parent)
    return mpWXCrystObj;
 }
 #endif
+
+
+Molecule *ZScatterer2Molecule(ZScatterer *scatt)
+{
+   VFN_DEBUG_ENTRY("ZScatterer2Molecule()",6)
+   Molecule *mol=new Molecule(scatt->GetCrystal(),scatt->GetName());
+   const unsigned long nb=scatt->GetZAtomRegistry().GetNb();
+   REAL x0=0,y0=0,z0=0;
+   for(unsigned int i=0;i<nb;++i)
+   {
+      const REAL x=scatt->GetZAtomX(i);
+      const REAL y=scatt->GetZAtomY(i);
+      const REAL z=scatt->GetZAtomZ(i);
+      x0+=x;
+      y0+=y;
+      z0+=z;
+      mol->AddAtom(x,y,z,scatt->GetZAtomRegistry().GetObj(i).GetScatteringPower(),
+                   scatt->GetZAtomRegistry().GetObj(i).GetName());
+      
+      #if 0
+      if(i>0)
+      {
+         const RefinablePar* pLength=&(scatt->GetPar(&(scatt->GetZAtomRegistry()
+                                                       .GetObj(i).GetZBondLength())));
+         if(pLength->IsFixed())
+            mol->AddBond(mol->GetAtom(i),mol->GetAtom(scatt->GetZBondAtom(i)),
+                         pLength->GetValue(),.01,.02,false);
+         else
+            if(pLength->IsLimited())
+               mol->AddBond(mol->GetAtom(i),mol->GetAtom(scatt->GetZBondAtom(i)),
+                            (pLength->GetMin()+pLength->GetMax())/2.,.01,.02,false);
+      }
+      if(i>1)
+      {
+         const RefinablePar* pAngle=&(scatt->GetPar(&(scatt->GetZAtomRegistry()
+                                                      .GetObj(i).GetZAngle())));
+         if(pAngle->IsFixed())
+            mol->AddBondAngle(mol->GetAtom(i),mol->GetAtom(scatt->GetZBondAtom(i)),
+                              mol->GetAtom(scatt->GetZAngleAtom(i)),
+                              pAngle->GetValue(),.01,.02,false);
+         else
+            if(pAngle->IsLimited())
+               mol->AddBondAngle(mol->GetAtom(i),mol->GetAtom(scatt->GetZBondAtom(i)),
+                                 mol->GetAtom(scatt->GetZAngleAtom(i)),
+                                 (pAngle->GetMin()+pAngle->GetMax())/2.,.01,.02,false);
+      }
+      if(i>2)
+      {
+         const RefinablePar* pDihed=&(scatt->GetPar(&(scatt->GetZAtomRegistry()
+                                                      .GetObj(i).GetZDihedralAngle())));
+         MolAtom *p1=&(mol->GetAtom(i));
+         MolAtom *p2=&(mol->GetAtom(scatt->GetZBondAtom(i)));
+         MolAtom *p3=&(mol->GetAtom(scatt->GetZAngleAtom(i)));
+         MolAtom *p4=&(mol->GetAtom(scatt->GetZDihedralAngleAtom(i)));
+         if(  (fabs(GetBondAngle(*p1,*p2,*p3)-M_PI)>0.3)
+            &&(fabs(GetBondAngle(*p1,*p2,*p4)-M_PI)>0.3)
+            &&(fabs(GetBondAngle(*p1,*p3,*p4)-M_PI)>0.3)
+            &&(fabs(GetBondAngle(*p2,*p3,*p4)-M_PI)>0.3))
+         {
+            if(pDihed->IsFixed())
+               mol->AddDihedralAngle(*p1,*p2,*p3,*p4,pDihed->GetValue(),.01,.02,false);
+            else
+               if(((pDihed->GetMax()-pDihed->GetMax())<0.3)&&(i>2)&&(pDihed->IsLimited()))
+                  mol->AddDihedralAngle(*p1,*p2,*p3,*p4,
+                                        (pDihed->GetMin()+pDihed->GetMax())/2.,.01,.02,false);
+         }
+      }
+      #endif
+      mol->GetAtom(i).SetOccupancy(scatt->GetZAtomRegistry().GetObj(i).GetOccupancy());
+   }
+   
+   CrystVector_REAL x(nb),y(nb),z(nb),radius(nb);
+   vector<pair<const ScatteringPowerAtom *,long> > scattpow(nb);
+   for(unsigned int i=0;i<nb;++i)
+   {
+      x(i)=mol->GetAtom(i).GetX();
+      y(i)=mol->GetAtom(i).GetY();
+      z(i)=mol->GetAtom(i).GetZ();
+      if(mol->GetAtom(i).IsDummy())
+      {
+         radius(i)=-1;
+         scattpow[i].first=0;
+      }
+      else
+      {
+         radius(i)=mol->GetAtom(i).GetScatteringPower().GetRadius();
+         scattpow[i].first=dynamic_cast<const ScatteringPowerAtom *>
+         (&(mol->GetAtom(i).GetScatteringPower()));
+         scattpow[i].second=scattpow[i].first->GetAtomicNumber();
+      }
+   }
+   for(unsigned int i=0;i<nb;++i)
+   {
+      if(scattpow[i].first==0) continue;
+      const REAL x1=x(i),y1=y(i),z1=z(i);
+      x += -x1;
+      y += -y1;
+      z += -z1;
+      for(unsigned int j=i+1;j<nb;++j)
+      {
+         if(scattpow[j].first==0) continue;
+         const REAL dist=sqrt(x(j)*x(j)+y(j)*y(j)+z(j)*z(j));
+         //cout<<"          -> d="<<dist<<"("<<radius(i)<<","<<radius(j)<<"):"<<scattpow[i].second<<","<<scattpow[j].second<<endl;
+         if(dist<(1.10*(radius(i)+radius(j))))
+         {
+            if((1!=scattpow[i].second)||(1!=scattpow[j].second))
+            {
+               mol->AddBond(mol->GetAtom(i),mol->GetAtom(j),dist,.01,.02,false);
+            }
+         }
+      }
+      x += x1;
+      y += y1;
+      z += z1;
+   }
+   mol->BuildConnectivityTable();
+   for(map<MolAtom*,set<MolAtom*> >::const_iterator pos=mol->GetConnectivityTable().begin();
+       pos!=mol->GetConnectivityTable().end();++pos)
+   {
+      for(set<MolAtom*>::const_iterator pos1=pos->second.begin();
+          pos1!=pos->second.end();++pos1)
+      {
+         for(set<MolAtom*>::const_iterator pos2=pos1;
+             pos2!=pos->second.end();++pos2)
+         {
+            if(pos2==pos1) continue;
+            if(mol->FindBondAngle(**pos1,*(pos->first),**pos2)== mol->GetBondAngleList().end())
+               mol->AddBondAngle(**pos1,*(pos->first),**pos2,
+                                 GetBondAngle(**pos1,*(pos->first),**pos2),0.01,0.02,false);
+         }
+      }
+   }
+   x0 /= nb;
+   y0 /= nb;
+   z0 /= nb;
+   mol->GetCrystal().OrthonormalToFractionalCoords(x0,y0,z0);
+   mol->SetX(x0);
+   mol->SetY(y0);
+   mol->SetZ(z0);
+   mol->UpdateDisplay();
+   VFN_DEBUG_EXIT("ZScatterer2Molecule()",6)
+   return mol;
+}
 
 }//namespace

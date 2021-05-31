@@ -21,7 +21,7 @@
 #include <algorithm>
 
 #include "cctbx/sgtbx/space_group.h"
-#include "boost/format.hpp"
+#include <boost/format.hpp>
 
 // wx headers, with or without precompilation
 #include "wx/wxprec.h"
@@ -425,7 +425,7 @@ mChi2(0.0),mGoF(0.0),mRwp(0.0),mRp(0.0)
       mList.Add(fieldThetaDispl);
       mList.Add(fieldThetaTransp);
       mpSizer->Add(thetaCorrSizer);
-   // Time OF Flight parameters
+   // Time of Flight parameters
       wxBoxSizer* tofSizer=new wxBoxSizer(wxHORIZONTAL);
       WXCrystObjBasic* fieldDIFC=mpPowderPattern->GetPar(&(mpPowderPattern->mDIFC)).WXCreate(this);
       WXCrystObjBasic* fieldDIFA=mpPowderPattern->GetPar(&(mpPowderPattern->mDIFA)).WXCreate(this);
@@ -438,6 +438,12 @@ mChi2(0.0),mGoF(0.0),mRwp(0.0),mRp(0.0)
       mList.Add(fieldDIFC);
       mList.Add(fieldDIFA);
       mpSizer->Add(tofSizer);
+   // Cylindrical absorption correction
+      WXCrystObjBasic* fieldMuR=mpPowderPattern->GetPar(&(mpPowderPattern->mMuR)).WXCreate(this);
+      fieldMuR->SetToolTip(_T("Cylindrical absorption correction parameter (muR)"));
+      mList.Add(fieldMuR);
+      mpSizer->Add(fieldMuR);
+
    // Max Sin(theta/Lambda)
       WXFieldPar<REAL> *maxSiThOvLa=
          new WXFieldPar<REAL>(this,"Max Sin(theta)/lambda:",-1,
@@ -516,8 +522,8 @@ void WXPowderPattern::CrystUpdate(const bool uui,const bool lock)
 {
    VFN_DEBUG_ENTRY("WXPowderPattern::CrystUpdate()",7)
    wxWakeUpIdle();
-   if(lock) mMutex.Lock();
    WXCrystValidateAllUserInput();
+   if(lock) mMutex.Lock();
 
    if(mpPowderPattern->GetNbPoint()<=0)
    {
@@ -540,6 +546,7 @@ void WXPowderPattern::CrystUpdate(const bool uui,const bool lock)
          mPowderPatternWasPreviouslyEmpty = false;
          wxCommandEvent event(wxEVT_COMMAND_MENU_SELECTED,ID_POWDER_MENU_GRAPH);
          wxPostEvent(this,event);
+      	if(lock) mMutex.Unlock();
       }
       else
       {
@@ -636,6 +643,7 @@ void WXPowderPattern::OnMenuAddCompBackgdBayesian(wxCommandEvent & WXUNUSED(even
    s.Printf(_T("%ld"),nbPointSpline);
    wxTextEntryDialog dialog(this,mes,_T("Automatic Bayesian (David-Sivia) Background"),
                             s,wxOK | wxCANCEL);
+   dialog.SetTextValidator(wxTextValidator(wxFILTER_DIGITS));
    if(wxID_OK!=dialog.ShowModal())
    {
       VFN_DEBUG_EXIT("WXPowderPattern::OnMenuAddCompBackgdBayesian():Canceled",6)
@@ -784,6 +792,7 @@ void WXPowderPattern::OnMenuSimulate(wxCommandEvent & WXUNUSED(event))
    {
       wxTextEntryDialog dialog(this,_T("2Theta Min"),
                               _T("Enter minimum 2Theta (degrees)"),_T("5"),wxOK | wxCANCEL);
+      dialog.SetTextValidator(wxTextValidator(wxFILTER_NUMERIC));
       if(wxID_OK!=dialog.ShowModal())
       {
          VFN_DEBUG_EXIT("WXPowderPattern::OnMenuSimulate():Cancelled",6)
@@ -795,6 +804,7 @@ void WXPowderPattern::OnMenuSimulate(wxCommandEvent & WXUNUSED(event))
    {
       wxTextEntryDialog dialog(this,_T("2Theta Max"),
                               _T("Enter maximum 2Theta (degrees)"),_T("100"),wxOK | wxCANCEL);
+      dialog.SetTextValidator(wxTextValidator(wxFILTER_NUMERIC));
       if(wxID_OK!=dialog.ShowModal())
       {
          VFN_DEBUG_EXIT("WXPowderPattern::OnMenuSimulate():Cancelled",6)
@@ -805,6 +815,7 @@ void WXPowderPattern::OnMenuSimulate(wxCommandEvent & WXUNUSED(event))
    {
       wxTextEntryDialog dialog(this,_T("Number of points"),
                               _T("Enter the number of points"),_T("1000"),wxOK | wxCANCEL);
+      dialog.SetTextValidator(wxTextValidator(wxFILTER_DIGITS));
       if(wxID_OK!=dialog.ShowModal())
       {
          VFN_DEBUG_EXIT("WXPowderPattern::OnMenuSimulate():Cancelled",6)
@@ -911,6 +922,7 @@ void WXPowderPattern::OnMenuSetWavelength(wxCommandEvent & event)
       double lambda;
       wxTextEntryDialog dialog(this,_T("new Wavelength)"),
                               _T("Enter new Wavelength (Angstroems)"),_T("1"),wxOK | wxCANCEL);
+      dialog.SetTextValidator(wxTextValidator(wxFILTER_NUMERIC));
       if(wxID_OK!=dialog.ShowModal())
       {
          VFN_DEBUG_EXIT("WXPowderPattern))OnMenuSetWavelength())Monochromatic)Cancelled",6)
@@ -956,6 +968,7 @@ void WXPowderPattern::OnMenuAddExclude(wxCommandEvent & WXUNUSED(event))
       if(mpPowderPattern->GetRadiation().GetWavelengthType()==WAVELENGTH_TOF)
          txt=_T("Enter Min 2theta to exclude (microseconds):");
       wxTextEntryDialog dialog(this,_T("Min"),txt,_T("0"),wxOK | wxCANCEL);
+      dialog.SetTextValidator(wxTextValidator(wxFILTER_NUMERIC));
       if(wxID_OK!=dialog.ShowModal())
       {
          VFN_DEBUG_EXIT("WXPowderPattern::OnMenuAddExclude():Cancelled",6)
@@ -969,6 +982,7 @@ void WXPowderPattern::OnMenuAddExclude(wxCommandEvent & WXUNUSED(event))
       if(mpPowderPattern->GetRadiation().GetWavelengthType()==WAVELENGTH_TOF)
          txt=_T("Enter Max 2theta to exclude (microseconds):");
       wxTextEntryDialog dialog(this,_T("Max"),txt,_T("5"),wxOK | wxCANCEL);
+      dialog.SetTextValidator(wxTextValidator(wxFILTER_NUMERIC));
       if(wxID_OK!=dialog.ShowModal())
       {
          VFN_DEBUG_EXIT("WXPowderPattern::OnMenuAddExclude():Cancelled",6)
@@ -2090,7 +2104,7 @@ wxWindow(parent,-1),mpGraph(graph),mpPeakList(&peaklist),mpCellExplorer(0),mpCry
 
       pQuick->SetSizer(pSizerQuick);
       pSizerQuick->Fit(pQuick);
-      pSizerQuick->RecalcSizes();
+      //pSizerQuick->RecalcSizes();
       pQuick->Layout();
    // Advanced interface
       wxWindow *pAdvanced=new wxWindow(pNotebook,-1);
@@ -2212,7 +2226,7 @@ wxWindow(parent,-1),mpGraph(graph),mpPeakList(&peaklist),mpCellExplorer(0),mpCry
       #endif
       pAdvanced->SetSizer(pSizerAdvanced);
       pSizerAdvanced->Fit(pAdvanced);
-      pSizerAdvanced->RecalcSizes();
+      //pSizerAdvanced->RecalcSizes();
       pAdvanced->Layout();
 
       pNotebook->AddPage(pAdvanced,_T("Advanced"));
@@ -2260,7 +2274,7 @@ wxWindow(parent,-1),mpGraph(graph),mpPeakList(&peaklist),mpCellExplorer(0),mpCry
    mpLog->AppendText(wxString::Format(_T("  Tetragonal I    v=%6.0f -> %6.0f A\n"),EstimateCellVolume(dmin,dmax,nb,TETRAGONAL ,LATTICE_I,1.2),EstimateCellVolume(dmin,dmax,nb,TETRAGONAL ,LATTICE_I,0.3)));
    mpLog->AppendText(wxString::Format(_T("  Orthorombic P   v=%6.0f -> %6.0f A\n"),EstimateCellVolume(dmin,dmax,nb,ORTHOROMBIC,LATTICE_P,1.2),EstimateCellVolume(dmin,dmax,nb,ORTHOROMBIC,LATTICE_P,0.3)));
    mpLog->AppendText(wxString::Format(_T("  Orthorombic I,C v=%6.0f -> %6.0f A\n"),EstimateCellVolume(dmin,dmax,nb,ORTHOROMBIC,LATTICE_I,1.2),EstimateCellVolume(dmin,dmax,nb,ORTHOROMBIC,LATTICE_I,0.3)));
-   mpLog->AppendText(wxString::Format(_T("  Orthorombic F   v=%6.0f -> %6.0f A\n"),EstimateCellVolume(dmin,dmax,nb,ORTHOROMBIC,LATTICE_F,1.2),EstimateCellVolume(dmin,dmax,nb,ORTHOROMBIC,LATTICE_I,0.3)));
+   mpLog->AppendText(wxString::Format(_T("  Orthorombic F   v=%6.0f -> %6.0f A\n"),EstimateCellVolume(dmin,dmax,nb,ORTHOROMBIC,LATTICE_F,1.2),EstimateCellVolume(dmin,dmax,nb,ORTHOROMBIC,LATTICE_F,0.3)));
    mpLog->AppendText(wxString::Format(_T("  Hexagonal       v=%6.0f -> %6.0f A\n"),EstimateCellVolume(dmin,dmax,nb,HEXAGONAL  ,LATTICE_P,1.2),EstimateCellVolume(dmin,dmax,nb,HEXAGONAL  ,LATTICE_P,0.3)));
    mpLog->AppendText(wxString::Format(_T("  Monoclinic P    v=%6.0f -> %6.0f A\n"),EstimateCellVolume(dmin,dmax,nb,MONOCLINIC ,LATTICE_P,1.2),EstimateCellVolume(dmin,dmax,nb,MONOCLINIC ,LATTICE_P,0.3)));
    mpLog->AppendText(wxString::Format(_T("  Monoclinic C    v=%6.0f -> %6.0f A\n"),EstimateCellVolume(dmin,dmax,nb,MONOCLINIC ,LATTICE_C,1.2),EstimateCellVolume(dmin,dmax,nb,MONOCLINIC ,LATTICE_C,0.3)));
@@ -2613,7 +2627,7 @@ void WXCellExplorer::OnSelectCell(wxCommandEvent &event)
          mpCrystal->GetPar("alpha").SetValue(uc[3]);
          mpCrystal->GetPar("beta").SetValue(uc[4]);
          mpCrystal->GetPar("gamma").SetValue(uc[5]);
-         // Choose the spcegroup wuth the highest possible symmetry given the centering used.
+         // Choose the spcegroup with the highest possible symmetry given the centering used.
          // We only try P, I, F, but also handle others, just in case
          switch(pos->first.mCentering)
          {
@@ -3533,7 +3547,7 @@ BEGIN_EVENT_TABLE(WXPowderPatternBackground, wxWindow)
                      WXPowderPatternBackground::OnMenuImportUserBackground)
    EVT_MENU(ID_POWDERBACKGROUND_OPTIMIZEBAYESIAN,
                      WXPowderPatternBackground::OnMenuOptimizeBayesianBackground)
-   EVT_GRID_CMD_CELL_CHANGE(ID_POWDERBACKGROUND_GRID,
+   EVT_GRID_CMD_CELL_CHANGED(ID_POWDERBACKGROUND_GRID,
                      WXPowderPatternBackground::OnEditGridBackgroundPoint)
    EVT_MENU(ID_POWDERBACKGROUND_NEWBAYESIAN,
                      WXPowderPatternBackground::OnMenuAutomaticBayesianBackground)
@@ -3586,6 +3600,7 @@ WXRefinableObj(parent,b),mpPowderPatternBackground(b),mNeedUpdateUI(false),mIsSe
 void WXPowderPatternBackground::OnMenuImportUserBackground(wxCommandEvent & WXUNUSED(event))
 {
    VFN_DEBUG_MESSAGE("WXPowderPatternBackground::OnMenuImportUserBackground()",6)
+   WXCrystValidateAllUserInput();
    wxFileDialog *open= new wxFileDialog(this,_T("Choose background file with 2Theta Ibackgd"),
                                         _T(""),_T(""),_T("*.*"),wxFD_OPEN | wxFD_FILE_MUST_EXIST);
    if(open->ShowModal() != wxID_OK) return;
@@ -3595,6 +3610,7 @@ void WXPowderPatternBackground::OnMenuImportUserBackground(wxCommandEvent & WXUN
 void WXPowderPatternBackground::OnMenuOptimizeBayesianBackground(wxCommandEvent & WXUNUSED(event))
 {
    VFN_DEBUG_ENTRY("WXPowderPatternBackground::OnMenuOptimizeBayesianBackground()",6)
+   WXCrystValidateAllUserInput();
    mpPowderPatternBackground->UnFixAllPar();
    mpPowderPatternBackground->OptimizeBayesianBackground();
    mpPowderPatternBackground->FixAllPar();
@@ -3612,6 +3628,7 @@ void WXPowderPatternBackground::OnMenuAutomaticBayesianBackground(wxCommandEvent
    s.Printf(_T("%ld"),nbPointSpline);
    wxTextEntryDialog dialog(this,mes,_T("Automatic Bayesian (David-Sivia) Background"),
                             s,wxOK | wxCANCEL);
+   dialog.SetTextValidator(wxTextValidator(wxFILTER_DIGITS));
    if(wxID_OK!=dialog.ShowModal())
    {
       VFN_DEBUG_EXIT("WXPowderPatternBackground::OnMenuAutomaticBayesianBackground():Canceled",6)
@@ -3660,6 +3677,7 @@ void WXPowderPatternBackground::OnMenuAutomaticBayesianBackground(wxCommandEvent
 void WXPowderPatternBackground::OnEditGridBackgroundPoint(wxGridEvent &e)
 {
    if(mIsSelfUpdating) return;
+   WXCrystValidateAllUserInput();
    VFN_DEBUG_ENTRY("WXPowderPatternBackground::OnEditGridBackgroundPoint():"<<e.GetRow()<<","<<e.GetCol(),10)
    const long r=e.GetRow();
    const long c=e.GetCol();
@@ -4098,6 +4116,7 @@ bool WXPowderPatternDiffraction::Enable(bool e)
 void WXPowderPatternDiffraction::OnChangeProfile(wxCommandEvent & event)
 {
    VFN_DEBUG_ENTRY("WXPowderPatternDiffraction::OnChangeProfile()",6)
+   WXCrystValidateAllUserInput();
    bool add=false;
    if(event.GetId()==ID_POWDERDIFF_PROFILE_PV)
    {
@@ -4329,7 +4348,7 @@ wxWindow(parent,-1),mpPattern(pPattern),mpDiff(pDiff),mLSQ("Profile Fitting obje
          mpFitCheckList->Check(6,true);
          mpFitCheckList->Check(7,true);
       }
-      pSizer->Add(mpFitCheckList,1,wxEXPAND|wxALIGN_CENTER);
+      pSizer->Add(mpFitCheckList,1,wxEXPAND);
 
       pQuick->SetSizer(pSizer);
       pSizer->SetSizeHints(pQuick);
@@ -4385,7 +4404,7 @@ wxWindow(parent,-1),mpPattern(pPattern),mpDiff(pDiff),mLSQ("Profile Fitting obje
    pNotebook->ChangeSelection(0);
    mpLog =new wxTextCtrl(this,-1,_T(""),wxDefaultPosition,wxSize(600,300),wxTE_MULTILINE|wxTE_READONLY|wxTE_DONTWRAP);
    mpLog->SetFont(wxFont(10,wxTELETYPE,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL));
-   pSizer0->Add(mpLog,0,wxALIGN_CENTER|wxEXPAND);
+   pSizer0->Add(mpLog,1,wxEXPAND);
    mpLog->AppendText(wxString::Format(_T("Profile fitting & Space Group exploration:\n")));
    mpLog->AppendText(wxString::Format(_T("\nTo perform a QUICK fit:\n")));
    mpLog->AppendText(wxString::Format(_T("  - if you are not too far to a reasonable fit, just use 'Le Bail + Fit profile',\n")));
@@ -4427,6 +4446,7 @@ WXProfileFitting::~WXProfileFitting()
 
 void WXProfileFitting::OnFit(wxCommandEvent &event)
 {
+   WXCrystValidateAllUserInput();
    // Map of crystalline phases to be fitted (or not)
    map<PowderPatternDiffraction *,bool> vpDiff;
    // Multiple phases can be fitted - which one was chosen ?
@@ -4804,50 +4824,11 @@ void WXProfileFitting::OnFit(wxCommandEvent &event)
    mpDiff->GetCrystal().UpdateDisplay();
 }
 
-struct SPGScore
-{
-   SPGScore(const string &s, const REAL r, const REAL g, const unsigned int nbextinct):
-   hm(s),rw(r),gof(g),nbextinct446(nbextinct)
-   {};
-   string hm;
-   REAL rw,gof;
-   unsigned int nbextinct446;
-};
-
-bool compareSPGScore(const SPGScore &s1, const SPGScore &s2)
-{
-   return s1.gof < s2.gof;
-}
-
-std::vector<bool> spgExtinctionFingerprint(Crystal &c,cctbx::sgtbx::space_group &spg)
-{
-  // We don't have the extinction symbol, so do it the stupid way
-  std::vector<bool> fingerprint(5*5*7-1+6);
-  long i=0;
-  fingerprint[i++]=c.GetPar("a").IsUsed();
-  fingerprint[i++]=c.GetPar("b").IsUsed();
-  fingerprint[i++]=c.GetPar("c").IsUsed();
-  fingerprint[i++]=c.GetPar("alpha").IsUsed();
-  fingerprint[i++]=c.GetPar("beta").IsUsed();
-  fingerprint[i++]=c.GetPar("gamma").IsUsed();
-  for(long h=0;h<5;++h)
-    for(long k=0;k<5;++k)
-      for (long l=0;l<7;++l)
-      {
-        if((h+k+l)==0) continue;
-        cctbx::miller::index<long> hkl(scitbx::vec3<long>(h,k,l));
-        if(i>=fingerprint.size()) cout<<"WHOOOOOOOOOOOOOPS"<<endl;
-        fingerprint[i++] =spg.is_sys_absent(hkl);
-      }
-  return fingerprint;
-}
 
 void WXProfileFitting::OnExploreSpacegroups(wxCommandEvent &event)
 {
+   WXCrystValidateAllUserInput();
    TAU_PROFILE("WXProfileFitting::OnExploreSpacegroups()","void (wxCommandEvent &)",TAU_DEFAULT);
-   TAU_PROFILE_TIMER(timer1,"WXProfileFitting::OnExploreSpacegroups()LSQ-P1","", TAU_FIELD);
-   TAU_PROFILE_TIMER(timer2,"WXProfileFitting::OnExploreSpacegroups()LSQ1","", TAU_FIELD);
-   TAU_PROFILE_TIMER(timer3,"WXProfileFitting::OnExploreSpacegroups()LSQ2","", TAU_FIELD);
    PowderPatternDiffraction *pDiff=0;
    if(mpDiff!=0) pDiff=mpDiff;
    else
@@ -4905,10 +4886,17 @@ void WXProfileFitting::OnExploreSpacegroups(wxCommandEvent &event)
                                  nbspg*nbcycle,this,wxPD_AUTO_HIDE|wxPD_ELAPSED_TIME|wxPD_CAN_ABORT|wxPD_APP_MODAL);
 
    list<SPGScore> vSPG;
+   
+   SpaceGroupExplorer ex(pDiff);
+   
    // we don't have the extinction symbols, so do it the stupid way
    // create a fingerprint of systematically extinct reflections
    // for 0<H<5 0<K<5 0<L<7
    std::map<std::vector<bool>,SPGScore> vSPGExtinctionFingerprint;
+
+   // Nb refl below max sin(theta/lambda) for p1, to compute nGoF
+   unsigned int nb_refl_p1=1;
+
    // Try & optimize every spacegroup
    it=cctbx::sgtbx::space_group_symbol_iterator();
    Chronometer chrono;
@@ -4925,126 +4913,72 @@ void WXProfileFitting::OnExploreSpacegroups(wxCommandEvent &event)
          i++;
          const string hm=s.universal_hermann_mauguin();
          cout<<s.number()<<","<<hm.c_str()<<","<<(int)compat<<endl;
-         pCrystal->Init(a,b,c,d,e,f,hm,name);
          mpLog->AppendText(wxString::Format(_T(" (#%3d) %-14s:"),s.number(),wxString::FromAscii(hm.c_str()).c_str()));
+
+         pCrystal->Init(a,b,c,d,e,f,hm,name);
          std::vector<bool> fgp=spgExtinctionFingerprint(*pCrystal,spg);
          std::map<std::vector<bool>,SPGScore>::iterator posfgp=vSPGExtinctionFingerprint.find(fgp);
          if(posfgp!=vSPGExtinctionFingerprint.end())
          {
-            vSPG.push_back(SPGScore(hm.c_str(),posfgp->second.rw,posfgp->second.gof,posfgp->second.nbextinct446));
+            mpDiff->SetExtractionMode(true,true); //:TODO: why is this needed to actually get the updated GetNbReflBelowMaxSinThetaOvLambda ?
+            unsigned int nbrefl = pDiff->GetNbReflBelowMaxSinThetaOvLambda();
+            REAL ngof = (posfgp->second.ngof * nbrefl) / posfgp->second.nbreflused;
+            SPGScore score = SPGScore(hm.c_str(),posfgp->second.rw,posfgp->second.gof, posfgp->second.nbextinct446, ngof, nbrefl);
+            vSPG.push_back(score);
             cout<<"Spacegroup:"<<hm<<" has same extinctions as:"<<posfgp->second.hm<<endl;
-            mpLog->AppendText(_T(" same as:")+wxString::FromAscii(posfgp->second.hm.c_str())+_T("\n"));
+            //mpLog->AppendText(_T(" same as:")+wxString::FromAscii(posfgp->second.hm.c_str())+_T("\n"));
+            mpLog->AppendText(wxString::Format(_T(" same refl as %13s nGoF=%9.5f (%3u reflections, %3u extinct)\n"),
+                                               wxString::FromAscii(posfgp->second.hm.c_str()), score.ngof, score.nbreflused, score.nbextinct446));
          }
          else
          {
+            SPGScore score = ex.Run(spg, event.GetId()==ID_PROFILEFITTING_EXPLORE_SPG, false, false);
             pDiff->GetParentPowderPattern().UpdateDisplay();
-            // Number of free parameters (not taking into account refined profile/background parameters)
-            unsigned int nbfreepar=pDiff->GetProfileFitNetNbObs();
-            if(nbfreepar<1) nbfreepar=1; // Should not happen !
+            if(s.number() == 1) nb_refl_p1 = score.nbreflused;
+            score.ngof *= mpDiff->GetNbReflBelowMaxSinThetaOvLambda() / (float)nb_refl_p1;
 
-            for(unsigned int j=0;j<nbcycle;j++)
-            {
-                // First, Le Bail
-                pDiff->SetExtractionMode(true,true);
-                const float t0=chrono.seconds();
-                cout<<"Doing Le Bail, t="<<FormatFloat(t0,6,2)<<"s";
-                pDiff->ExtractLeBail(5);
-                cout<<",   dt="<<FormatFloat(chrono.seconds()-t0,6,2)<<"s"<<endl;
-                pDiff->GetParentPowderPattern().FitScaleFactorForRw();
-                if(event.GetId()==ID_PROFILEFITTING_EXPLORE_SPG)
-                {// Perform LSQ
-                  LSQNumObj lsq;
-                  TAU_PROFILE_START(timer2);
-                  lsq.SetRefinedObj(pDiff->GetParentPowderPattern(),0,true,true);
-                  lsq.PrepareRefParList(true);
-                  lsq.SetParIsFixed(gpRefParTypeObjCryst,true);
-                  lsq.SetParIsFixed(gpRefParTypeScattDataScale,false);
-                  std::list<RefinablePar*> vnewpar;
-                  std::list<const RefParType*> vnewpartype;
-                  // Only do the full monty for P1, keep the parameters for other spacegroups
-                  if(s.number()==1) vnewpar.push_back(&lsq.GetCompiledRefinedObj().GetPar("Zero"));
-                  lsq.SetParIsFixed(gpRefParTypeUnitCell,false);
-                  lsq.SafeRefine(vnewpar, vnewpartype,2,true,false);
-                  vnewpar.clear();
-                  TAU_PROFILE_STOP(timer2);
-                  if(s.number()==1)
-                  {
-                      TAU_PROFILE_START(timer1);
-                      vnewpar.push_back(&lsq.GetCompiledRefinedObj().GetPar("2ThetaDispl"));
-                      vnewpar.push_back(&lsq.GetCompiledRefinedObj().GetPar("2ThetaTransp"));
-                      lsq.SafeRefine(vnewpar, vnewpartype,2,true,false);
-                      vnewpar.clear();
-                      lsq.SetParIsFixed(gpRefParTypeScattDataBackground,false);
-                      // Fix background point beyond optimized domain
-                      const unsigned int nbcomp= pDiff->GetParentPowderPattern().GetNbPowderPatternComponent();
-                      for(unsigned int i=0;i<nbcomp;++i)
-                        if(pDiff->GetParentPowderPattern().GetPowderPatternComponent(i).GetClassName()=="PowderPatternBackground")
-                        {
-                            PowderPatternBackground *pback=dynamic_cast<PowderPatternBackground *>
-                            (&(pDiff->GetParentPowderPattern().GetPowderPatternComponent(i)));
-                            pback->FixParametersBeyondMaxresolution(lsq.GetCompiledRefinedObj());
-                        }
-                     for(unsigned int i=0; i<lsq.GetCompiledRefinedObj().GetNbPar();i++)
-                        if(  (lsq.GetCompiledRefinedObj().GetPar(i).IsFixed()==false)
-                           &&(lsq.GetCompiledRefinedObj().GetPar(i).GetType()==gpRefParTypeScattDataBackground))
-                           vnewpar.push_back(&lsq.GetCompiledRefinedObj().GetPar(i));
-                      lsq.SafeRefine(vnewpar,vnewpartype,2,true,false);
-                      vnewpar.clear();
-                      TAU_PROFILE_STOP(timer1);
-                  }
-                  // restart from equal intensities
-                  pDiff->SetExtractionMode(true,true);
-                  pDiff->ExtractLeBail(5);
-                  TAU_PROFILE_START(timer3);
-                  lsq.SafeRefine(vnewpar,vnewpartype,3,true,false);
-                  TAU_PROFILE_STOP(timer3);
-                  //mpLog->AppendText(wxString::Format(_T("%5.2f%%/"),pDiff->GetParentPowderPattern().GetRw()*100));
-                  pDiff->GetParentPowderPattern().FitScaleFactorForRw();
-                }
-                pDiff->GetParentPowderPattern().UpdateDisplay();
-                const REAL rw=pDiff->GetParentPowderPattern().GetRw()*100;
-                const REAL gof=pDiff->GetParentPowderPattern().GetChi2()/nbfreepar;
-                if(dlgProgress.Update(i*nbcycle+j,wxString::FromAscii(hm.c_str())+wxString::Format(_T("  (cycle #%u)\n   Rwp=%5.2f%%\n   GoF=%9.2f"),
-                                                                  j,rw,gof))==false) user_stop=true;
-
-                if(user_stop) break;
-            }
+            if(dlgProgress.Update(i*nbcycle,wxString::FromAscii(hm.c_str())+wxString::Format(_T("  (%u cycles)\n   Rwp=%5.2f%%\n   GoF=%9.2f"),
+                                  nbcycle,score.rw,score.gof))==false) user_stop=true;
+            
             if(user_stop) break;
-            const REAL rw=pDiff->GetParentPowderPattern().GetRw()*100;
-            const REAL gof=pDiff->GetParentPowderPattern().GetChi2()/nbfreepar;
-            unsigned int nbextinct446=0;
-            for(unsigned int i=6;i<fgp.size();++i) nbextinct446+=(unsigned int)(fgp[i]);
-            vSPG.push_back(SPGScore(hm.c_str(),rw,gof,nbextinct446));
-            mpLog->AppendText(wxString::Format(_T(" Rwp= %5.2f%%  GoF=%9.2f  (%2u extinct refls)\n"),rw,gof,nbextinct446));
-            vSPGExtinctionFingerprint.insert(make_pair(fgp,SPGScore(hm.c_str(),rw,gof,nbextinct446)));
+            vSPG.push_back(score);
+            mpLog->AppendText(wxString::Format(_T(" Rwp= %5.2f%%  GoF=%8.3f  nGoF=%9.5f (%3u reflections, %3u extinct)\n"),score.rw,score.gof,score.ngof, score.nbreflused,score.nbextinct446));
+            vSPGExtinctionFingerprint.insert(make_pair(fgp,score));
           }
         }
       if(user_stop) break;
    }
    // sort results by GoF
    vSPG.sort(compareSPGScore);
-   mpLog->AppendText(wxString::Format(_T("\n\n BEST Solutions, from min_GoF to 2*min_Gof:\n")));
-   mpLog->AppendText(wxString::Format(_T("\n\'extinct refls\' gives the number of extinct reflections\n")));
-   mpLog->AppendText(wxString::Format(_T("for 0<=H<=4 0<=K<=4 0<=L<=6 \n\n")));
-   mpLog->AppendText(wxString::Format(_T("Note that the listed GoF takes into account the net observed points\n")));
-   mpLog->AppendText(wxString::Format(_T("so that spacegroups (P1) with a high ration of nb reflections/nb points\n")));
-   mpLog->AppendText(wxString::Format(_T("can have an optimal Chi2 or Rwp and yet ranked lower in terms of GoF\n\n")));
+   mpLog->AppendText(wxString::Format(_T("\n\nBEST Solutions, from min_nGoF to 4*min_nGof:\n")));
+   mpLog->AppendText(wxString::Format(_T("\nThe number of reflections use for the fit is given, and\n"
+                                         "  \'extinct\' gives the number of extinct reflections\n")));
+   mpLog->AppendText(wxString::Format(_T("  for 0<=H<=4 0<=K<=4 0<=L<=6 \n\n")));
+   mpLog->AppendText(wxString::Format(_T("GoF = Chi^2 / nb observed points\n\n")));
+   mpLog->AppendText(wxString::Format(_T("nGof = iGoF_P1 * (nb_refl) / (nb_refl_P1) \n"
+                                         "  where iGoF_P1 is the integrated Goodness-of-Fit \n"
+                                         "  using P1 integration intervals.\n"
+                                         "  This takes into account the number of used reflections\n"
+                                         "  and is the best indicator\n\n")));
    for(list<SPGScore>::const_iterator pos=vSPG.begin();pos!=vSPG.end();++pos)
    {
-      if(pos->gof>(2*vSPG.begin()->gof)) break;
-      mpLog->AppendText(wxString::Format(_T(" Rwp= %5.2f%%  GoF=%9.2f: (extinct refls=%2u )"),pos->rw,pos->gof,pos->nbextinct446)+wxString::FromAscii(pos->hm.c_str())+_T(" \n"));
+      if( (pos->ngof>(4*vSPG.begin()->ngof))) break;
+      mpLog->AppendText(wxString::Format(_T(" Rwp=%5.2f%%  GoF=%8.2f  nGoF=%9.5f: (%3u reflections, %3u extinct) "),pos->rw,pos->gof,pos->ngof, pos->nbreflused,pos->nbextinct446)+wxString::FromAscii(pos->hm.c_str())+_T(" \n"));
    }
-   mpLog->AppendText(wxString::Format(_T("\n\n You can copy the chosen spacegroup symbol in the Crystal window\n")));
-   // Back to original spacegroup
-   pCrystal->Init(a,b,c,d,e,f,spgname,name);
+   mpLog->AppendText(wxString::Format(_T("\n\nYou can copy the chosen spacegroup symbol in the Crystal window\n")));
+   mpLog->AppendText(wxString::Format(_T("\n\nThe spacegroup with the best nGoF has been applied\n")));
+   // Set best solution
+   pCrystal->GetSpaceGroup().ChangeSpaceGroup(vSPG.front().hm);
    pDiff->GetParentPowderPattern().UpdateDisplay();
    pDiff->SetExtractionMode(true,true);
    pDiff->ExtractLeBail(5);
    pDiff->GetParentPowderPattern().UpdateDisplay();
+   ex.RunAll(event.GetId()==ID_PROFILEFITTING_EXPLORE_SPG, true);
 }
 
 void WXPowderPatternDiffraction::OnLeBail(wxCommandEvent &event)
 {
+   WXCrystValidateAllUserInput();
    if((event.GetId()==ID_POWDERDIFF_PROFILEFITTINGMODE)&&(mpProfileFittingMode->GetValue()==false))
    {
       mpPowderPatternDiffraction->SetExtractionMode(false);

@@ -41,7 +41,7 @@
 #include <fstream>
 #include <sstream>
 #include <stdio.h>
-#include "boost/format.hpp"
+#include <boost/format.hpp>
 
 namespace ObjCryst
 {
@@ -65,10 +65,9 @@ void CompareWorlds(const CrystVector_long &idx,const CrystVector_long &swap, con
 //#################################################################################
 ObjRegistry<OptimizationObj> gOptimizationObjRegistry("List of all Optimization objects");
 
-
-OptimizationObj::OptimizationObj(const string name):
-mName(name),mSaveFileName("GlobalOptim.save"),
-mNbTrialPerRun(10000000),mNbTrial(0),mBestCost(-1),
+OptimizationObj::OptimizationObj():
+mName(""),mSaveFileName("GlobalOptim.save"),
+mNbTrialPerRun(10000000),mNbTrial(0),mRun(0),mBestCost(-1),
 mBestParSavedSetIndex(-1),
 mContext(0),
 mIsOptimizing(false),mStopAfterCycle(false),
@@ -90,6 +89,62 @@ mLastOptimTime(0)
    // We only copy parameters, so do not delete them !
    mRefParList.SetDeleteRefParInDestructor(false);
    VFN_DEBUG_EXIT("OptimizationObj::OptimizationObj()",5)
+}
+
+OptimizationObj::OptimizationObj(const string name):
+mName(name),mSaveFileName("GlobalOptim.save"),
+mNbTrialPerRun(10000000),mNbTrial(0),mRun(0),mBestCost(-1),
+mBestParSavedSetIndex(-1),
+mContext(0),
+mIsOptimizing(false),mStopAfterCycle(false),
+mRefinedObjList("OptimizationObj: "+mName+" RefinableObj registry"),
+mRecursiveRefinedObjList("OptimizationObj: "+mName+" recursive RefinableObj registry"),
+mLastOptimTime(0)
+{
+   VFN_DEBUG_ENTRY("OptimizationObj::OptimizationObj()",5)
+   // This must be done in a real class to avoid calling a pure virtual method
+   // if a graphical representation is automatically called upon registration.
+   //  gOptimizationObjRegistry.Register(*this);
+
+   static bool need_initRandomSeed=true;
+   if(need_initRandomSeed==true)
+   {
+      srand(time(NULL));
+      need_initRandomSeed=false;
+   }
+   // We only copy parameters, so do not delete them !
+   mRefParList.SetDeleteRefParInDestructor(false);
+   VFN_DEBUG_EXIT("OptimizationObj::OptimizationObj()",5)
+}
+
+OptimizationObj::OptimizationObj(const OptimizationObj &old):
+mName(old.mName),mSaveFileName(old.mSaveFileName),
+mNbTrialPerRun(old.mNbTrialPerRun),mNbTrial(old.mNbTrial),mRun(old.mRun),mBestCost(old.mBestCost),
+mBestParSavedSetIndex(-1),
+mContext(0),
+mIsOptimizing(false),mStopAfterCycle(false),
+mRefinedObjList("OptimizationObj: "+mName+" RefinableObj registry"),
+mRecursiveRefinedObjList("OptimizationObj: "+mName+" recursive RefinableObj registry"),
+mLastOptimTime(0)
+{
+   VFN_DEBUG_ENTRY("OptimizationObj::OptimizationObj(&old)",5)
+   // This must be done in a real class to avoid calling a pure virtual method
+   // if a graphical representation is automatically called upon registration.
+   //  gOptimizationObjRegistry.Register(*this);
+
+   static bool need_initRandomSeed=true;
+   if(need_initRandomSeed==true)
+   {
+      srand(time(NULL));
+      need_initRandomSeed=false;
+   }
+   // We only copy parameters, so do not delete them !
+   mRefParList.SetDeleteRefParInDestructor(false);
+
+   for(unsigned int i=0;i<old.mRefinedObjList.GetNb();i++)
+      this->AddRefinableObj(old.mRefinedObjList.GetObj(i));
+
+   VFN_DEBUG_EXIT("OptimizationObj::OptimizationObj(&old)",5)
 }
 
 OptimizationObj::~OptimizationObj()
@@ -284,6 +339,7 @@ REAL& OptimizationObj::GetBestCost(){return mBestCost;}
 
 void OptimizationObj::BeginOptimization(const bool allowApproximations, const bool enableRestraints)
 {
+   mvContextObjStats.clear();
    for(int i=0;i<mRefinedObjList.GetNb();i++)
    {
       mRefinedObjList.GetObj(i).BeginOptimization(allowApproximations,enableRestraints);
@@ -298,6 +354,89 @@ void OptimizationObj::EndOptimization()
 long& OptimizationObj::NbTrialPerRun() {return mNbTrialPerRun;}
 
 const long& OptimizationObj::NbTrialPerRun() const {return mNbTrialPerRun;}
+
+long OptimizationObj::GetTrial() const {return mNbTrial;}
+
+long OptimizationObj::GetRun() const {return mRun;}
+
+unsigned int OptimizationObj::GetNbOption()const
+{
+   return mOptionRegistry.GetNb();
+}
+
+ObjRegistry<RefObjOpt>& OptimizationObj::GetOptionList()
+{
+   return mOptionRegistry;
+}
+
+RefObjOpt& OptimizationObj::GetOption(const unsigned int i)
+{
+   VFN_DEBUG_MESSAGE("RefinableObj::GetOption()"<<i,3)
+   //:TODO: Check
+   return mOptionRegistry.GetObj(i);
+}
+
+RefObjOpt& OptimizationObj::GetOption(const string & name)
+{
+   VFN_DEBUG_MESSAGE("OptimizationObj::GetOption()"<<name,3)
+   const long i=mOptionRegistry.Find(name);
+   if(i<0)
+   {
+      this->Print();
+      throw ObjCrystException("OptimizationObj::GetOption(): cannot find option: "+name+" in object:"+this->GetName());
+   }
+   return mOptionRegistry.GetObj(i);
+}
+
+const RefObjOpt& OptimizationObj::GetOption(const unsigned int i)const
+{
+   VFN_DEBUG_MESSAGE("RefinableObj::GetOption()"<<i,3)
+   //:TODO: Check
+   return mOptionRegistry.GetObj(i);
+}
+
+const RefObjOpt& OptimizationObj::GetOption(const string & name)const
+{
+   VFN_DEBUG_MESSAGE("OptimizationObj::GetOption()"<<name,3)
+   const long i=mOptionRegistry.Find(name);
+   if(i<0)
+   {
+      this->Print();
+      throw ObjCrystException("OptimizationObj::GetOption(): cannot find option: "+name+" in object:"+this->GetName());
+   }
+   return mOptionRegistry.GetObj(i);
+}
+
+const ObjRegistry<RefinableObj>& OptimizationObj::GetRefinedObjList() const
+{
+   return mRefinedObjList;
+}
+
+unsigned int OptimizationObj::GetNbParamSet() const
+{
+   return mvSavedParamSet.size();
+}
+
+long OptimizationObj::GetParamSetIndex(const unsigned int i) const
+{
+   if(i>=mvSavedParamSet.size())
+      throw ObjCrystException("OptimizationObj::GetSavedParamSetIndex(i): i > nb saved param set");
+
+   return mvSavedParamSet[i].first;
+}
+
+long OptimizationObj::GetParamSetCost(const unsigned int i) const
+{
+   if(i>=mvSavedParamSet.size())
+      throw ObjCrystException("OptimizationObj::GetSavedParamSetCost(i): i > nb saved param set");
+   return mvSavedParamSet[i].second;
+}
+
+void OptimizationObj::RestoreParamSet(const unsigned int i, const bool update_display)
+{
+   mRefParList.RestoreParamSet(this->GetParamSetIndex(i));
+   if(update_display) this->UpdateDisplay();
+}
 
 void OptimizationObj::PrepareRefParList()
 {
@@ -375,19 +514,18 @@ void OptimizationObj::InitOptions()
       needInitNames=false;//Only once for the class
    }
    mXMLAutoSave.Init(6,&xmlAutoSaveName,xmlAutoSaveChoices);
+   this->AddOption(&mXMLAutoSave);
    VFN_DEBUG_MESSAGE("OptimizationObj::InitOptions():End",5)
 }
 
-void OptimizationObj::UpdateDisplay()
+void OptimizationObj::UpdateDisplay() const
 {
    Chronometer chrono;
-   #ifdef __WX__CRYST__
-   if(0!=this->WXGet()) this->WXGet()->CrystUpdate(true,true);
-   #endif
    for(int i=0;i<mRefinedObjList.GetNb();i++)
       mRefinedObjList.GetObj(i).UpdateDisplay();
    mMainTracker.UpdateDisplay();
 }
+
 void OptimizationObj::BuildRecursiveRefObjList()
 {
    // First check if anything has changed (ie if a sub-object has been
@@ -404,11 +542,39 @@ void OptimizationObj::BuildRecursiveRefObjList()
    }
 }
 
+void OptimizationObj::AddOption(RefObjOpt *opt)
+{
+   VFN_DEBUG_ENTRY("OptimizationObj::AddOption()",5)
+   mOptionRegistry.Register(*opt);
+   VFN_DEBUG_EXIT("OptimizationObj::AddOption()",5)
+}
+
 //#################################################################################
 //
 //       MonteCarloObj
 //
 //#################################################################################
+MonteCarloObj::MonteCarloObj():
+OptimizationObj(""),
+mCurrentCost(-1),
+mTemperatureMax(1e6),mTemperatureMin(.001),mTemperatureGamma(1.0),
+mMutationAmplitudeMax(8.),mMutationAmplitudeMin(.125),mMutationAmplitudeGamma(1.0),
+mNbTrialRetry(0),mMinCostRetry(0)
+#ifdef __WX__CRYST__
+,mpWXCrystObj(0)
+#endif
+{
+   VFN_DEBUG_ENTRY("MonteCarloObj::MonteCarloObj()",5)
+   this->InitOptions();
+   mGlobalOptimType.SetChoice(GLOBAL_OPTIM_PARALLEL_TEMPERING);
+   mAnnealingScheduleTemp.SetChoice(ANNEALING_SMART);
+   mAnnealingScheduleMutation.SetChoice(ANNEALING_EXPONENTIAL);
+   mXMLAutoSave.SetChoice(5);//Save after each Run
+   mAutoLSQ.SetChoice(0);
+   gOptimizationObjRegistry.Register(*this);
+   VFN_DEBUG_EXIT("MonteCarloObj::MonteCarloObj()",5)
+}
+
 MonteCarloObj::MonteCarloObj(const string name):
 OptimizationObj(name),
 mCurrentCost(-1),
@@ -428,6 +594,27 @@ mNbTrialRetry(0),mMinCostRetry(0)
    mAutoLSQ.SetChoice(0);
    gOptimizationObjRegistry.Register(*this);
    VFN_DEBUG_EXIT("MonteCarloObj::MonteCarloObj()",5)
+}
+
+MonteCarloObj::MonteCarloObj(const MonteCarloObj &old):
+OptimizationObj(old),
+mCurrentCost(old.mCurrentCost),
+mTemperatureMax(old.mTemperatureMax),mTemperatureMin(old.mTemperatureMin),
+mTemperatureGamma(old.mTemperatureGamma),
+mMutationAmplitudeMax(old.mMutationAmplitudeMax),mMutationAmplitudeMin(old.mMutationAmplitudeMin),
+mMutationAmplitudeGamma(old.mMutationAmplitudeGamma),
+mNbTrialRetry(old.mNbTrialRetry),mMinCostRetry(old.mMinCostRetry)
+#ifdef __WX__CRYST__
+,mpWXCrystObj(0)
+#endif
+{
+   VFN_DEBUG_ENTRY("MonteCarloObj::MonteCarloObj(&old)",5)
+   this->InitOptions();
+   for(unsigned int i=0;i<this->GetNbOption();i++)
+      this->GetOption(i).SetChoice(old.GetOption(i).GetChoice());
+
+   gOptimizationObjRegistry.Register(*this);
+   VFN_DEBUG_EXIT("MonteCarloObj::MonteCarloObj(&old)",5)
 }
 
 MonteCarloObj::MonteCarloObj(const bool internalUseOnly):
@@ -603,6 +790,7 @@ void MonteCarloObj::MultiRunOptimize(long &nbCycle,long &nbStep,const bool silen
    long nbTrialCumul=0;
    const long nbCycle0=nbCycle;
 	Chronometer chrono;
+   mRun = 0;
    while(nbCycle!=0)
    {
       if(!silent) cout <<"MonteCarloObj::MultiRunOptimize: Starting Run#"<<abs(nbCycle)<<endl;
@@ -685,6 +873,7 @@ void MonteCarloObj::MultiRunOptimize(long &nbCycle,long &nbStep,const bool silen
       #ifdef __WX__CRYST__
       mMutexStopAfterCycle.Unlock();
       #endif
+      mRun++;
    }
    mIsOptimizing=false;
 
@@ -1068,6 +1257,7 @@ void MonteCarloObj::RunRandomLSQMethod(long &nbCycle)
 
     const long starting_point=mRefParList.CreateParamSet("MonteCarloObj:Last parameters (RANDOM-LSQ)");
     mRefParList.SaveParamSet(starting_point);
+    mRun = 0;
     while(nbCycle!=0) {
         nbCycle--;
         mRefParList.RestoreParamSet(starting_point);
@@ -1119,6 +1309,7 @@ void MonteCarloObj::RunRandomLSQMethod(long &nbCycle)
           #ifdef __WX__CRYST__
           mMutexStopAfterCycle.Unlock();
           #endif
+        mRun++;
     }
 
     if(bsigma<0 || bdelta<0 || asigma<0 || adelta<0) return;
@@ -2087,6 +2278,11 @@ void MonteCarloObj::InitOptions()
    mAnnealingScheduleMutation.Init(6,&AnnealingScheduleMutationName,AnnealingScheduleChoices);
    mSaveTrackedData.Init(2,&saveTrackedDataName,saveTrackedDataChoices);
    mAutoLSQ.Init(3,&runAutoLSQName,runAutoLSQChoices);
+   this->AddOption(&mGlobalOptimType);
+   this->AddOption(&mAnnealingScheduleTemp);
+   this->AddOption(&mAnnealingScheduleMutation);
+   this->AddOption(&mSaveTrackedData);
+   this->AddOption(&mAutoLSQ);
    VFN_DEBUG_MESSAGE("MonteCarloObj::InitOptions():End",5)
 }
 
@@ -2103,11 +2299,30 @@ void MonteCarloObj::InitLSQ(const bool useFullPowderPatternProfile)
    }
    // Only refine structural parameters (excepting parameters already fixed) and scale factor
    mLSQ.PrepareRefParList(true);
+   
+   // Intensity corrections can be refined
+   std::list<RefinablePar*> vIntCorrPar;
+   for(int i=0; i<mLSQ.GetCompiledRefinedObj().GetNbPar();i++)
+      if(mLSQ.GetCompiledRefinedObj().GetPar(i).GetType()->IsDescendantFromOrSameAs(gpRefParTypeScattDataCorrInt) && mLSQ.GetCompiledRefinedObj().GetPar(i).IsFixed()==false)
+         vIntCorrPar.push_back(&mLSQ.GetCompiledRefinedObj().GetPar(i));
+   
    mLSQ.SetParIsFixed(gpRefParTypeScattData,true);
    mLSQ.SetParIsFixed(gpRefParTypeScattDataScale,false);
+   
+   for(std::list<RefinablePar*>::iterator pos=vIntCorrPar.begin();pos!=vIntCorrPar.end();pos++)
+      (*pos)->SetIsFixed(false);
    mLSQ.SetParIsFixed(gpRefParTypeUnitCell,true);
    mLSQ.SetParIsFixed(gpRefParTypeScattPow,true);
    mLSQ.SetParIsFixed(gpRefParTypeRadiation,true);
+}
+
+void MonteCarloObj::UpdateDisplay() const
+{
+   Chronometer chrono;
+   #ifdef __WX__CRYST__
+   if(0!=mpWXCrystObj) mpWXCrystObj->CrystUpdate(true,true);
+   #endif
+   this->OptimizationObj::UpdateDisplay();
 }
 
 #ifdef __WX__CRYST__
