@@ -36,6 +36,30 @@ namespace ObjCryst
 {
 class PeakList;
 class PowderPattern;
+class PowderPatternDiffraction;
+
+//######################################################################
+/** \brief Cylinder absorption correction
+ *
+ * Correction formulas from Lobanov & Alte da Veiga,
+ * Code re-implemented from GSAS-II (courtesy of B. von Dreele), original version:
+ * https://subversion.xray.aps.anl.gov/trac/pyGSAS/browser/trunk/GSASIIpwd.py
+ *
+ */
+class CylinderAbsCorr:public ScatteringCorr
+{
+public:
+   /** Constructor
+    * \param powp: the PowderPattern object which has the muR parameter
+    */
+   CylinderAbsCorr(const PowderPatternDiffraction &data);
+   virtual ~CylinderAbsCorr();
+   virtual const string & GetName() const;
+   virtual const string & GetClassName() const;
+protected:
+   virtual void CalcCorr() const;
+   const PowderPatternDiffraction *mpPowderPatternDiff;
+};
 
 //######################################################################
 /** \brief Generic class to compute components (eg the contribution of
@@ -471,6 +495,8 @@ class PowderPatternDiffraction : virtual public PowderPatternComponent,public Sc
          TextureEllipsoid mCorrTextureEllipsoid;
          /// Time-Of-Flight intensity correction
          TOFCorr mCorrTOF;
+         /// Cylinder absorption correction
+         CylinderAbsCorr mCorrCylAbs;
 
       /// Computed intensities for all reflections
          mutable CrystVector_REAL mIhklCalc;
@@ -529,7 +555,6 @@ class PowderPatternDiffraction : virtual public PowderPatternComponent,public Sc
       // Avoid compiler warnings.  Explicitly hide the base-class method.
       void GenHKLFullSpace(const REAL, const bool);
 };
-
 
 //######################################################################
 /** \brief Powder pattern class, with an observed pattern and several
@@ -696,6 +721,8 @@ class PowderPattern : public RefinableObj
          /// When were the parameters for 2theta/TOF correction (zero, transparency,
          /// displacement) last changed ?
          const RefinableObjClock& GetClockPowderPatternXCorr()const;
+         /// When were the absorption correction parameters (muR) last changed ?
+         const RefinableObjClock& GetClockPowderPatternAbsCorr() const;
 
       // Corrections to the x (2theta, tof) coordinate
          ///Change Zero in x (2theta,tof)
@@ -937,6 +964,10 @@ class PowderPattern : public RefinableObj
       * \note: in development. Only supports constant wavelength neutron & X-ray patterns.
       */
       void ExportFullprof(const std::string &prefix)const;
+      /// Set the $\mu R$ value for cylinder absorption correction
+      void SetMuR(const REAL muR);
+      /// Get the $\mu R$ value
+      REAL GetMuR() const;
    protected:
       /// Calc the powder pattern
       void CalcPowderPattern() const;
@@ -1018,6 +1049,8 @@ class PowderPattern : public RefinableObj
          RefinableObjClock mClockPowderPatternXCorr;
          /// Last modification of the scale factor
          mutable RefinableObjClock mClockScaleFactor;
+         /// Last modification of absorption correction parameters
+         mutable RefinableObjClock mClockCorrAbs;
 
       //Excluded regions in the powder pattern, for statistics.
          /// Min coordinate for for all excluded regions
@@ -1048,6 +1081,9 @@ class PowderPattern : public RefinableObj
          /// This is mutable because generally we use the 'best' scale factor, but
          /// it should not be...
          mutable CrystVector_REAL mScaleFactor;
+   
+      /// Mu*R parameter for cylinder absorption correction
+      REAL mMuR;
 
       /// Use faster, less precise functions ?
       bool mUseFastLessPreciseFunc;
@@ -1133,15 +1169,22 @@ CrystVector_REAL PowderProfileLorentz(const CrystVector_REAL theta,
 */
 struct SPGScore
 {
-   SPGScore(const string &s, const REAL r, const REAL g, const unsigned int nbextinct, const REAL ngof=0);
+   SPGScore(const string &s, const REAL r, const REAL g, const unsigned int nbextinct, const REAL ngof=0, const unsigned int nbrefl=0);
    string hm;
    /// Rw factor, from PowderPattern::GetRw()
    REAL rw;
    /// Goodness-of-fit, from PowderPattern::GetChi2() normalised by 
    REAL gof;
-   /// Normalised goodness-of-fit =  gof * (nb_refl) / (nb_refl in P1)
+   /// Normalised & integrated goodness-of-fit =  iGoF * (nb_refl) / (nb_refl in P1),
+   /// where iGoF is the integrated goodness-of-fit, computed using the integration
+   /// intervals determined for the P1 spacegroup. This is only computed
+   /// if the P1 spacegroup was tested first.
    REAL ngof;
+   /// Number of extinct reflections for 0<=H<=4, 0<=K<=4, 0<=L<=6, which
+   /// can be used as unique fingerprint for the spacegroup systematic extinctions.
    unsigned int nbextinct446;
+   /// Number of reflections used for the fit.
+   unsigned int nbreflused;
 };
 
 bool compareSPGScore(const SPGScore &s1, const SPGScore &s2);
@@ -1168,35 +1211,49 @@ public:
     * \param fitprofile: if true, will perform a full profile fitting instead of just Le Bail
     *  extraction. Much slower.
     * \param restore_orig: if true, will go back to the original unit cell and spacegroup at the end
+    
     * \return: the SPGScore corresponding to this spacegroup
     */
    SPGScore Run(const string &spg, const bool fitprofile=false, const bool verbose=false,
-                const bool restore_orig=false);
+                const bool restore_orig=false, const bool update_display=true);
    /** Run test on a single spacegroup
     *
     * \param spg: the cctbx::sgtbx::space_group
     * \param fitprofile: if true, will perform a full profile fitting instead of just Le Bail
     *  extraction. Much slower.
     * \param restore_orig: if true, will go back to the original unit cell and spacegroup at the end
+    * \param update_display: if true, update the display during the search
     * \return: the SPGScore corresponding to this spacegroup
     */
    SPGScore Run(const cctbx::sgtbx::space_group &spg, const bool fitprofile=false,
-                const bool verbose=false, const bool restore_orig=false);
+                const bool verbose=false, const bool restore_orig=false, const bool update_display=true);
    /** Run test on all spacegroups compatible with the unit cell
+    * Note that all scores's ngof values will be multiplied by nb_refl/nb_refl_P1 to
+    * have a better indicator of the quality taking into account the number of reflections used.
     *
     * \param fitprofile_all: if true, will perform a full profile fitting instead of just Le Bail
     *  extraction for all spacegroups. Much slower. By default, the profile fitting is only
     *  performed for the first spacegroup (P1)
     * \param verbose: 0 (default), not verbose, 1 minimal information, 2, very verbose
     * \param keep_best: if true, will keep the best solution at the end (default: restore the original one)
+    * \param update_display: if true, update the display during the search
+    * \param fitprofile_p1: if true, fit the profile for p1 (ignored if fitprofile_all=true)
     * \return: the SPGScore corresponding to this spacegroup
     */
-   void RunAll(const bool fitprofile_all=false, const bool verbose=true, const bool keep_best=false);
+   void RunAll(const bool fitprofile_all=false, const bool verbose=true, const bool keep_best=false,
+               const bool update_display=true, const bool fitprofile_p1=true);
    /// Get the list of all scores obatined after using RunAll()
    const list<SPGScore>& GetScores() const;
 private:
+   /// Compute the integrated goodness-of-fit using P1 integration intervals. If this is called
+   /// and the spacegroup is P1, this initialises the P1 intervals as well. If the intervals
+   /// have not been initialised and the spaceroup is not P1, zero is returned.
+   REAL GetP1IntegratedGoF();
    /// PwderPatternDiffraction for which we explore the spacegroups
    PowderPatternDiffraction *mpDiff;
+   /// Min and max of intervals for integration domains, for the P1 specegroup. This is
+   /// used to compute a normalised integrated goodness of fit using the same intervals
+   CrystVector_REAL mP1IntegratedProfileMin,mP1IntegratedProfileMax;
    /// List of scores for the explore spacegroups
    list<SPGScore> mvSPG;
    /// Map extinction fingerprint

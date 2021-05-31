@@ -102,8 +102,12 @@ enum GlobalOptimType
 class OptimizationObj
 {
    public:
+      /// Default constructor
+      OptimizationObj();
       /// Constructor
-      OptimizationObj(const string name="");
+      OptimizationObj(const string name);
+      /// Copy constructor
+      OptimizationObj(const OptimizationObj &old);
       /// Destructor
       virtual ~OptimizationObj();
 
@@ -222,6 +226,10 @@ class OptimizationObj
       virtual long& NbTrialPerRun();
       /// Number of trial per run
       virtual const long& NbTrialPerRun() const;
+      /// Current trial number (updated during a run)
+      long GetTrial() const;
+      /// Current run number (updated during a run)
+      long GetRun() const;
       //Options
       /// Access to the options registry
       ObjRegistry<RefObjOpt>& GetOptionList();
@@ -237,15 +245,26 @@ class OptimizationObj
       const RefObjOpt& GetOption(const string & name)const;
       /// Access the list of refined object
       const ObjRegistry<RefinableObj>& GetRefinedObjList() const;
+      /// Update Display (if any display is available), when a new 'relevant' configuration
+      /// is reached. This calls all RefinableObj::UpdateDisplay()
+      virtual void UpdateDisplay() const;
+      /// Get the number of saved parameters set
+      unsigned int GetNbParamSet() const;
+      /// Get the index of a saved parameters set in the compiled RefinableObj.
+      /// The parameters can then be accessed using GetRefinedObjList().GetParamSet(idx)
+      long GetParamSetIndex(const unsigned int i) const;
+      /// Get the cost (log-likelihood) of a saved parameters set
+      long GetParamSetCost(const unsigned int i) const;
+      /// Restore a given saved parameter set.
+      /// This is equivalent to GetRefinedObjList().RestoreParamSet(GetSavedParamSetIndex(i))
+      /// \param i: the order of the saved parameter set
+      void RestoreParamSet(const unsigned int i, const bool update_display=true);
    protected:
       /// \internal Prepare mRefParList for the refinement
       void PrepareRefParList();
 
       /// Initialization of options.
       virtual void InitOptions();
-      /// Update Display (if any display is available), when a new 'relevant' configuration
-      /// is reached. This calls all RefinableObj::UpdateDisplay()
-      virtual void UpdateDisplay();
       /// (Re)build OptimizationObj::mRecursiveRefinedObjList, if an
       /// object has been added or modified. If no object has been
       /// added and no sub-object has been added/removed, then nothing is done.
@@ -265,8 +284,10 @@ class OptimizationObj
       //Status of optimization
          /// Number of trial per run, to be saved/restored in XML output
          long mNbTrialPerRun;
-         /// Number of trials so far
+         /// Current trial number
          long mNbTrial;
+         /// Current run number (during multiple runs)
+         long mRun;
          /// Best value of the cost function so far
          REAL mBestCost;
          /// Index of the 'best' saved parameter set
@@ -311,8 +332,10 @@ class OptimizationObj
       bool mStopAfterCycle;
 
       // Refined objects
-         /// The refined objects
-         ObjRegistry<RefinableObj> mRefinedObjList;
+         /// The refined objects. This is mutable to allow a copy constructor for
+         /// the OptimizationObj, and because the objects are not owned
+         /// but rather referenced here.
+         mutable ObjRegistry<RefinableObj> mRefinedObjList;
          /// The refined objects, recursively including all sub-objects.
          /// This is mutable, since it is a function of mRefinedObjList only.
          mutable ObjRegistry<RefinableObj> mRecursiveRefinedObjList;
@@ -357,8 +380,12 @@ class OptimizationObj
 class MonteCarloObj:public OptimizationObj
 {
    public:
+      /// Default Constructor
+      MonteCarloObj();
       /// Constructor
-      MonteCarloObj(const string name="");
+      MonteCarloObj(const string name);
+      /// Copy constructor
+      MonteCarloObj(const MonteCarloObj &old);
       /// Constructor. Using internalUseOnly=true will avoid registering the
       /// the object to any registry, and thus (for example) no display will be created,
       /// nor will this object be automatically be saved.
@@ -461,6 +488,9 @@ class MonteCarloObj:public OptimizationObj
       * will be used (faster).
       */
       virtual void InitLSQ(const bool useFullPowderPatternProfile=true);
+      /// Update Display (if any display is available), when a new 'relevant' configuration
+      /// is reached. This calls all RefinableObj::UpdateDisplay()
+      virtual void UpdateDisplay() const;
    protected:
 
       /** \brief Make a random change in the configuration.
