@@ -7,4 +7,4 @@ not available for example, when building from git zip archive.
 Update FALLBACK_VERSION when tagging a new release.
 '''
 
-FALLBACK_VERSION = '2017.2.3.post0'
+FALLBACK_VERSION = '2017.2.2.post0'
