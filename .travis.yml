@@ -73,6 +73,7 @@ before_install:
                   libboost-all-dev python-pip build-essential scons
 
   - $NOBREW || test "${TRAVIS_OS_NAME}" = "osx" || exit $?
+  - $NOBREW || softwareupdate --all --install --force
   - $NOBREW || brew update
   - $NOBREW || brew install scons
 
