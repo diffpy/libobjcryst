@@ -1,5 +1,18 @@
 # Release notes
 
+## Version 2021.1.1 - 2021-06-04
+
+### Added
+
+- Add 3D crystal visualization widget using py3Dmol.
+
+### Changed
+
+- Improve the indexing functions.
+- Better access to some global optimisation variables.
+- Expose the ZScatterer2Molecule function inside Molecule.h.
+- Add a cylindrical absorption correction (Lobanov & Alte da Veiga).
+
 ## Version 2017.2.3 - 2020-06-15
 
 ### Added
