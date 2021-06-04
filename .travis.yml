@@ -4,6 +4,8 @@ os:
   - linux
   - osx
 
+osx_image: xcode12.4
+
 env:
   - MYUSEMC=true MYPYTHON_VERSION=2.7
   - MYUSEMC=true MYPYTHON_VERSION=3.7
