@@ -4,8 +4,6 @@ os:
   - linux
   - osx
 
-osx_image: xcode12.4
-
 env:
   - MYUSEMC=true MYPYTHON_VERSION=2.7
   - MYUSEMC=true MYPYTHON_VERSION=3.7
@@ -74,7 +72,6 @@ before_install:
   - $NOAPT || sudo apt-get install -y
                   libboost-all-dev python-pip build-essential scons
 
-  - $NOBREW || export CFLAGS="${CFLAGS} -i sysroot ${CONDA_BUILD_SYSROOT}"
   - $NOBREW || test "${TRAVIS_OS_NAME}" = "osx" || exit $?
   - $NOBREW || brew update
   - $NOBREW || brew install scons

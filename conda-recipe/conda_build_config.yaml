@@ -1,4 +1,2 @@
 boost:
   - 1.67
-CONDA_BUILD_SYSROOT:
-  - /opt/MacOSX10.10.sdk        # [osx]
