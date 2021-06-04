@@ -74,6 +74,7 @@ before_install:
   - $NOAPT || sudo apt-get install -y
                   libboost-all-dev python-pip build-essential scons
 
+  - $NOBREW || export CFLAGS="${CFLAGS} -i sysroot ${CONDA_BUILD_SYSROOT}"
   - $NOBREW || test "${TRAVIS_OS_NAME}" = "osx" || exit $?
   - $NOBREW || brew update
   - $NOBREW || brew install scons
