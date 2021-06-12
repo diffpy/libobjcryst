@@ -13,6 +13,8 @@ matrix:
   exclude:
     - os: osx
       env: MYUSEMC=true MYPYTHON_VERSION=2.7
+    - os: osx
+      env: MYUSEMC=false
 
 git:
   depth: 999999
