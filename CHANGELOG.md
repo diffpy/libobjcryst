@@ -1,5 +1,23 @@
 # Release notes
 
+## Version 2021.1.2 - 2021-11-28
+
+### Added
+
+- Add access to the weight (g/mol) for ScatteringPowerAtom and Crystal
+
+### Changed
+
+- Add relative_length_tolerance and absolute_angle_tolerance_degree to 
+  SpaceGroupExplorer::Run() and RunAll()
+- Crystal::XMLInput(): add a hook to re-use atomic scattering power when
+  mDeleteSubObjInDestructor is False
+- Better formula for Crystal and Molecule
+
+### Fixed
+
+- Crystal::XMLInput(): take into account mDeleteSubObjInDestructor.
+
 ## Version 2021.1.1 - 2021-06-04
 
 ### Added
