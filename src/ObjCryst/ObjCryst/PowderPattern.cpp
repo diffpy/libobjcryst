@@ -1298,6 +1298,19 @@ unsigned int PowderPatternDiffraction::GetProfileFitNetNbObs()const
    return nb;
 }
 
+bool PowderPatternDiffraction::HasFhklObsSq() const
+{
+  if(mpLeBailData==NULL) return false;
+  return mpLeBailData->GetFhklObsSq().size() > 0;
+}
+
+const CrystVector_REAL& PowderPatternDiffraction::GetFhklObsSq() const
+{
+  if(mpLeBailData==NULL)
+    throw ObjCrystException("PowderPatternDiffraction::GetFhklObsSq(): no extracted intensities available");
+   return mpLeBailData->GetFhklObsSq();
+}
+
 void PowderPatternDiffraction::CalcPowderPattern() const
 {
    this->GetNbReflBelowMaxSinThetaOvLambda();
@@ -6559,7 +6572,7 @@ void PowderPattern::PrepareIntegratedRfactor()const
       for(int i=0;i<mPowderPatternComponentRegistry.GetNb();i++)
       {
          const CrystVector_long vLim=mPowderPatternComponentRegistry.GetObj(i).GetBraggLimits();
-         for(i=0;i<vLim.numElements();i++) vLimits.push_back(vLim(i));
+         for(int j=0;j<vLim.numElements();j++) vLimits.push_back(vLim(j));
       }
       if(vLimits.size()<2)
       {
