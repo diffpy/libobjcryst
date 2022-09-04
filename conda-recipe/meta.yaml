@@ -17,12 +17,12 @@ requirements:
   build:
     - {{ compiler('cxx') }}
     - scons
-  host:
     - libboost {{ boost }}
+    - python
 
 test:
-  commands:
-    - test -f $PREFIX/lib/libObjCryst${SHLIB_EXT}
+  commands: # [not win]
+    - test -f $PREFIX/lib/libObjCryst${SHLIB_EXT} # [not win]
 
 about:
   home: https://github.com/diffpy/libobjcryst/
