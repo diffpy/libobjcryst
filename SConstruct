@@ -111,10 +111,6 @@ vars.Add(BoolVariable(
     'with_shared_cctbx',
     'compile and link with the shared cctbx library', False))
 
-# Specify minimum C++ standard.  Allow later standard from sconscript.local.
-# In case of multiple `-std` options the last option holds.
-env.PrependUnique(CXXFLAGS='-std=c++11', delete_existing=1)
-
 vars.Update(env)
 env.Help(MY_SCONS_HELP % vars.GenerateHelpText(env))
 
@@ -125,13 +121,16 @@ if platform.system().lower() == "windows":
     # Unused as we are using as static library for windows
     # env.AppendUnique(no_import_lib=1)
     if 'CONDA_PREFIX' in os.environ:
-        env.Append(CPPPATH=pjoin(os.environ['CONDA_PREFIX'], 'include'))
-        env.Append(CPPPATH=pjoin(os.environ['CONDA_PREFIX'], 'Library', 'include'))
+        env.Append(CPPPATH=[pjoin(os.environ['CONDA_PREFIX'], 'include')])
+        env.Append(CPPPATH=[pjoin(os.environ['CONDA_PREFIX'], 'Library', 'include')])
         env.Append(LIBPATH=pjoin(os.environ['CONDA_PREFIX'], 'Library', 'lib'))
 else:
     if 'CONDA_PREFIX' in os.environ:
         env.Append(CPPPATH=pjoin(os.environ['CONDA_PREFIX'], 'include'))
         env.Append(LIBPATH=pjoin(os.environ['CONDA_PREFIX'], 'lib'))
+    # Specify minimum C++ standard.  Allow later standard from sconscript.local.
+    # In case of multiple `-std` options the last option holds.
+    env.PrependUnique(CXXFLAGS='-std=c++11', delete_existing=1)
 
 # the CPPPATH directories are checked by scons dependency scanner
 cpppath = getsyspaths('CPLUS_INCLUDE_PATH', 'CPATH')
