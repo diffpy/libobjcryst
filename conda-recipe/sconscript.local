@@ -3,17 +3,19 @@
 Import('env')
 
 import os
+import platform
 
-# Apply environment settings for Anaconda compilers
-env.Replace(CXX=os.environ['CXX'])
-env.MergeFlags(os.environ['CFLAGS'])
-env.MergeFlags(os.environ['CPPFLAGS'])
-env.MergeFlags(os.environ['CXXFLAGS'])
-env.MergeFlags(os.environ['LDFLAGS'])
+if platform.system() != 'Darwin':
+    # Apply environment settings for Anaconda compilers
+    env.Replace(CXX=os.environ['CXX'])
+    env.MergeFlags(os.environ['CFLAGS'])
+    env.MergeFlags(os.environ['CPPFLAGS'])
+    env.MergeFlags(os.environ['CXXFLAGS'])
+    env.MergeFlags(os.environ['LDFLAGS'])
 
-# Use the default c++98 language standard
-cxxflags98 = [f for f in env['CXXFLAGS'] if not f.startswith('-std=')]
-env.Replace(CXXFLAGS=cxxflags98)
+    # Use the default c++98 language standard
+    cxxflags98 = [f for f in env['CXXFLAGS'] if not f.startswith('-std=')]
+    env.Replace(CXXFLAGS=cxxflags98)
 
 # Silence copious warnings from the boost headers.
 P = os.environ['PREFIX']
