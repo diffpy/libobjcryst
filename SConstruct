@@ -110,6 +110,11 @@ vars.Add(BoolVariable(
 vars.Add(BoolVariable(
     'with_shared_cctbx',
     'compile and link with the shared cctbx library', False))
+
+# Specify minimum C++ standard.  Allow later standard from sconscript.local.
+# In case of multiple `-std` options the last option holds.
+env.PrependUnique(CXXFLAGS='-std=c++11', delete_existing=1)
+
 vars.Update(env)
 env.Help(MY_SCONS_HELP % vars.GenerateHelpText(env))
 
