@@ -7,6 +7,7 @@ package:
 source:
   # git_url: https://github.com/diffpy/libobjcryst.git
   git_url: ..
+  # path: ..  # To build from modified local tree
 
 build:
   number: 0
@@ -17,12 +18,12 @@ requirements:
   build:
     - {{ compiler('cxx') }}
     - scons
-  host:
-    - libboost {{ boost }}
+    - boost-cpp {{ boost }}
+    - python
 
 test:
-  commands:
-    - test -f $PREFIX/lib/libObjCryst${SHLIB_EXT}
+  commands: # [not win]
+    - test -f $PREFIX/lib/libObjCryst${SHLIB_EXT} # [not win]
 
 about:
   home: https://github.com/diffpy/libobjcryst/

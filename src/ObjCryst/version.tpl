@@ -80,7 +80,11 @@ struct libobjcryst_version_info {
     static const char* date;
     static const char* git_commit;
     // git_sha is deprecated.  Use git_commit instead.
+    #ifndef _MSC_VER
     static const char* git_sha __attribute__ ((deprecated));
+    #else
+    __declspec(deprecated) static const char* git_sha;
+    #endif
 
 };
 
