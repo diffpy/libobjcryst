@@ -5,14 +5,18 @@ Import('env')
 import os
 import platform
 
-if platform.system() != 'Darwin':
-    # Apply environment settings for Anaconda compilers
-    env.Replace(CXX=os.environ['CXX'])
-    env.MergeFlags(os.environ['CFLAGS'])
-    env.MergeFlags(os.environ['CPPFLAGS'])
-    env.MergeFlags(os.environ['CXXFLAGS'])
-    env.MergeFlags(os.environ['LDFLAGS'])
+if platform.system().lower() == 'darwin' and 'CONDA_BUILD_SYSROOT' in os.environ:
+    env.AppendUnique(CPPFLAGS=['-isysroot', os.environ['CONDA_BUILD_SYSROOT']])
+    env.AppendUnique(LINKFLAGS=['-isysroot', os.environ['CONDA_BUILD_SYSROOT']])
 
+# Apply environment settings for Anaconda compilers
+env.Replace(CXX=os.environ['CXX'])
+env.MergeFlags(os.environ['CFLAGS'])
+env.MergeFlags(os.environ['CPPFLAGS'])
+env.MergeFlags(os.environ['CXXFLAGS'])
+env.MergeFlags(os.environ['LDFLAGS'])
+
+if platform.system() != 'Darwin':
     # Use the default c++98 language standard
     cxxflags98 = [f for f in env['CXXFLAGS'] if not f.startswith('-std=')]
     env.Replace(CXXFLAGS=cxxflags98)
