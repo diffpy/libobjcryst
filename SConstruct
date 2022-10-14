@@ -48,53 +48,75 @@ env.EnsureSConsVersion(0, 98, 1)
 # Customizable compile variables
 vars = Variables('sconsvars.py')
 
-# TODO: also amend paths when VIRTUAL_ENV variable exists,
-#  if CONDA_PREFIX does not exist ?
-if 'CONDA_PREFIX' in os.environ:
+# Set PREFIX for installation and linking
+# TODO: also amend paths when VIRTUAL_ENV variable exists ?
+if 'PREFIX' in os.environ:
+    # building with a set prefix
+    vars.Add(PathVariable(
+        'prefix',
+        'installation prefix directory',
+        os.environ['PREFIX']))
+    vars.Update(env)
+elif 'CONDA_PREFIX' in os.environ:
     # building for a conda environment
     vars.Add(PathVariable(
         'prefix',
         'installation prefix directory',
         os.environ['CONDA_PREFIX']))
     vars.Update(env)
-    if platform.system().lower() == "windows":
-        vars.Add(PathVariable(
-            'libdir',
-            'installation directory for compiled library [prefix/Library/lib]',
-            pjoin(env['prefix'], 'Library', 'Lib'),
-            PathVariable.PathAccept))
-        vars.Add(PathVariable(
-            'includedir',
-            'installation directory for C++ header files [prefix/Library/include]',
-            pjoin(env['prefix'], 'Library', 'include'),
-            PathVariable.PathAccept))
-    else:
-        vars.Add(PathVariable(
-            'libdir',
-            'installation directory for compiled library [prefix/lib]',
-            pjoin(env['prefix'], 'lib'),
-            PathVariable.PathAccept))
-        vars.Add(PathVariable(
-            'includedir',
-            'installation directory for C++ header files [prefix/include]',
-            pjoin(env['prefix'], 'include'),
-            PathVariable.PathAccept))
 else:
+    # Default: install in /usr/local
     vars.Add(PathVariable(
         'prefix',
         'installation prefix directory',
         '/usr/local'))
-    vars.Update(env)
+
+if platform.system().lower() == "windows":
+    # Installation paths
+    vars.Add(PathVariable(
+        'libdir',
+        'installation directory for compiled library [prefix/Library/lib]',
+        pjoin(env['prefix'], 'Library', 'Lib'),
+        PathVariable.PathAccept))
+    vars.Add(PathVariable(
+        'includedir',
+        'installation directory for C++ header files [prefix/Library/include]',
+        pjoin(env['prefix'], 'Library', 'include'),
+        PathVariable.PathAccept))
+
+    # See https://scons.org/faq.html#Linking_on_Windows_gives_me_an_error
+    env['ENV']['TMP'] = os.environ['TMP']
+    # Prevent the generation of an import lib (.lib) in addition to the dll
+    # Unused as we are using as static library for windows
+    # env.AppendUnique(no_import_lib=1)
+
+    # Compilation and linking paths
+    env.Append(CPPPATH=[pjoin(env['prefix'], 'include')])
+    env.Append(CPPPATH=[pjoin(env['prefix'], 'Library', 'include')])
+    env.Append(LIBPATH=pjoin(env['prefix'], 'Library', 'lib'))
+else:
+    # Installation paths
     vars.Add(PathVariable(
         'libdir',
         'installation directory for compiled library [prefix/lib]',
-        env['prefix'] + '/lib',
+        pjoin(env['prefix'], 'lib'),
         PathVariable.PathAccept))
     vars.Add(PathVariable(
         'includedir',
         'installation directory for C++ header files [prefix/include]',
-        env['prefix'] + '/include',
+        pjoin(env['prefix'], 'include'),
         PathVariable.PathAccept))
+
+    # Compilation and linking paths
+    env.Append(CPPPATH=[pjoin(env['prefix'], 'include')])
+    env.Append(LIBPATH=[pjoin(env['prefix'], 'lib')])
+
+    # Specify minimum C++ standard.  Allow later standard from sconscript.local.
+    # In case of multiple `-std` options the last option holds.
+    env.PrependUnique(CXXFLAGS='-std=c++11', delete_existing=1)
+
+# for k, v in env.Dictionary().items():
+#     print(k, v)
 
 vars.Add(EnumVariable(
     'build',
@@ -113,24 +135,6 @@ vars.Add(BoolVariable(
 
 vars.Update(env)
 env.Help(MY_SCONS_HELP % vars.GenerateHelpText(env))
-
-if platform.system().lower() == "windows":
-    # See https://scons.org/faq.html#Linking_on_Windows_gives_me_an_error
-    env['ENV']['TMP'] = os.environ['TMP']
-    # Prevent the generation of an import lib (.lib) in addition to the dll
-    # Unused as we are using as static library for windows
-    # env.AppendUnique(no_import_lib=1)
-    if 'CONDA_PREFIX' in os.environ:
-        env.Append(CPPPATH=[pjoin(os.environ['CONDA_PREFIX'], 'include')])
-        env.Append(CPPPATH=[pjoin(os.environ['CONDA_PREFIX'], 'Library', 'include')])
-        env.Append(LIBPATH=pjoin(os.environ['CONDA_PREFIX'], 'Library', 'lib'))
-else:
-    if 'CONDA_PREFIX' in os.environ:
-        env.Append(CPPPATH=[pjoin(os.environ['CONDA_PREFIX'], 'include')])
-        env.Append(LIBPATH=[pjoin(os.environ['CONDA_PREFIX'], 'lib')])
-    # Specify minimum C++ standard.  Allow later standard from sconscript.local.
-    # In case of multiple `-std` options the last option holds.
-    env.PrependUnique(CXXFLAGS='-std=c++11', delete_existing=1)
 
 # the CPPPATH directories are checked by scons dependency scanner
 cpppath = getsyspaths('CPLUS_INCLUDE_PATH', 'CPATH')
