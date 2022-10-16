@@ -18,12 +18,17 @@ requirements:
   build:
     - {{ compiler('cxx') }}
     - scons
-    - boost-cpp {{ boost }}
     - python
+  host:
+    - boost {{ boost }}
+
 
 test:
-  commands: # [not win]
-    - test -f $PREFIX/lib/libObjCryst${SHLIB_EXT} # [not win]
+  commands:
+    - test -f $PREFIX/lib/libObjCryst${SHLIB_EXT}             # [not win]
+    - test -f $PREFIX/include/ObjCryst/version.h              # [not win]
+    - if not exist %LIBRARY_LIB%\\libObjCryst.lib exit 1      # [win]
+    - if not exist %LIBRARY_INC%\\ObjCryst\\version.h exit 1  # [win]
 
 about:
   home: https://github.com/diffpy/libobjcryst/
