@@ -1,5 +1,16 @@
 # Release notes
 
+## Version 2022.1.2,  - 2022-10-16
+
+### Added
+
+- Recipes for windows and macOS (arm64) builds
+- PowderPatternDiffraction::GetFhklObsSq() and HasFhklObsSq()
+
+### Changed
+
+- Use a valid XML output for a Molecule RigidGroup (not backwards-compatible)
+
 ## Version 2021.1.2 - 2021-11-28
 
 ### Added
