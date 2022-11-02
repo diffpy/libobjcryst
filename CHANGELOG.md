@@ -1,5 +1,14 @@
 # Release notes
 
+## Version 2022.1.3,  - 2022-11-02
+
+### Changed
+
+- the list of HKL reflections will now be automatically be re-generated 
+  for a PowderPatternDiffraction when the Crystal's spacegroup changes,  
+  or the lattice parameters are modified by more than 0.5%
+- Fixed the powder pattern indexing test
+
 ## Version 2022.1.2,  - 2022-10-16
 
 ### Added
