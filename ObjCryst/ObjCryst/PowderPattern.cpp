@@ -794,7 +794,7 @@ PowderPatternDiffraction::PowderPatternDiffraction():
 mpReflectionProfile(0),
 mCorrLorentz(*this),mCorrPolar(*this),mCorrSlitAperture(*this),
 mCorrTextureMarchDollase(*this),mCorrTextureEllipsoid(*this),mCorrTOF(*this),mCorrCylAbs(*this),mExtractionMode(false),
-mpLeBailData(0),mFrozenLatticePar(6),mFreezeLatticePar(false),mFrozenBMatrix(3,3)
+mpLeBailData(0),mFrozenLatticePar(6),mFreezeLatticePar(false),mFrozenBMatrix(3,3),mGenHKLBMatrix(3,3)
 {
    VFN_DEBUG_MESSAGE("PowderPatternDiffraction::PowderPatternDiffraction()",10)
    mIsScalable=true;
@@ -808,13 +808,14 @@ mpLeBailData(0),mFrozenLatticePar(6),mFreezeLatticePar(false),mFrozenBMatrix(3,3
    mClockMaster.AddChild(mpReflectionProfile->GetClockMaster());
    for(unsigned int i=0;i<3;++i) mFrozenLatticePar(i)=5;
    for(unsigned int i=3;i<6;++i) mFrozenLatticePar(i)=M_PI/2;
+   mGenHKLBMatrix=0;
 }
 
 PowderPatternDiffraction::PowderPatternDiffraction(const PowderPatternDiffraction &old):
 mpReflectionProfile(0),
 mCorrLorentz(*this),mCorrPolar(*this),mCorrSlitAperture(*this),
 mCorrTextureMarchDollase(*this),mCorrTextureEllipsoid(*this),mCorrTOF(*this),mCorrCylAbs(*this),mExtractionMode(false),
-mpLeBailData(0),mFrozenLatticePar(6),mFreezeLatticePar(old.FreezeLatticePar()),mFrozenBMatrix(3,3)
+mpLeBailData(0),mFrozenLatticePar(6),mFreezeLatticePar(old.FreezeLatticePar()),mFrozenBMatrix(3,3),mGenHKLBMatrix(3,3)
 {
    this->AddSubRefObj(mCorrTextureMarchDollase);
    this->AddSubRefObj(mCorrTextureEllipsoid);
@@ -831,7 +832,7 @@ mpLeBailData(0),mFrozenLatticePar(6),mFreezeLatticePar(old.FreezeLatticePar()),m
    mClockMaster.AddChild(mClockLorentzPolarSlitCorrPar);
    mClockMaster.AddChild(mpReflectionProfile->GetClockMaster());
    for(unsigned int i=0;i<6;++i) mFrozenLatticePar(i)=old.GetFrozenLatticePar(i);
-   mFrozenBMatrix=old.GetBMatrix();
+   mGenHKLBMatrix=0;
 }
 
 PowderPatternDiffraction::~PowderPatternDiffraction()
@@ -913,13 +914,13 @@ ReflectionProfile& PowderPatternDiffraction::GetProfile()
 
 // Disable the base-class function.
 void PowderPatternDiffraction::GenHKLFullSpace(
-        const REAL maxTheta, const bool useMultiplicity)
+        const REAL maxTheta, const bool useMultiplicity) const
 {
    // This should be never called.
    abort();
 }
 
-void PowderPatternDiffraction::GenHKLFullSpace()
+void PowderPatternDiffraction::GenHKLFullSpace()const
 {
    VFN_DEBUG_ENTRY("PowderPatternDiffraction::GenHKLFullSpace():",5)
    float stol;
@@ -927,15 +928,17 @@ void PowderPatternDiffraction::GenHKLFullSpace()
       stol=mpParentPowderPattern->X2STOL(mpParentPowderPattern->GetPowderPatternXMin());
    else
       stol=mpParentPowderPattern->X2STOL(mpParentPowderPattern->GetPowderPatternXMax());
-   if(stol>1) stol=1; // Do not go beyond 0.5 A resolution (mostly for TOF data)
+   if(stol>2) stol=2; // Do not go beyond 0.25 A resolution (mostly for TOF data)
    this->ScatteringData::GenHKLFullSpace2(stol,true);
    if((mExtractionMode) && (mFhklObsSq.numElements()!=this->GetNbRefl()))
    {// Reflections changed, so ScatteringData::PrepareHKLarrays() probably reseted mFhklObsSq
-      VFN_DEBUG_ENTRY("PowderPatternDiffraction::GenHKLFullSpace(): need to reset observed intensities",7)
-      mFhklObsSq.resize(this->GetNbRefl());
-      mFhklObsSq=100;
+      VFN_DEBUG_ENTRY("PowderPatternDiffraction::GenHKLFullSpace(): need to resize observed intensities",7)
+      const int n0 = mFhklObsSq.numElements();
+      mFhklObsSq.resizeAndPreserve(this->GetNbRefl());
+      for(int i=n0;i<this->GetNbRefl();i++) mFhklObsSq(i)=100;
    }
-   mCorrTextureEllipsoid.InitRefParList();// #TODO: SHould this be here ?
+   // Save the used Bmatrix
+   mGenHKLBMatrix = this->GetBMatrix();
    VFN_DEBUG_EXIT("PowderPatternDiffraction::GenHKLFullSpace():"<<this->GetNbRefl(),5)
 }
 void PowderPatternDiffraction::BeginOptimization(const bool allowApproximations,
@@ -1298,6 +1301,19 @@ unsigned int PowderPatternDiffraction::GetProfileFitNetNbObs()const
    return nb;
 }
 
+bool PowderPatternDiffraction::HasFhklObsSq() const
+{
+  if(mpLeBailData==NULL) return false;
+  return mpLeBailData->GetFhklObsSq().size() > 0;
+}
+
+const CrystVector_REAL& PowderPatternDiffraction::GetFhklObsSq() const
+{
+  if(mpLeBailData==NULL)
+    throw ObjCrystException("PowderPatternDiffraction::GetFhklObsSq(): no extracted intensities available");
+   return mpLeBailData->GetFhklObsSq();
+}
+
 void PowderPatternDiffraction::CalcPowderPattern() const
 {
    this->GetNbReflBelowMaxSinThetaOvLambda();
@@ -1306,12 +1322,38 @@ void PowderPatternDiffraction::CalcPowderPattern() const
 
    VFN_DEBUG_ENTRY("PowderPatternDiffraction::CalcPowderPattern():",3)
 
-   // :TODO: Can't do this as this is non-const
-   //if(this->GetCrystal().GetSpaceGroup().GetClockSpaceGroup()>mClockHKL)
-   //   this->GenHKLFullSpace();
-   //
-   // The workaround is to call Prepare() (non-const) before every calculation
-   // when a modifictaion may have occured.
+   if(this->GetCrystal().GetSpaceGroup().GetClockSpaceGroup()>mClockHKL)
+   {
+      VFN_DEBUG_MESSAGE("PowderPatternDiffraction::CalcPowderPattern():"
+                        "spacegroup has changed, re-generating HKL's",5)
+      cout<<"PowderPatternDiffraction::CalcPowderPattern(): spacegroup has changed, re-generating HKL's"<<endl;
+      this->GenHKLFullSpace();
+   }
+   else if((!this->IsBeingRefined()) && (this->GetCrystal().GetClockLatticePar()>mClockHKL))
+   {
+      // Check if the B matrix changed significantly and requires regenerating the HKL's
+      // This is never done during optimisation
+
+      //mBMatrix = aa ,  bb*cos(gammaa) , cc*cos(betaa) ,
+      //            0  , bb*sin(gammaa) ,-cc*sin(betaa)*cos(alpha),
+      //            0  , 0              ,1/c;
+      bool needgen=false;
+      const REAL r = 0.005; // Tolerate 0.5% difference
+      if(abs(this->GetBMatrix()(0)-mGenHKLBMatrix(0))>(r*this->GetBMatrix()(0))) needgen=true;
+      else if(abs(this->GetBMatrix()(4)-mGenHKLBMatrix(4))>(r*this->GetBMatrix()(4))) needgen=true;
+      else if(abs(this->GetBMatrix()(1)-mGenHKLBMatrix(1))>(r*this->GetBMatrix()(4))) needgen=true;
+      else if(abs(this->GetBMatrix()(8)-mGenHKLBMatrix(8))>(r*this->GetBMatrix()(8))) needgen=true;
+      else if(abs(this->GetBMatrix()(2)-mGenHKLBMatrix(2))>(r*this->GetBMatrix()(8))) needgen=true;
+      else if(abs(this->GetBMatrix()(5)-mGenHKLBMatrix(5))>(r*this->GetBMatrix()(8))) needgen=true;
+      if(needgen)
+      {
+        VFN_DEBUG_MESSAGE("PowderPatternDiffraction::CalcPowderPattern():"
+                          "lattice parameters have changed by more than 0.5%, re-generating HKL's",5)
+        cout<<"PowderPatternDiffraction::CalcPowderPattern():"
+              "lattice parameters have changed by more than 0.5%, re-generating HKL's"<<endl;
+         this->GenHKLFullSpace();
+      }
+   }
 
    this->CalcIhkl();
    this->CalcPowderReflProfile();
@@ -6559,7 +6601,7 @@ void PowderPattern::PrepareIntegratedRfactor()const
       for(int i=0;i<mPowderPatternComponentRegistry.GetNb();i++)
       {
          const CrystVector_long vLim=mPowderPatternComponentRegistry.GetObj(i).GetBraggLimits();
-         for(i=0;i<vLim.numElements();i++) vLimits.push_back(vLim(i));
+         for(int j=0;j<vLim.numElements();j++) vLimits.push_back(vLim(j));
       }
       if(vLimits.size()<2)
       {
@@ -6825,7 +6867,8 @@ SpaceGroupExplorer::SpaceGroupExplorer(PowderPatternDiffraction *pd):
 
 SPGScore SpaceGroupExplorer::Run(const string &spgId, const bool fitprofile,
                                  const bool verbose, const bool restore_orig,
-                                 const bool update_display)
+                                 const bool update_display, const REAL relative_length_tolerance,
+                                 const REAL absolute_angle_tolerance_degree)
 {
    cctbx::sgtbx::space_group sg;
    try
@@ -6847,11 +6890,13 @@ SPGScore SpaceGroupExplorer::Run(const string &spgId, const bool fitprofile,
          throw ObjCrystException(emsg);
       }
    }
-   return this->Run(sg, fitprofile, verbose, restore_orig, update_display);
+   return this->Run(sg, fitprofile, verbose, restore_orig, update_display,
+                    relative_length_tolerance, absolute_angle_tolerance_degree);
 }
 
 SPGScore SpaceGroupExplorer::Run(const cctbx::sgtbx::space_group &spg, const bool fitprofile, const bool verbose,
-                                 const bool restore_orig, const bool update_display)
+                                 const bool restore_orig, const bool update_display,
+                                 const REAL relative_length_tolerance, const REAL absolute_angle_tolerance_degree)
 {
    TAU_PROFILE("SpaceGroupExplorer::Run()","void (wxCommandEvent &)",TAU_DEFAULT);
    TAU_PROFILE_TIMER(timer1,"SpaceGroupExplorer::Run()LSQ-P1","", TAU_FIELD);
@@ -6871,7 +6916,7 @@ SPGScore SpaceGroupExplorer::Run(const cctbx::sgtbx::space_group &spg, const boo
    const cctbx::sgtbx::space_group_symbols s = spg.match_tabulated_settings();
    const string hm=s.universal_hermann_mauguin();
    const cctbx::uctbx::unit_cell uc(scitbx::af::double6(a,b,c,d*RAD2DEG,e*RAD2DEG,f*RAD2DEG));
-   if(!spg.is_compatible_unit_cell(uc,0.01,0.1))
+   if(!spg.is_compatible_unit_cell(uc,relative_length_tolerance,absolute_angle_tolerance_degree))
    {
       throw ObjCrystException("Spacegroup is not compatible with unit cell.");
    }
@@ -6976,7 +7021,8 @@ SPGScore SpaceGroupExplorer::Run(const cctbx::sgtbx::space_group &spg, const boo
 }
 
 void SpaceGroupExplorer::RunAll(const bool fitprofile_all, const bool verbose, const bool keep_best,
-                                const bool update_display, const bool fitprofile_p1)
+                                const bool update_display, const bool fitprofile_p1,
+                                const REAL relative_length_tolerance, const REAL absolute_angle_tolerance_degree)
 {
    Crystal *pCrystal=&(mpDiff->GetCrystal());
    
@@ -6999,7 +7045,7 @@ void SpaceGroupExplorer::RunAll(const bool fitprofile_all, const bool verbose, c
       cctbx::sgtbx::space_group_symbols s=it.next();
       if(s.number()==0) break;
       cctbx::sgtbx::space_group spg(s);
-      if(spg.is_compatible_unit_cell(uc,0.01,0.1)) nbspg++;
+      if(spg.is_compatible_unit_cell(uc,relative_length_tolerance, absolute_angle_tolerance_degree)) nbspg++;
       //if(s.universal_hermann_mauguin().size()>hmlen) hmlen=s.universal_hermann_mauguin().size();
    }
    if(verbose) cout << boost::format("Beginning spacegroup exploration... %u to go...\n") % nbspg;
@@ -7018,7 +7064,7 @@ void SpaceGroupExplorer::RunAll(const bool fitprofile_all, const bool verbose, c
       cctbx::sgtbx::space_group_symbols s=it.next();
       if(s.number()==0) break;
       cctbx::sgtbx::space_group spg(s);
-      bool compat=spg.is_compatible_unit_cell(uc,0.01,0.1);
+      bool compat=spg.is_compatible_unit_cell(uc,relative_length_tolerance,absolute_angle_tolerance_degree);
       if(compat)
       {
          i++;
@@ -7041,8 +7087,9 @@ void SpaceGroupExplorer::RunAll(const bool fitprofile_all, const bool verbose, c
          }
          else
          {
-            if(((s.number()==1) && fitprofile_p1) || fitprofile_all) mvSPG.push_back(this->Run(spg, true, false, false, update_display));
-            else mvSPG.push_back(this->Run(spg, false, false, true, update_display));
+            if(((s.number()==1) && fitprofile_p1) || fitprofile_all) mvSPG.push_back(this->Run(spg, true, false, false, update_display,
+                                                                                               relative_length_tolerance, absolute_angle_tolerance_degree));
+            else mvSPG.push_back(this->Run(spg, false, false, true, update_display,relative_length_tolerance,absolute_angle_tolerance_degree));
             if(s.number() == 1) nb_refl_p1 = mvSPG.back().nbreflused;
             mvSPG.back().ngof *= mpDiff->GetNbReflBelowMaxSinThetaOvLambda() / (float)nb_refl_p1;
             mvSPGExtinctionFingerprint.insert(make_pair(fgp, mvSPG.back()));

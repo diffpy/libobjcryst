@@ -381,7 +381,8 @@ void Crystal::Print(ostream &os)const
    for(int i=0;i<mScattCompList.GetNbComponent();i++)
       nbAtoms += genMult * mScattCompList(i).mOccupancy * mScattCompList(i).mDynPopCorr;
    os << " Total number of components (atoms) in one unit cell : " << nbAtoms<<endl
-      << " Chemical formula: "<< this->GetFormula() <<endl;
+      << " Chemical formula: "<< this->GetFormula() << endl
+      << " Weight: "<< this->GetWeight()<< " g/mol" << endl;
 
    VFN_DEBUG_MESSAGE("Crystal::Print():End",5)
 }
@@ -408,12 +409,33 @@ std::string Crystal::GetFormula() const
    {
       if(pos!=velts.begin()) s<<" ";
       float nb=pos->second;
-      if((abs(nb)-nb)<0.01) s<<pos->first<<int(round(nb));
+      if(abs(round(nb)-nb)<0.005)
+      {
+         if(int(round(nb))==1) s<<pos->first;
+         else s<<pos->first<<int(round(nb));
+      }
       else s<<pos->first<<nb;
    }
    return s.str();
 }
-   
+
+
+REAL Crystal::GetWeight() const
+{
+   this->GetScatteringComponentList();
+   if(mScattCompList.GetNbComponent() == 0) return 0;
+   REAL w=0;
+   for(unsigned int i=0; i<mScattCompList.GetNbComponent(); ++i)
+   {
+      const ScatteringComponent* psi = &mScattCompList(i);
+      if(psi->mpScattPow == 0) continue;
+      if(psi->mpScattPow->GetClassName().compare("ScatteringPowerAtom")!=0) continue;
+      const ScatteringPowerAtom *pat=dynamic_cast<const ScatteringPowerAtom*>(psi->mpScattPow);
+      w += pat->GetAtomicWeight() * psi->mOccupancy * psi->mDynPopCorr ;
+   }
+   return w;
+}
+
 
 CrystMatrix_REAL Crystal::GetMinDistanceTable(const REAL minDistance) const
 {

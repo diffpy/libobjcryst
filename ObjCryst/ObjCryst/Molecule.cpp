@@ -24,6 +24,8 @@
 #include <iterator>
 #include <algorithm>
 #include <iomanip>
+#include <ctime>
+#include <boost/format.hpp>
 
 #include "ObjCryst/Quirks/VFNStreamFormat.h"
 #include "ObjCryst/ObjCryst/Molecule.h"
@@ -354,6 +356,8 @@ bool MolAtom::IsNonFlipAtom() const
    return mIsNonFlipAtom;
 }
 
+size_t MolAtom::int_ptr() const {return (size_t)this;}
+
 #ifdef __WX__CRYST__
 WXCrystObjBasic* MolAtom::WXCreate(wxWindow* parent)
 {
@@ -633,6 +637,9 @@ void MolBond::SetFreeTorsion(const bool isFreeTorsion)
    mIsFreeTorsion=isFreeTorsion;
    mpMol->GetBondListClock().Click();
 }
+
+size_t MolBond::int_ptr() const {return (size_t)this;}
+
 #ifdef __WX__CRYST__
 WXCrystObjBasic* MolBond::WXCreate(wxWindow* parent)
 {
@@ -940,6 +947,9 @@ void MolBondAngle::SetAtom3(MolAtom& at){mvpAtom[2]=&at;}
 std::size_t MolBondAngle::size() const {return mvpAtom.size();}
 vector<MolAtom*>::const_iterator MolBondAngle::begin() const {return mvpAtom.begin();}
 vector<MolAtom*>::const_iterator MolBondAngle::end() const  {return mvpAtom.end();}
+
+size_t MolBondAngle::int_ptr() const {return (size_t)this;}
+
 #ifdef __WX__CRYST__
 WXCrystObjBasic* MolBondAngle::WXCreate(wxWindow* parent)
 {
@@ -1300,6 +1310,9 @@ MolAtom& MolDihedralAngle::GetAtom4(){return *(mvpAtom[3]);}
 std::size_t MolDihedralAngle::size() const {return mvpAtom.size();}
 vector<MolAtom*>::const_iterator MolDihedralAngle::begin() const {return mvpAtom.begin();}
 vector<MolAtom*>::const_iterator MolDihedralAngle::end() const  {return mvpAtom.end();}
+
+size_t MolDihedralAngle::int_ptr() const {return (size_t)this;}
+
 #ifdef __WX__CRYST__
 WXCrystObjBasic* MolDihedralAngle::WXCreate(wxWindow* parent)
 {
@@ -1324,6 +1337,9 @@ string RigidGroup::GetName()const
    for(;at!=this->end();++at) name+=", "+(*at)->GetName();
    return name;
 }
+
+size_t RigidGroup::int_ptr() const {return (size_t)this;}
+
 //######################################################################
 //
 //      MolRing
@@ -1337,6 +1353,9 @@ const std::list<MolAtom*>& MolRing::GetAtomList()const
 
 std::list<MolAtom*>& MolRing::GetAtomList()
 {return mvpAtom;}
+
+size_t MolRing::int_ptr() const {return (size_t)this;}
+
 //######################################################################
 //
 //      Quaternion
@@ -2189,8 +2208,12 @@ std::string Molecule::GetFormula() const
    {
       if(pos!=velts.begin()) s<<" ";
       float nb=pos->second;
-      if((abs(nb)-nb)<0.01) s<<pos->first<<int(round(nb));
-      else s<<pos->first<<nb;
+      if(abs(round(nb)-nb)<0.005)
+      {
+         if(int(round(nb))==1) s<<pos->first;
+         else s<<pos->first<<int(round(nb));
+      }
+     else s<<pos->first<<nb;
    }
    return s.str();
 }
@@ -2270,8 +2293,12 @@ void Molecule::XMLOutput(ostream &os,int indent)const
       for(pos=mvRigidGroup.begin();pos!=mvRigidGroup.end();++pos)
       {
          XMLCrystTag tagg("RigidGroup",false,true);
-         for(set<MolAtom *>::const_iterator at=(*pos)->begin();at!=(*pos)->end();++at)
-            tagg.AddAttribute("Atom",(*at)->GetName());
+         // Need to use Atom1, Atom2 etc.. so a valid XML is produced
+         // See https://github.com/vincefn/objcryst/issues/52
+         // This won't be backwards-compatible
+         int idx = 0;
+         for (set<MolAtom*>::const_iterator at = (*pos)->begin(); at != (*pos)->end(); ++at)
+             tagg.AddAttribute((boost::format("Atom%d") %idx++).str(), (*at)->GetName());
          /*
          tagg.AddAttribute("Q0",(*pos)->mQuat.Q0());
          tagg.AddAttribute("Q1",(*pos)->mQuat.Q1());
@@ -2362,7 +2389,7 @@ void Molecule::XMLInput(istream &is,const XMLCrystTag &tag)
       {
          RigidGroup s;
          for(unsigned int i=0;i<tagg.GetNbAttribute();i++)
-            if("Atom"==tagg.GetAttributeName(i))
+            if(tagg.GetAttributeName(i).rfind("Atom", 0)==0)
                s.insert(&(this->GetAtom(tagg.GetAttributeValue(i))));
          this->AddRigidGroup(s);
       }
