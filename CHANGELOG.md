@@ -1,5 +1,15 @@
 # Release notes
 
+## Version 2022.1.4,  - 2022-12-03
+
+### Added
+- Add UnitCell::ChangeSpaceGroup(), which updates lattice parameter symmetry constraints. 
+
+### Changed
+- Take into account spacegroup clock in UnitCell::GetLatticePar and InitMatrices
+- Throw an exception if alpha, beta or gamma are not within ]0;pi[ in UnitCell::Init()
+
+
 ## Version 2022.1.3,  - 2022-11-02
 
 ### Changed
