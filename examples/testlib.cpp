@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
 {
     using namespace ObjCryst;
     // check simple crystal
-    Crystal fcc(3.523, 3.523, 3.523, 90, 90, 90, "F m -3 m");
+    Crystal fcc(3.523, 3.523, 3.523, M_PI*0.5, M_PI*0.5, M_PI*0.5, "F m -3 m");
     // verify parsing of space group specification in COD4316154
     const char* cod4316154_sg_segment =
         "data_4316154\n"
