@@ -1,5 +1,12 @@
 # Release notes
 
+## Version 2024.1,  - 2024-02-04
+
+### Changed
+- Make sure Molecule::BuildConnectivityTable() always list all atoms, 
+  even for un-connected atoms (pathological case)
+  (https://github.com/diffpy/pyobjcryst/issues/39)
+
 ## Version 2022.1.4,  - 2022-12-03
 
 ### Added
