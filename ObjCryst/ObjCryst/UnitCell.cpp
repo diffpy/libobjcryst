@@ -93,7 +93,8 @@ CrystVector_REAL UnitCell::GetLatticePar() const
 {
    VFN_DEBUG_MESSAGE("UnitCell::GetLatticePar()",0)
 
-   if(mClockLatticeParUpdate>mClockLatticePar) return mCellDim;
+   if(  (mClockLatticeParUpdate>mClockLatticePar)
+      &&(mClockLatticeParUpdate>mSpaceGroup.GetClockSpaceGroup())) return mCellDim;
    else
    {
       //:NOTE: cannot use this->UpdateLatticePar() because it is not a const member function
@@ -164,7 +165,8 @@ REAL UnitCell::GetLatticePar(int whichPar)const
    if( (whichPar<0) || (whichPar>5))
       throw ObjCrystException("UnitCell::LatticePar(int) :trying to access parameter>5!");
 
-   if(mClockLatticeParUpdate>mClockLatticePar) return mCellDim(whichPar);
+   if(  (mClockLatticeParUpdate>mClockLatticePar)
+      &&(mClockLatticeParUpdate>mSpaceGroup.GetClockSpaceGroup())) return mCellDim(whichPar);
    else
    {
       const int num = mSpaceGroup.GetSpaceGroupNumber();
@@ -320,6 +322,14 @@ void UnitCell::Print(ostream &os)const
 const SpaceGroup & UnitCell::GetSpaceGroup() const {return mSpaceGroup;}
 SpaceGroup & UnitCell::GetSpaceGroup()  {return mSpaceGroup;}
 
+void UnitCell::ChangeSpaceGroup(const string &spgId)
+{
+  this->GetSpaceGroup().ChangeSpaceGroup(spgId);
+  this->InitRefParList();
+  this->UpdateLatticePar();
+}
+
+
 const RefinableObjClock& UnitCell::GetClockLatticePar()const {return mClockLatticePar;}
 const RefinableObjClock& UnitCell::GetClockMetricMatrix()const {return mClockMetricMatrix;}
 
@@ -351,13 +361,16 @@ void UnitCell::Init(const REAL a, const REAL b, const REAL c, const REAL alpha,
    mCellDim(4)=beta;
    mCellDim(5)=gamma;
    mClockLatticePar.Click();
+   this->UpdateLatticePar();
+   if((mCellDim(3)<=0)||(mCellDim(3)>=M_PI)) throw ObjCrystException("alpha must be within ]0;pi[");
+   if((mCellDim(4)<=0)||(mCellDim(4)>=M_PI)) throw ObjCrystException("beta must be within ]0;pi[");
+   if((mCellDim(5)<=0)||(mCellDim(5)>=M_PI)) throw ObjCrystException("gamma must be within ]0;pi[");
 
    mClockMetricMatrix.Reset();
    mClockLatticeParUpdate.Reset();
 
    this->InitRefParList();
    this->InitMatrices();
-   this->UpdateLatticePar();
    this->SetName(name);
 
    VFN_DEBUG_EXIT("UnitCell::Init(a,b,c,alpha,beta,gamma,Sg,name):End",10)
@@ -390,7 +403,8 @@ void UnitCell::InitMatrices() const
 {
    //:NOTE: The Matrices must remain upper triangular, since this is assumed for
    //optimization purposes in some procedures.
-   if(mClockMetricMatrix>mClockLatticePar) return;//no need to update
+   if(  (mClockMetricMatrix>mClockLatticePar)
+      &&(mClockMetricMatrix>mSpaceGroup.GetClockSpaceGroup())) return;//no need to update
    //this->UpdateLatticePar(); we should be able to do this...
 
    VFN_DEBUG_MESSAGE("UnitCell::InitMatrices() for crystal : "+this->GetName(),5)

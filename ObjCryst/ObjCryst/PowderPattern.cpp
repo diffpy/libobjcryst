@@ -794,7 +794,7 @@ PowderPatternDiffraction::PowderPatternDiffraction():
 mpReflectionProfile(0),
 mCorrLorentz(*this),mCorrPolar(*this),mCorrSlitAperture(*this),
 mCorrTextureMarchDollase(*this),mCorrTextureEllipsoid(*this),mCorrTOF(*this),mCorrCylAbs(*this),mExtractionMode(false),
-mpLeBailData(0),mFrozenLatticePar(6),mFreezeLatticePar(false),mFrozenBMatrix(3,3)
+mpLeBailData(0),mFrozenLatticePar(6),mFreezeLatticePar(false),mFrozenBMatrix(3,3),mGenHKLBMatrix(3,3)
 {
    VFN_DEBUG_MESSAGE("PowderPatternDiffraction::PowderPatternDiffraction()",10)
    mIsScalable=true;
@@ -808,13 +808,14 @@ mpLeBailData(0),mFrozenLatticePar(6),mFreezeLatticePar(false),mFrozenBMatrix(3,3
    mClockMaster.AddChild(mpReflectionProfile->GetClockMaster());
    for(unsigned int i=0;i<3;++i) mFrozenLatticePar(i)=5;
    for(unsigned int i=3;i<6;++i) mFrozenLatticePar(i)=M_PI/2;
+   mGenHKLBMatrix=0;
 }
 
 PowderPatternDiffraction::PowderPatternDiffraction(const PowderPatternDiffraction &old):
 mpReflectionProfile(0),
 mCorrLorentz(*this),mCorrPolar(*this),mCorrSlitAperture(*this),
 mCorrTextureMarchDollase(*this),mCorrTextureEllipsoid(*this),mCorrTOF(*this),mCorrCylAbs(*this),mExtractionMode(false),
-mpLeBailData(0),mFrozenLatticePar(6),mFreezeLatticePar(old.FreezeLatticePar()),mFrozenBMatrix(3,3)
+mpLeBailData(0),mFrozenLatticePar(6),mFreezeLatticePar(old.FreezeLatticePar()),mFrozenBMatrix(3,3),mGenHKLBMatrix(3,3)
 {
    this->AddSubRefObj(mCorrTextureMarchDollase);
    this->AddSubRefObj(mCorrTextureEllipsoid);
@@ -831,7 +832,7 @@ mpLeBailData(0),mFrozenLatticePar(6),mFreezeLatticePar(old.FreezeLatticePar()),m
    mClockMaster.AddChild(mClockLorentzPolarSlitCorrPar);
    mClockMaster.AddChild(mpReflectionProfile->GetClockMaster());
    for(unsigned int i=0;i<6;++i) mFrozenLatticePar(i)=old.GetFrozenLatticePar(i);
-   mFrozenBMatrix=old.GetBMatrix();
+   mGenHKLBMatrix=0;
 }
 
 PowderPatternDiffraction::~PowderPatternDiffraction()
@@ -913,13 +914,13 @@ ReflectionProfile& PowderPatternDiffraction::GetProfile()
 
 // Disable the base-class function.
 void PowderPatternDiffraction::GenHKLFullSpace(
-        const REAL maxTheta, const bool useMultiplicity)
+        const REAL maxTheta, const bool useMultiplicity) const
 {
    // This should be never called.
    abort();
 }
 
-void PowderPatternDiffraction::GenHKLFullSpace()
+void PowderPatternDiffraction::GenHKLFullSpace()const
 {
    VFN_DEBUG_ENTRY("PowderPatternDiffraction::GenHKLFullSpace():",5)
    float stol;
@@ -927,15 +928,17 @@ void PowderPatternDiffraction::GenHKLFullSpace()
       stol=mpParentPowderPattern->X2STOL(mpParentPowderPattern->GetPowderPatternXMin());
    else
       stol=mpParentPowderPattern->X2STOL(mpParentPowderPattern->GetPowderPatternXMax());
-   if(stol>1) stol=1; // Do not go beyond 0.5 A resolution (mostly for TOF data)
+   if(stol>2) stol=2; // Do not go beyond 0.25 A resolution (mostly for TOF data)
    this->ScatteringData::GenHKLFullSpace2(stol,true);
    if((mExtractionMode) && (mFhklObsSq.numElements()!=this->GetNbRefl()))
    {// Reflections changed, so ScatteringData::PrepareHKLarrays() probably reseted mFhklObsSq
-      VFN_DEBUG_ENTRY("PowderPatternDiffraction::GenHKLFullSpace(): need to reset observed intensities",7)
-      mFhklObsSq.resize(this->GetNbRefl());
-      mFhklObsSq=100;
+      VFN_DEBUG_ENTRY("PowderPatternDiffraction::GenHKLFullSpace(): need to resize observed intensities",7)
+      const int n0 = mFhklObsSq.numElements();
+      mFhklObsSq.resizeAndPreserve(this->GetNbRefl());
+      for(int i=n0;i<this->GetNbRefl();i++) mFhklObsSq(i)=100;
    }
-   mCorrTextureEllipsoid.InitRefParList();// #TODO: SHould this be here ?
+   // Save the used Bmatrix
+   mGenHKLBMatrix = this->GetBMatrix();
    VFN_DEBUG_EXIT("PowderPatternDiffraction::GenHKLFullSpace():"<<this->GetNbRefl(),5)
 }
 void PowderPatternDiffraction::BeginOptimization(const bool allowApproximations,
@@ -1319,12 +1322,35 @@ void PowderPatternDiffraction::CalcPowderPattern() const
 
    VFN_DEBUG_ENTRY("PowderPatternDiffraction::CalcPowderPattern():",3)
 
-   // :TODO: Can't do this as this is non-const
-   //if(this->GetCrystal().GetSpaceGroup().GetClockSpaceGroup()>mClockHKL)
-   //   this->GenHKLFullSpace();
-   //
-   // The workaround is to call Prepare() (non-const) before every calculation
-   // when a modifictaion may have occured.
+   if(this->GetCrystal().GetSpaceGroup().GetClockSpaceGroup()>mClockHKL)
+   {
+      VFN_DEBUG_MESSAGE("PowderPatternDiffraction::CalcPowderPattern():"
+                        "spacegroup has changed, re-generating HKL's",5)
+      this->GenHKLFullSpace();
+   }
+   else if((!this->IsBeingRefined()) && (this->GetCrystal().GetClockLatticePar()>mClockHKL))
+   {
+      // Check if the B matrix changed significantly and requires regenerating the HKL's
+      // This is never done during optimisation
+
+      //mBMatrix = aa ,  bb*cos(gammaa) , cc*cos(betaa) ,
+      //            0  , bb*sin(gammaa) ,-cc*sin(betaa)*cos(alpha),
+      //            0  , 0              ,1/c;
+      bool needgen=false;
+      const REAL r = 0.005; // Tolerate 0.5% difference
+      if(abs(this->GetBMatrix()(0)-mGenHKLBMatrix(0))>(r*this->GetBMatrix()(0))) needgen=true;
+      else if(abs(this->GetBMatrix()(4)-mGenHKLBMatrix(4))>(r*this->GetBMatrix()(4))) needgen=true;
+      else if(abs(this->GetBMatrix()(1)-mGenHKLBMatrix(1))>(r*this->GetBMatrix()(4))) needgen=true;
+      else if(abs(this->GetBMatrix()(8)-mGenHKLBMatrix(8))>(r*this->GetBMatrix()(8))) needgen=true;
+      else if(abs(this->GetBMatrix()(2)-mGenHKLBMatrix(2))>(r*this->GetBMatrix()(8))) needgen=true;
+      else if(abs(this->GetBMatrix()(5)-mGenHKLBMatrix(5))>(r*this->GetBMatrix()(8))) needgen=true;
+      if(needgen)
+      {
+        VFN_DEBUG_MESSAGE("PowderPatternDiffraction::CalcPowderPattern():"
+                          "lattice parameters have changed by more than 0.5%, re-generating HKL's",5)
+         this->GenHKLFullSpace();
+      }
+   }
 
    this->CalcIhkl();
    this->CalcPowderReflProfile();
@@ -2577,6 +2603,43 @@ void PowderPattern::AddPowderPatternComponent(PowderPatternComponent &comp)
    //this->UpdateDisplay();
    VFN_DEBUG_EXIT("PowderPattern::AddPowderPatternComponent():"<<comp.GetName(),5)
 }
+
+void PowderPattern::RemovePowderPatternComponent(PowderPatternComponent &comp)
+{
+   VFN_DEBUG_ENTRY("PowderPattern::RemovePowderPatternComponent():"<<comp.GetName(),5)
+   if(comp.IsScalable())
+   {
+      // Remove one scale factor parameter
+      cout<<"PowderPattern::RemovePowderPatternComponent: removing 1 scale paramater"<<endl;
+      this->Print();
+      this->RemovePar(&this->GetPar(mScaleFactor.data()+mPowderPatternComponentRegistry.GetNb()-1));
+      this->Print();
+   }
+   
+   this->RemoveSubRefObj(comp);
+   comp.DeRegisterClient(*this);
+   mClockPowderPatternCalc.Reset();
+   mClockIntegratedFactorsPrep.Reset();
+   mPowderPatternComponentRegistry.DeRegister(comp);
+   
+   // Shift scale factors
+   unsigned int i=0;
+   for(unsigned int i=0;i<this->GetNbPowderPatternComponent();i++)
+      if(&comp == &this->GetPowderPatternComponent(i)) break;
+   for(unsigned int j=i;j<this->GetNbPowderPatternComponent()-1;j++) mScaleFactor(j) = mScaleFactor(j+1);
+
+   mClockScaleFactor.Click();
+   this->UpdateDisplay();
+   VFN_DEBUG_EXIT("PowderPattern::RemovePowderPatternComponent():"<<comp.GetName(),5)
+}
+
+void PowderPattern::RemovePowderPatternComponent(const int i)
+{
+   VFN_DEBUG_ENTRY("PowderPattern::RemovePowderPatternComponent():"<<i,5)
+   this->RemovePowderPatternComponent(mPowderPatternComponentRegistry.GetObj(i));
+   VFN_DEBUG_EXIT("PowderPattern::RemovePowderPatternComponent():"<<i,5)
+}
+
 
 unsigned int PowderPattern::GetNbPowderPatternComponent()const
 {
@@ -7074,7 +7137,7 @@ void SpaceGroupExplorer::RunAll(const bool fitprofile_all, const bool verbose, c
    if(keep_best)
    {
       if(verbose) cout<<"Restoring best spacegroup: "<<mvSPG.front().hm<<endl;
-      pCrystal->GetSpaceGroup().ChangeSpaceGroup(mvSPG.front().hm);
+      pCrystal->ChangeSpaceGroup(mvSPG.front().hm);
    }
    else
    {

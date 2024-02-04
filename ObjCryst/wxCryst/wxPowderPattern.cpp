@@ -172,9 +172,10 @@ class WXProfileFitting:public wxWindow
 //    WXPowderPattern
 //
 ////////////////////////////////////////////////////////////////////////
-static const long ID_POWDER_MENU_COMP_ADDBACKGD_BAYESIAN=WXCRYST_ID();
-static const long ID_POWDER_MENU_COMP_ADDBACKGD=       WXCRYST_ID();
-static const long ID_POWDER_MENU_COMP_ADDCRYST=        WXCRYST_ID();
+static const long ID_POWDER_MENU_COMP_ADDBACKGD_BAYESIAN=   WXCRYST_ID();
+static const long ID_POWDER_MENU_COMP_ADDBACKGD=            WXCRYST_ID();
+static const long ID_POWDER_MENU_COMP_ADDCRYST=             WXCRYST_ID();
+static const long ID_POWDER_MENU_COMP_REMOVE=               WXCRYST_ID();
 static const long ID_POWDER_MENU_GRAPH=                     WXCRYST_ID();
 static const long ID_POWDER_MENU_SAVETEXT=                  WXCRYST_ID();
 static const long ID_POWDER_MENU_SIMULATE=                  WXCRYST_ID();
@@ -236,6 +237,7 @@ BEGIN_EVENT_TABLE(WXPowderPattern, wxWindow)
    EVT_MENU(ID_POWDER_MENU_COMP_ADDBACKGD,          WXPowderPattern::OnMenuAddCompBackgd)
    EVT_MENU(ID_POWDER_MENU_COMP_ADDBACKGD_BAYESIAN, WXPowderPattern::OnMenuAddCompBackgdBayesian)
    EVT_MENU(ID_POWDER_MENU_COMP_ADDCRYST,           WXPowderPattern::OnMenuAddCompCryst)
+   EVT_MENU(ID_POWDER_MENU_COMP_REMOVE,             WXPowderPattern::OnMenuRemoveComp)
    EVT_MENU(ID_POWDER_MENU_SAVETEXT,                WXPowderPattern::OnMenuSaveText)
    EVT_MENU(ID_POWDER_MENU_SIMULATE,                WXPowderPattern::OnMenuSimulate)
    EVT_MENU(ID_POWDER_MENU_IMPORT_FULLPROF,         WXPowderPattern::OnMenuImportPattern)
@@ -333,6 +335,8 @@ mChi2(0.0),mGoF(0.0),mRwp(0.0),mRp(0.0)
                                 "Add user-supplied Background ");
          mpMenuBar->AddMenuItem(ID_POWDERPATTERN_MENU_COMPONENTS,ID_POWDER_MENU_COMP_ADDCRYST,
                                 "Add Crystalline Phase");
+         mpMenuBar->AddMenuItem(ID_POWDERPATTERN_MENU_COMPONENTS,ID_POWDER_MENU_COMP_REMOVE,
+                                "Remove background or crystalline phase");
       mpMenuBar->AddMenu("Radiation",ID_POWDER_MENU_WAVELENGTH);
          mpMenuBar->AddMenuItem(ID_POWDER_MENU_WAVELENGTH,
                                 ID_POWDER_MENU_WAVELENGTH_NEUTRON,
@@ -728,6 +732,42 @@ void WXPowderPattern::OnMenuAddCompCryst(wxCommandEvent & WXUNUSED(event))
    this->CrystUpdate();
    VFN_DEBUG_EXIT("WXPowderPattern::OnMenuAddCompCryst()",10)
 }
+
+void WXPowderPattern::OnMenuRemoveComp(wxCommandEvent & WXUNUSED(event))
+{
+   VFN_DEBUG_ENTRY("WXPowderPattern::OnMenuRemoveComp()",10)
+   WXCrystValidateAllUserInput();
+   // Update names
+   for(unsigned int i=0;i<this->GetPowderPattern().GetNbPowderPatternComponent();i++)
+   {
+      PowderPatternComponent &comp=this->GetPowderPattern().GetPowderPatternComponent(i);
+      if(comp.GetClassName()=="PowderPatternBackground")
+         comp.SetName("Background");
+      else
+      {
+         PowderPatternDiffraction* pdiff=dynamic_cast<PowderPatternDiffraction*> (&comp);
+         if(pdiff) comp.SetName("Crystal:" + pdiff->GetCrystal().GetName());
+         else cout<<"WXPowderPattern::OnMenuRemoveComp(): could not recognize:"<<comp.GetClassName()<<":"<<comp.GetName()<<endl;
+      }
+   }
+   int choice;
+   PowderPatternComponent *comp= WXDialogChooseFromRegistry(this->GetPowderPattern().mPowderPatternComponentRegistry,(wxWindow*)this,
+         "Choose a component to remove:",choice);
+   if(0==comp)
+   {
+      VFN_DEBUG_EXIT("WXPowderPattern::OnMenuRemoveComp(): Canceled",10)
+      return;
+   }
+   VFN_DEBUG_MESSAGE("WXPowderPattern::OnMenuRemoveComp()",10)
+   this->GetPowderPattern().RemovePowderPatternComponent(*comp);
+   VFN_DEBUG_MESSAGE("WXPowderPattern::OnMenuRemoveComp()",10)
+   if(mpGraph!=0) mpPowderPattern->Prepare();//else this will be done when opening the graph
+   wxTheApp->GetTopWindow()->Layout();
+   wxTheApp->GetTopWindow()->SendSizeEvent();
+   this->CrystUpdate();
+   VFN_DEBUG_EXIT("WXPowderPattern::OnMenuRemoveComp()",10)
+}
+
 
 class WXPowderPatternGraphFrame :public wxFrame
 {
@@ -2635,13 +2675,13 @@ void WXCellExplorer::OnSelectCell(wxCommandEvent &event)
             {
                switch(pos->first.mlattice)
                {
-                  case TRICLINIC:mpCrystal->GetSpaceGroup().ChangeSpaceGroup("P-1");break;
-                  case MONOCLINIC:mpCrystal->GetSpaceGroup().ChangeSpaceGroup("P2/m");break;
-                  case ORTHOROMBIC:mpCrystal->GetSpaceGroup().ChangeSpaceGroup("Pmmm");break;
-                  case HEXAGONAL:mpCrystal->GetSpaceGroup().ChangeSpaceGroup("P6/mmm");break;
-                  case RHOMBOEDRAL:mpCrystal->GetSpaceGroup().ChangeSpaceGroup("R-3m");break;
-                  case TETRAGONAL:mpCrystal->GetSpaceGroup().ChangeSpaceGroup("P4/mmm");break;
-                  case CUBIC:mpCrystal->GetSpaceGroup().ChangeSpaceGroup("Pm-3m");break;
+                  case TRICLINIC:mpCrystal->ChangeSpaceGroup("P-1");break;
+                  case MONOCLINIC:mpCrystal->ChangeSpaceGroup("P2/m");break;
+                  case ORTHOROMBIC:mpCrystal->ChangeSpaceGroup("Pmmm");break;
+                  case HEXAGONAL:mpCrystal->ChangeSpaceGroup("P6/mmm");break;
+                  case RHOMBOEDRAL:mpCrystal->ChangeSpaceGroup("R-3m");break;
+                  case TETRAGONAL:mpCrystal->ChangeSpaceGroup("P4/mmm");break;
+                  case CUBIC:mpCrystal->ChangeSpaceGroup("Pm-3m");break;
                }
                break;
             }
@@ -2649,10 +2689,10 @@ void WXCellExplorer::OnSelectCell(wxCommandEvent &event)
             {
                switch(pos->first.mlattice)
                {
-                  case MONOCLINIC:mpCrystal->GetSpaceGroup().ChangeSpaceGroup("I2/m");break;
-                  case ORTHOROMBIC:mpCrystal->GetSpaceGroup().ChangeSpaceGroup("I222");break;
-                  case TETRAGONAL:mpCrystal->GetSpaceGroup().ChangeSpaceGroup("I4/mmm");break;
-                  case CUBIC:mpCrystal->GetSpaceGroup().ChangeSpaceGroup("Im-3m");break;
+                  case MONOCLINIC:mpCrystal->ChangeSpaceGroup("I2/m");break;
+                  case ORTHOROMBIC:mpCrystal->ChangeSpaceGroup("I222");break;
+                  case TETRAGONAL:mpCrystal->ChangeSpaceGroup("I4/mmm");break;
+                  case CUBIC:mpCrystal->ChangeSpaceGroup("Im-3m");break;
                }
                break;
             }
@@ -2660,8 +2700,8 @@ void WXCellExplorer::OnSelectCell(wxCommandEvent &event)
             {
                switch(pos->first.mlattice)
                {
-                  case MONOCLINIC:mpCrystal->GetSpaceGroup().ChangeSpaceGroup("A2/m");break;
-                  case ORTHOROMBIC:mpCrystal->GetSpaceGroup().ChangeSpaceGroup("Amm2");break;
+                  case MONOCLINIC:mpCrystal->ChangeSpaceGroup("A2/m");break;
+                  case ORTHOROMBIC:mpCrystal->ChangeSpaceGroup("Amm2");break;
                }
                break;
             }
@@ -2669,8 +2709,8 @@ void WXCellExplorer::OnSelectCell(wxCommandEvent &event)
             {
                switch(pos->first.mlattice)
                {
-                  case MONOCLINIC:mpCrystal->GetSpaceGroup().ChangeSpaceGroup("C2/m");break;
-                  case ORTHOROMBIC:mpCrystal->GetSpaceGroup().ChangeSpaceGroup("Cmmm");break;
+                  case MONOCLINIC:mpCrystal->ChangeSpaceGroup("C2/m");break;
+                  case ORTHOROMBIC:mpCrystal->ChangeSpaceGroup("Cmmm");break;
                }
                break;
             }
@@ -2678,8 +2718,8 @@ void WXCellExplorer::OnSelectCell(wxCommandEvent &event)
             {
                switch(pos->first.mlattice)
                {
-                  case ORTHOROMBIC:mpCrystal->GetSpaceGroup().ChangeSpaceGroup("Fmmm");break;
-                  case CUBIC:mpCrystal->GetSpaceGroup().ChangeSpaceGroup("Fm-3m");break;
+                  case ORTHOROMBIC:mpCrystal->ChangeSpaceGroup("Fmmm");break;
+                  case CUBIC:mpCrystal->ChangeSpaceGroup("Fm-3m");break;
                }
                break;
             }
@@ -4968,7 +5008,7 @@ void WXProfileFitting::OnExploreSpacegroups(wxCommandEvent &event)
    mpLog->AppendText(wxString::Format(_T("\n\nYou can copy the chosen spacegroup symbol in the Crystal window\n")));
    mpLog->AppendText(wxString::Format(_T("\n\nThe spacegroup with the best nGoF has been applied\n")));
    // Set best solution
-   pCrystal->GetSpaceGroup().ChangeSpaceGroup(vSPG.front().hm);
+   pCrystal->ChangeSpaceGroup(vSPG.front().hm);
    pDiff->GetParentPowderPattern().UpdateDisplay();
    pDiff->SetExtractionMode(true,true);
    pDiff->ExtractLeBail(5);
