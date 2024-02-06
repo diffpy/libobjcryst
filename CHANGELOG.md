@@ -1,5 +1,11 @@
 # Release notes
 
+## Version 2024.1.1,  - 2024-02-06
+
+### Added
+- Make sure Molecule::BuildConnectivityTable() always list all atoms, 
+  even if their connectivity list is empty (pathological case)
+
 ## Version 2022.1.4,  - 2022-12-03
 
 ### Added
