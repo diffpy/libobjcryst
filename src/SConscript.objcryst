@@ -4,35 +4,36 @@ Import('env')
 objcrystenv = env.Clone()
 
 # Source directories
-objcrystenv.PrependUnique(CPPPATH = ["."])
+objcrystenv.PrependUnique(CPPPATH = ["./"])
+objcrystenv.PrependUnique(CPPPATH = ["./objcryst"])
 objcrystenv.PrependUnique(CPPPATH = ["./cctbx/include"])
 
 # Idenfity the required source files
-srcfiles  = Glob("./ObjCryst/ObjCryst/*.cpp")
-srcfiles += Glob("./ObjCryst/RefinableObj/*.cpp")
-srcfiles += Glob("./ObjCryst/CrystVector/*.cpp")
-srcfiles += Glob("./ObjCryst/Quirks/*.cpp")
+srcfiles  = Glob("./objcryst/ObjCryst/ObjCryst/*.cpp")
+srcfiles += Glob("./objcryst/ObjCryst/RefinableObj/*.cpp")
+srcfiles += Glob("./objcryst/ObjCryst/CrystVector/*.cpp")
+srcfiles += Glob("./objcryst/ObjCryst/Quirks/*.cpp")
 
 # Determine library version from the git data.
 SConscript("SConscript.version")
-srcfiles += [File("./ObjCryst/version.cpp")]
+srcfiles += [File("./version/version.cpp")]
 
 # Make shared objects
 objects = objcrystenv.SharedObject(srcfiles)
 # Put VFNDebug.os first to define debug level constants
 objects.sort(key=lambda o: not o.name.startswith('VFNDebug'))
-Clean(objects, "ObjCryst")
+Clean(objects, "objcryst")
 
 # Put this back into the global environment
 env["objcrystobjs"] = objects
 
 # Record headers
-env['lib_includes'] += Glob("./ObjCryst/ObjCryst/*.h")
-env['lib_includes'] += Glob("./ObjCryst/RefinableObj/*.h")
-env['lib_includes'] += Glob("./ObjCryst/CrystVector/*.h")
+env['lib_includes'] += Glob("./objcryst/ObjCryst/ObjCryst/*.h")
+env['lib_includes'] += Glob("./objcryst/ObjCryst/RefinableObj/*.h")
+env['lib_includes'] += Glob("./objcryst/ObjCryst/CrystVector/*.h")
 # these headers are not included from any other headers
 excluded_quirks = set(['Chronometer.h', 'VFNStreamFormat.h', 'sse_mathfun.h'])
-env['lib_includes'] += [f for f in Glob("./ObjCryst/Quirks/*.h")
+env['lib_includes'] += [f for f in Glob("./objcryst/ObjCryst/Quirks/*.h")
         if not f.name in excluded_quirks]
 
 # vim: ft=python

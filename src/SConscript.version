@@ -50,13 +50,13 @@ env.Append(BUILDERS={'BuildVersionCode' :
 
 # Targets --------------------------------------------------------------------
 
-vhpp = File('ObjCryst/version.h')
+vhpp = File('version/version.h')
 
 # If version.h does not exists, build it from git metadata
 if not os.path.isfile(str(vhpp.srcnode())):
-    vtpl = File('ObjCryst/version.tpl')
+    vtpl = File('version/version.tpl')
     gver = get_version_or_die()
-    vhpp, = env.BuildVersionCode(['ObjCryst/version.h'], vtpl)
+    vhpp, = env.BuildVersionCode(['version/version.h'], vtpl)
     env.Depends(vhpp, env.Value(gver['version'] + gver['commit']))
 
 env['lib_includes'] += [vhpp]

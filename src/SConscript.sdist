@@ -10,14 +10,14 @@ def add_version_and_compress(target, source, env):
     tfin = tarfile.open(target[0].path)
     fpout = gzip.GzipFile(target[0].path + '.gz', 'w', mtime=0)
     tfout = tarfile.open(fileobj=fpout, mode='w')
-    # copy archive members up to the ObjCryst/version.cpp member.
+    # copy archive members up to the version/version.cpp member.
     tiiter = (t for t in tfin if not t.name.endswith('/version.tpl'))
     for ti in tiiter:
         tfout.addfile(ti, tfin.extractfile(ti))
-        if ti.name.endswith('src/ObjCryst/version.cpp'):
+        if ti.name.endswith('src/version/version.cpp'):
             break
     assert ti.name.endswith('version.cpp'), \
-        "src/ObjCryst/version.cpp not found in tar archive."
+        "src/version/version.cpp not found in tar archive."
     # add the generated version.h file to the archive.
     vp = source[0].path
     ti.name = ti.name[:-4] + '.h'
@@ -62,7 +62,7 @@ env.Append(BUILDERS={'BuildSourceDistribution' :
     Builder(generator=generate_sdist_actions, suffix='.tar')})
 
 # build node for version.hpp
-vh = [f for f in env['lib_includes'] if str(f).endswith('ObjCryst/version.h')]
+vh = [f for f in env['lib_includes'] if str(f).endswith('version/version.h')]
 
 sdist = Alias('sdist', env.BuildSourceDistribution('#/libobjcryst', vh))
 AlwaysBuild(sdist)
