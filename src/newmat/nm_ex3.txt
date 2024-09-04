@@ -47,4 +47,3 @@ Fails with some compilers - needs fixing
 exp(LnMaximum)              1.79769e+308
 This should print a value close to Minimum, not zero
 exp(LnMinimum)              2.22507e-308
-
