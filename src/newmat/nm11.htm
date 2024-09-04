@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//SoftQuad Software//DTD HoTMetaL PRO 5.0::19981217::extensions to HTML 4.0//EN" "hmpro5.dtd">
- 
+
 <HTML>
- 
+
 <HEAD>
 <meta http-equiv="Content-Language" content="en-nz">
 <meta name="GENERATOR" content="Microsoft FrontPage 6.0">
@@ -27,7 +27,7 @@ Introduction</A><BR>
 <A HREF="#refer">3. Reference manual</A><br>
 <A HREF="#error">4.
 Error messages</A></TD>
-<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> 
+<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%">
 <A HREF="#design">5. Design of the library</A><br>
 <a href="#function">6. Function summary</a><br>
 <a href="#changes">7. Change History</a><br>
@@ -37,7 +37,7 @@ Error messages</A></TD>
 <p>&nbsp;</p>
 <P>This is the <I>how to use</I> documentation for <I>newmat</I> plus some
 background information on its design. </P>
-<P>There is additional support material on my <A HREF="#where">web site</A>. 
+<P>There is additional support material on my <A HREF="#where">web site</A>.
 </P>
 <P CLASS="small">Navigation:&nbsp; This page is arranged in sections,
 sub-sections and sub-sub-sections; four cross-references are given at the top
@@ -72,7 +72,7 @@ Where to find this library</A><BR>
 <p>I place no restrictions on the use of <i>newmat</i> except that I take no liability for any problems that may arise from its use,
 distribution or other dealings with it.<p>
 <p>
-You can use it in your commercial projects (as well as your non-commercial 
+You can use it in your commercial projects (as well as your non-commercial
 projects).<p>
 <p>
 You can make and distribute modified or merged versions. You can
@@ -91,7 +91,7 @@ Please understand that there may still be bugs and errors. Use at
 your own risk. I (Robert Davies) take no responsibility for any errors
 or omissions in this package or for any misfortune that may befall you
 or others as a result of your use, distribution or other dealings with it.<HR>
-<P>Please report bugs to me at <B>robert at statsresearch.co.nz</B>&nbsp;&nbsp; 
+<P>Please report bugs to me at <B>robert at statsresearch.co.nz</B>&nbsp;&nbsp;
 [replace <b>at</b> by you-know-what-character in the email address].</P>
 <P>When reporting a bug please tell me which C++ compiler you are using, and
 what version. Also give me details of your computer. And tell me which version
@@ -197,7 +197,7 @@ multiply </LI>
 operators so you can write things like <TT> X = A * (B + C);</TT></LI>
 <LI>need a variety of types of matrices (but not sparse)</LI>
 <LI>need only one element type (float or double)</LI>
-<LI>work with matrices in the range 10 x 10 up to what can be stored in memory 
+<LI>work with matrices in the range 10 x 10 up to what can be stored in memory
 </LI>
 <LI>tolerate a moderately large but not huge package</LI>
 <LI>need high quality but not necessarily the latest numerical methods. </LI>
@@ -295,14 +295,14 @@ should store the resulting object files as a library. The tmt*.cpp files are
 used for <A HREF="#testing">testing</A>, example.cpp is an <A
 HREF="#example">example</A> and sl_ex.cpp, nl_ex.cpp and garch.cpp are examples
 of the <A HREF="#nonlin">non-linear</A> solve and optimisation routines. A
-demonstration and test of the exception mechanism is in test_exc.cpp. The files 
+demonstration and test of the exception mechanism is in test_exc.cpp. The files
 nm_ex1.cpp, nm_ex2.cpp and nm_ex3.cpp contain more simple examples. </P>
 <P>I include a number of <I>make</I> files for compiling the example and the
 test package. See the section on <A HREF="#make">make files</A> for details.
 Alternatively, with the PC compilers, its pretty quick just to load all the files in the
 interactive environments by pointing and clicking. </P>
 <P>Use the large or win32 console model when you are using a PC. Do not
-<I>outline</I> inline functions. You may need to increase the stack size on 
+<I>outline</I> inline functions. You may need to increase the stack size on
 older operating systems or compilers. </P>
 <P>Your source files that access the newmat will need to #include one or more
 of the following files. </P>
@@ -338,18 +338,18 @@ are using.</P>
 <H2><A NAME="make"></A>2.2 Make files</H2>
 <P CLASS="small"><A HREF="#custom">next</A> - <A HREF="#custom">skip</A> -
 <A HREF="#starting">up</A> - <A HREF="#top">start</A></P>
-<P>I have included <I>make</I> files for compiling my test and example programs for 
-various versions of CC, Borland, Microsoft, Open Watcom, Intel and Gnu compilers. You 
+<P>I have included <I>make</I> files for compiling my test and example programs for
+various versions of CC, Borland, Microsoft, Open Watcom, Intel and Gnu compilers. You
 can generate make files for a number of other compilers with my
 <a href="genmake.htm">genmake</a> utility. <i>Make</i> files provide
 a way of compiling your programs  without using the IDE that comes with
 PC compilers. See the <A HREF="#files">files section</A> for details.</P>
 <H3>PC</H3>
-<P>I include  make files for various versions of Borland, Microsoft and Intel 
-compilers. With the 
-Borland compiler you will need to edit it to show where 
+<P>I include  make files for various versions of Borland, Microsoft and Intel
+compilers. With the
+Borland compiler you will need to edit it to show where
 you have stored your Borland compiler. For make files for other compilers use my
-<a href="genmake.htm">genmake</a> utility. To compile my test and example 
+<a href="genmake.htm">genmake</a> utility. To compile my test and example
 programs use Borland 5.5 (Builder 5) use</P>
 <pre>   make -f nm_b55.mak</pre>
 <p>or with Borland 5.6 (Builder 6) use</p>
@@ -400,7 +400,7 @@ supported exceptions, simulated exceptions, or disable exceptions. I now set
 compiler supported exceptions <I>if and only if</I> you have set the option on
 your compiler to recognise exceptions. Disabling exceptions sometimes helps
 with compilers that are incompatible with my exception simulation scheme. </P>
-<P>Activate the appropriate statement to make the element type <i>float</i> or 
+<P>Activate the appropriate statement to make the element type <i>float</i> or
 <i>double</i>. I suggest you leave it at <i>double</i>.</P>
 <P>The option <A HREF="#testing">DO_FREE_CHECK</A> is used for tracking memory
 leaks and normally should not be activated. </P>
@@ -408,7 +408,7 @@ leaks and normally should not be activated. </P>
 <A HREF="#elements">element access</A>. Note that this does <I>not</I> change
 the starting point for indices when you are using round brackets for accessing
 elements or selecting submatrices. It does enable you to use C style square
-brackets. This also activates additional constructors for Matrix, ColumnVector 
+brackets. This also activates additional constructors for Matrix, ColumnVector
 and RowVector to simplify use with <i>Numerical Recipes in C++</i>.</P>
 <P>Activate <TT>#define use_namespace</TT> if you want to use <A
 HREF="#namesp">namespaces</A>. Do this only if you are sure your compiler
@@ -417,7 +417,7 @@ again if the compiler reports inaccessible variables or the linker reports
 missing links. </P>
 <P>Activate <TT>#define _STANDARD_</TT> to use the standard names for the
 included files and to find the floating point precision data using the floating
-point standard. This will work with most recent compilers and is done 
+point standard. This will work with most recent compilers and is done
 automatically for Borland, Gnu, Intel and Microsoft compilers. </P>
 <P>If you haven't defined <TT>_STANDARD_</TT> and are using a compiler that
 <I>include.h</I> does not recognise and you want to pick up the floating point
@@ -427,7 +427,7 @@ Otherwise the floating point precision data will be accessed from
 particular.</P>
 <P>There is a line</P>
 <pre>   //#define set_unix_options</pre>
-<p>You can activate this if you are using a Linux or Unix system. It is not used 
+<p>You can activate this if you are using a Linux or Unix system. It is not used
 by <i>Newmat</i> but is used by some of my other programs.</p>
 <H2><A NAME="compiler"></A>2.4 Compilers</H2>
 <P CLASS="small"><A HREF="#atandt">next</A> - <A HREF="#update">skip</A> -
@@ -449,7 +449,7 @@ by <i>Newmat</i> but is used by some of my other programs.</p>
 <P>I have tested this library on a number of compilers. Here are the levels of
 success and any special considerations. In most cases I have chosen code that
 works under all the compilers I have access to, but I have had to include some
-specific work-arounds for some compilers. For the newest PC versions,  I use a Pentium 
+specific work-arounds for some compilers. For the newest PC versions,  I use a Pentium
 4 computer running windows XP or Linux
 (Red Hat workstation version). The Unix versions are on a Sun Sparc
 station. Thanks to Victoria University for access to the Sparc. </P>
@@ -462,7 +462,7 @@ your own set of options in include.h. </P>
 <P CLASS="small"><A HREF="#borland">next</A> - <A HREF="#borland">skip</A> -
 <A HREF="#compiler">up</A> - <A HREF="#top">start</A></P>
 <P>The AT&amp;T compiler used to be available on a wide variety of Unix
-workstations. I don't know if anyone still uses it. However the AT&amp;T options are 
+workstations. I don't know if anyone still uses it. However the AT&amp;T options are
 the default if your compiler is not recognised.</P>
 <P>AT&amp;T C++ 2.1; 3.0.1 on a Sun: Previous versions worked on these
 compilers, which I no longer have access to. </P>
@@ -473,25 +473,25 @@ Triangular Matrices. You need to evaluate the expression separately. </P>
 <P CLASS="small"><A HREF="#gcc">next</A> - <A HREF="#gcc">skip</A> -
 <A HREF="#compiler">up</A> - <A HREF="#top">start</A></P>
 <H3>Newer compilers</H3>
-<P><b>Borland Builder version 8.</b> My tests here have been compiling from a 
-make file using <i>nm_b58.mak </i> and making a console program. This works fine 
-except that my values of <i>LnMinimum</i> and <i>LnMaximum</i> in <i>precisio.h</i> 
+<P><b>Borland Builder version 8.</b> My tests here have been compiling from a
+make file using <i>nm_b58.mak </i> and making a console program. This works fine
+except that my values of <i>LnMinimum</i> and <i>LnMaximum</i> in <i>precisio.h</i>
 are not correct.</P>
-<P><b>Borland Builder version 6:</b> My tests have been on the <i>personal</i> 
-version. See the notes for version 5. If you are 
-compiling with a make file you can use <i>nm_b56.mak</i> as a model. You can set 
-the <i>newmat</i> options to use namespace and the standard library. If you are 
+<P><b>Borland Builder version 6:</b> My tests have been on the <i>personal</i>
+version. See the notes for version 5. If you are
+compiling with a make file you can use <i>nm_b56.mak</i> as a model. You can set
+the <i>newmat</i> options to use namespace and the standard library. If you are
 compiling a GUI program you may need to comment out the line defining <i>
-TypeDefException</i> in <i>include.h. </i>I don't believe exceptions work 
-completely correctly in either version 5 or version 6. However, this does not 
+TypeDefException</i> in <i>include.h. </i>I don't believe exceptions work
+completely correctly in either version 5 or version 6. However, this does not
 seem to be a problem with my use of them in <i>newmat</i>.</P>
 <P><B>Borland Builder version 5:</B> This works fine in console mode and no
 special editing of the source codes is required. I haven't tested it in GUI
 mode. You can set the <i>newmat</i> options to use namespace and the standard library. <b> You
-should turn <I>off</I> the Borland option to use pre-compiled headers.</b> There 
-are notes on compiling with the IDE on my <a href="#where">website</a>. 
+should turn <I>off</I> the Borland option to use pre-compiled headers.</b> There
+are notes on compiling with the IDE on my <a href="#where">website</a>.
 Alternatively you can use the <i>nm_b55.mak</i> make file<i>.</i></P>
-<P><B>Borland Builder version 4</B>: I have successfully used this on older 
+<P><B>Borland Builder version 4</B>: I have successfully used this on older
 versions of newmat using the
 console wizard (menu item file/new - select new tab). Use compiler
 exceptions. Suppose you are compiling my test program <I>tmt</I>. Rename my
@@ -508,10 +508,10 @@ your system.</P>
 <H3>Older compilers</H3>
 <P><B>Borland C++  5.02</B>:</P>
 <P>I am not longer checking compatibility with this compiler.</P>
-<P>Use the large or 32 bit flat model. If you are not debugging, turn off the 
+<P>Use the large or 32 bit flat model. If you are not debugging, turn off the
 options that collect debugging information. Use my simulated exceptions.</P>
 <P>When running my test program under ms-dos you may run out of memory. Either
-compile the test routine to run under <I>easywin</I> or use simulated exceptions 
+compile the test routine to run under <I>easywin</I> or use simulated exceptions
 rather than the built in exceptions. </P>
 <P>If you can, upgrade to windows 95 or window NT and use the 32 bit console
 model. </P>
@@ -519,23 +519,23 @@ model. </P>
 less than 64K bytes in length (90x90 for a rectangular matrix if you are using
 <TT>double</TT> as your element type). Otherwise your program will crash
 without warning or explanation. You will need to break the <A
-HREF="#testing">tmt</A> set of test files into several parts to get the program 
+HREF="#testing">tmt</A> set of test files into several parts to get the program
 to fit into your computer and run without stack overflow. </P>
 <P>You can generate make files for versions 5  with my <a href="genmake.htm">
 genmake</a> utility.</P>
 <P><b>Borland C++ 3 and 4</b>.</P>
-<P>The program used to compile in version 3.1 if you enable the <i>simulated booleans</i> 
-- comment <i>out</i> the line <tt>#define bool_LIB 0</tt> in <i>include.h</i> 
-and use the <i>simulated exceptions</i>. I haven't checked the latest versions 
-of Newmat. The main test program is too large to run 
+<P>The program used to compile in version 3.1 if you enable the <i>simulated booleans</i>
+- comment <i>out</i> the line <tt>#define bool_LIB 0</tt> in <i>include.h</i>
+and use the <i>simulated exceptions</i>. I haven't checked the latest versions
+of Newmat. The main test program is too large to run
 unless you break it up into several parts. I haven't tried it under version 4.</P>
 <H2><A NAME="gcc"></A>2.4.3 Gnu G++</H2>
 <P CLASS="small"><A HREF="#hpux">next</A> - <A HREF="#hpux">skip</A> -
 <A HREF="#compiler">up</A> - <A HREF="#top">start</A></P>
 <P><B>Gnu G++ 3, 4 (Linux), 3 (Sun):</B> These work OK. If you are using a much earlier version
-see if you can upgrade. It&nbsp; used to work with 2.95 and 2.96 but I don't 
-have access to these now. You can't use <i>standard</i> with the 2.9X 
-versions. The namespace option worked with 2.96 on Linux but not with 2.95 on 
+see if you can upgrade. It&nbsp; used to work with 2.95 and 2.96 but I don't
+have access to these now. You can't use <i>standard</i> with the 2.9X
+versions. The namespace option worked with 2.96 on Linux but not with 2.95 on
 the Sun. Standard is automatically turned on with the 3.X.</P>
 <P>This version of Newmat is not compatible with versions 2.6 or earlier.</P>
 <H2><A NAME="hpux"></A>2.4.4 HP-UX</H2>
@@ -552,11 +552,11 @@ present, I think these can be ignored. </P>
 <P CLASS="small"><A HREF="#microso">next</A> - <A HREF="#microso">skip</A> -
 <A HREF="#compiler">up</A> - <A HREF="#top">start</A></P>
 
-<P>Newmat works correctly with the Intel 10 C++ compiler for Windows and Linux. (Not tested for the other versions). Standard is 
-automatically turned on for both the Linux versions and Windows versions. If 
+<P>Newmat works correctly with the Intel 10 C++ compiler for Windows and Linux. (Not tested for the other versions). Standard is
+automatically turned on for both the Linux versions and Windows versions. If
 this causes a problem for the version you are using you can find the lines in <i>
-include.h</i> that control this and comment them out. Note that the Intel compiler for 
-Linux is <i>free</i> for non-commercial use. (One of the versions of 8.1 gave a 
+include.h</i> that control this and comment them out. Note that the Intel compiler for
+Linux is <i>free</i> for non-commercial use. (One of the versions of 8.1 gave a
 warning message every time I had something like
 <tt>Real x; ... if (x==0.0) ...</tt>, which was often. This is now seems to be fixed.)</P>
 
@@ -566,15 +566,15 @@ warning message every time I had something like
 <H3>Newer versions</H3>
 <P>See my <A HREF="#where">web site</A> for instructions how to work
 Microsoft's IDE.<B></B></P>
-<P><b>Microsoft Visual C++ 7, 7.1, 8:</b> These work OK. All my tests have 
-been in console mode. You can turn on my namespace option. Standard is turned on 
+<P><b>Microsoft Visual C++ 7, 7.1, 8:</b> These work OK. All my tests have
+been in console mode. You can turn on my namespace option. Standard is turned on
 by default for these versions. </P>
-<P><B>Microsoft Visual C++ 6</B>: <b>Get the latest service pack</b>. I have tried this 
+<P><B>Microsoft Visual C++ 6</B>: <b>Get the latest service pack</b>. I have tried this
 in console mode and it seems to work satisfactorily. Use the compiler supported exceptions. You may be able to
 use the namespace and standard options. If you want to work under MFC
-you may need to <TT>#include &quot;stdafx.h&quot;</TT> at the beginning of each .cpp file 
+you may need to <TT>#include &quot;stdafx.h&quot;</TT> at the beginning of each .cpp file
 (or turn off precompiled headers). </P>
-<P><B>Microsoft Visual C++ 5</B>: I have tried this in console mode on previous 
+<P><B>Microsoft Visual C++ 5</B>: I have tried this in console mode on previous
 versions of Newmat. It
 seems to work satisfactorily. There may be a problem with <A
 HREF="#namesp">namespace</A> (fixed by Service Pack 3?). <B>Turn optimisation
@@ -587,7 +587,7 @@ beginning of each .cpp file (or turn off precompiled headers).</P>
 <H2><A NAME="sun"></A>2.4.7 Sun</H2>
 <P CLASS="small"><A HREF="#watcom">next</A> - <A HREF="#watcom">skip</A> -
 <A HREF="#compiler">up</A> - <A HREF="#top">start</A></P>
-<P><B>Sun C++ (version = ?):</B> This seems to work fine with 
+<P><B>Sun C++ (version = ?):</B> This seems to work fine with
 compiler supported exceptions. <B>Sun C++ (version
 5):</B> There was a problem with exceptions. If you use my simulated
 exceptions the non-linear optimisation programs hang. If you use the compiler
@@ -596,48 +596,48 @@ supported exceptions my tmt and test_exc programs crash. You should
 <H2><A NAME="watcom"></A>2.4.8 Watcom</H2>
 <P CLASS="small"><A HREF="#update">next</A> - <A HREF="#update">skip</A> -
 <A HREF="#compiler">up</A> - <A HREF="#top">start</A></P>
-<P><b>Open Watcom (version 1.7a):</b> this works. You can set the standard 
-option in <tt>include.h</tt>. The <i>scientific</i> and <i>fixed</i> 
+<P><b>Open Watcom (version 1.7a):</b> this works. You can set the standard
+option in <tt>include.h</tt>. The <i>scientific</i> and <i>fixed</i>
 manipulators don't work.</P>
-<P><B>Watcom C++ (version 10a):</B> this used to work, I don't know if it works 
+<P><B>Watcom C++ (version 10a):</B> this used to work, I don't know if it works
 now. </P>
 <H2><A NAME="update"></A>2.5 Updating from previous
 versions</H2>
 <P CLASS="small"><a href="#except_1">next</a> - <a href="#except_1">skip</a> -
 <A HREF="#starting">up</A> - <A HREF="#top">start</A></P>
-<P><b>Newmat11 </b>- if you are upgrading from earlier versions note the 
+<P><b>Newmat11 </b>- if you are upgrading from earlier versions note the
 following:</P>
 <ul>
   <li>The class <i>Exception</i> in <i>myexcept.h</i> has been replaced by <i>
-  BaseException</i> and a <b>typedef</b> statement included so programs that use 
-  the <i>Exception</i> class will still work. If the <i>Exception</i> class was 
+  BaseException</i> and a <b>typedef</b> statement included so programs that use
+  the <i>Exception</i> class will still work. If the <i>Exception</i> class was
   causing a problem comment out the line defining <i>TypeDefException</i> in <i>
   include.h</i>.</li>
-  <li>Newmat11 does not support the TEMP_DESTROYED_QUICKLY options so won't work 
+  <li>Newmat11 does not support the TEMP_DESTROYED_QUICKLY options so won't work
 	with very old versions of Gnu G++</li>
   <li>Old AT&amp;T work-arounds are removed</li>
-  <li>The simulated Booleans class is now stored at the end of include.h. In 
+  <li>The simulated Booleans class is now stored at the end of include.h. In
   general, I am not testing with compilers that don't support <b>bool</b>.</li>
-  <li>QRZ and QRZT no longer throw an exception if they generate a singular 
+  <li>QRZ and QRZT no longer throw an exception if they generate a singular
 	triangular matrix</li>
   <li>Converting functions to lower case. Both the old and new names will work. See the list of <a href="#function">
   functions</a> for new and old names</li>
 	<li><i>nm_i5.mak</i>, <i>nm_il5.mak</i> replaced by <i>nm_i8.mak</i>, <i>
 	nm_il8.mak</i></li>
 	<li>extra file <i>nm_misc.cpp</i> to be included in compilation</li>
-	<li><i>scientific</i> and <i>fixed</i> manipulators now recognised in output 
+	<li><i>scientific</i> and <i>fixed</i> manipulators now recognised in output
 	statements. If you want <i>fixed</i> output and have been using <i>
 	scientific</i> in a previous output statement, you may need to include the
-	<i>fixed</i> manipulator. (Doesn't work in Visual C++, version 6 and open 
+	<i>fixed</i> manipulator. (Doesn't work in Visual C++, version 6 and open
 	Watcom).</li>
 </ul>
 <P><B>Newmat10</B> includes new <A HREF="#scalar2">maxima, minima</A>,
 <A HREF="#scalar3">determinant, dot product and Frobenius norm</A> functions, a
 faster <A HREF="#fft">FFT</A>, revised <A HREF="#make">make</A> files for GCC
-and CC compilers, several corrections, new <A HREF="#dimen">ReSize</A> function, <a href="#constr">IdentityMatrix</a> 
+and CC compilers, several corrections, new <A HREF="#dimen">ReSize</A> function, <a href="#constr">IdentityMatrix</a>
 and <a href="#binary">Kronecker Product</a>. Singular values from <a href="#svd">
 SVD</a> are sorted. The program files include a new file, <TT>newfft.cpp</TT>, so you
-will need to include this in the list of files in your IDE and make files. There 
+will need to include this in the list of files in your IDE and make files. There
 is also a new test file tmtm.cpp.
 <A HREF="#pointer">Pointer arithmetic</A> now mostly meets requirements of
 standard. You can use <A HREF="#entering">&lt;&lt;</A> to load data into rows
@@ -650,7 +650,7 @@ next section as there were some late changes to newmat09. </P>
 <LI>Boolean, TRUE, FALSE are now bool, true, false. See
 <A HREF="#custom">customising</A> if your compiler supports the bool class.
 </LI>
-<LI>ReDimension is now <A HREF="#dimen">ReSize</A>.  
+<LI>ReDimension is now <A HREF="#dimen">ReSize</A>.
 </LI>
 <LI>The <A HREF="#except">simulated exception</A> package has
 been updated. </LI>
@@ -692,7 +692,7 @@ use compiler supported exceptions, simulated exceptions or disable exceptions.
 Edit the file include.h to select one of these three options. Don't simulate
 exceptions if you have set your compiler's option to implement exceptions.
 </LI>
-<LI>New <A HREF="#qr">QR decomposition</A> functions.  
+<LI>New <A HREF="#qr">QR decomposition</A> functions.
 </LI>
 <LI>A <A HREF="#nonlin">non-linear least squares</A> class.
 </LI>
@@ -700,7 +700,7 @@ exceptions if you have set your compiler's option to implement exceptions.
 </LI>
 <LI><A HREF="#binary">Concatenation and elementwise
 multiplication</A>. </LI>
-<LI>A new <A HREF="#unspec">GenericMatrix</A> class.  
+<LI>A new <A HREF="#unspec">GenericMatrix</A> class.
 </LI>
 <LI><A HREF="#scalar3">Sum</A> function. </LI>
 <LI>Some of the <A HREF="#make">make</A> files reorganised.
@@ -754,8 +754,8 @@ main()
    return 0;
 }</pre>
 <P>Or see my file <i>nm_ex1.cpp</i> for an easy way of organising this.</P>
-<P>If you are using a GUI version rather a console version of the program you 
-will need to catch the exception and display the error message in a pop-up 
+<P>If you are using a GUI version rather a console version of the program you
+will need to catch the exception and display the error message in a pop-up
 window.</P>
 <P>If you are using my simulated exceptions or have set the disable exceptions
 option in <i>include.h</i> then uncaught exceptions automatically print the
@@ -767,13 +767,13 @@ the exception structure. </P>
 <H2><A NAME="example"></A>2.7 Examples</H2>
 <P CLASS="small"><A HREF="#testing">next</A> - <A HREF="#testing">skip</A> -
 <A HREF="#starting">up</A> - <A HREF="#top">start</A></P>
-<P>I include a number of example files. See the sections on <a href="#make">make</a> 
-files and on <a href="#compiler">compilers</a> for information about compiling 
+<P>I include a number of example files. See the sections on <a href="#make">make</a>
+files and on <a href="#compiler">compilers</a> for information about compiling
 them.</P>
-<P><b>Invert matrix:</b> <tt>nm_ex1.cpp</tt>. Load values into a 4x4 matrix; invert it 
+<P><b>Invert matrix:</b> <tt>nm_ex1.cpp</tt>. Load values into a 4x4 matrix; invert it
 and check the result. The output is in <tt>nm_ex1.txt</tt>.</P>
-<P><b>Eigenvalues and eigenvectors of Hilbert matrix:</b> <tt>nm_ex2.cpp</tt>. Calculate the 
-eigenvalues and eigenvectors of a 7x7 Hilbert matrix. The output is in 
+<P><b>Eigenvalues and eigenvectors of Hilbert matrix:</b> <tt>nm_ex2.cpp</tt>. Calculate the
+eigenvalues and eigenvectors of a 7x7 Hilbert matrix. The output is in
 <tt>nm_ex2.txt</tt>.</P>
 <P>Values in <tt>precisio.h</tt>: <tt>nm_ex3.cpp</tt>.</P>
 <P><b>Linear regression example</b>: <TT>example.cpp</TT>. This gives a  linear
@@ -784,7 +784,7 @@ is left allocated on the heap when it terminates. See the section on
 and the use of the DO_FREE_CHECK option. </P>
 <P>Other example files are <TT>nl_ex.cpp</TT> and <TT>garch.cpp</TT> for
 demonstrating the non-linear fitting routines, <TT>sl_ex</TT> for demonstrating
-the solve function and <TT>test_exc</TT> for demonstrating and testing exception 
+the solve function and <TT>test_exc</TT> for demonstrating and testing exception
 handling. </P>
 <H2><A NAME="testing"></A>2.8 Testing</H2>
 <P CLASS="small"><A HREF="#bugs">next</A> - <A HREF="#bugs">skip</A> -
@@ -815,8 +815,8 @@ before I allocate the first memory block. Programs may allocate memory for
 different sized items in different places, or might not allocate items
 consecutively. Or they might mix the items with memory blocks from other
 programs. Nevertheless, I seem to get consistent answers from <i>some</i> of the
-compilers I work with, so I think this is a worthwhile test. The compilers that 
-the test seems to work for include the Borland compilers, Microsoft VC++ 6 , 
+compilers I work with, so I think this is a worthwhile test. The compilers that
+the test seems to work for include the Borland compilers, Microsoft VC++ 6 ,
 Watcom, and Gnu 2.96 for Linux.</P>
 <P>If the <A HREF="#custom">DO_FREE_CHECK</A> option in include.h is activated,
 the program checks that each <TT>new</TT> is balanced with exactly one
@@ -844,41 +844,41 @@ exceptions.</LI>
 <h2><a name="problemareas"></a>2.10 Problem areas</h2>
 <P CLASS="small"><A HREF="#files">next</A> - <A HREF="#files">skip</A> -
 <A HREF="#starting">up</A> - <A HREF="#top">start</A> </P>
-<p>This section lists parts of <i>Newmat</i> which users (including me) have found 
-difficult or unnatural. Also see the <a href="nmfaq.htm">newmat FAQ list</a> on 
+<p>This section lists parts of <i>Newmat</i> which users (including me) have found
+difficult or unnatural. Also see the <a href="nmfaq.htm">newmat FAQ list</a> on
 my <a href="#where">website</a>.</p>
 <p><b>Invert, element access, matrix multiply etc causes the program to crash</b></p>
 <blockquote>
-<p CLASS="small">Newmat throws an exception when it detects an error. This can cause a program 
+<p CLASS="small">Newmat throws an exception when it detects an error. This can cause a program
 crash unless the exception is caught with a <i>catch</i> statement. See
 <a href="#except_1">catching exceptions</a>.</p>
 </blockquote>
 <p><b><tt>1x1</tt> matrix not automatically converted to a Real</b></p>
 <blockquote>
 <p CLASS="small">Use the <a href="#ch_type">as_scalar()</a> member function or the
-<a href="#scalar3">dotproduct()</a> function to take the dot 
+<a href="#scalar3">dotproduct()</a> function to take the dot
 product of two vectors.</p>
 </blockquote>
 <p><b>Constructors do not initialise elements</b></p>
 <blockquote>
-<p CLASS="small">For example, <tt>Matrix A(4,5);</tt> does not initialise the elements of <tt>A</tt>. Use the 
+<p CLASS="small">For example, <tt>Matrix A(4,5);</tt> does not initialise the elements of <tt>A</tt>. Use the
 statement <tt>A=0.0</tt> to set the values to zero.</p>
 </blockquote>
 <p><b><i>resize</i> does not initialise elements</b></p>
 <blockquote>
-<p CLASS="small">For example, <tt>A.resize(5,6);</tt> does not set the elements of <tt>A</tt>. 
+<p CLASS="small">For example, <tt>A.resize(5,6);</tt> does not set the elements of <tt>A</tt>.
 If you want to keep values use <tt>resize_keep</tt>. See <a href="#dimen">resize</a>.</p>
 </blockquote>
 <p><b>Setting Matrix to a scalar sets all the values</b></p>
 <blockquote>
-<p CLASS="small"><tt>A(1,3) = 0.0;</tt> sets one element of a Matrix to zero. <tt>A = 0.0;</tt> sets all the 
-elements to zero. This is very convenient but also a source of error that is 
- 
+<p CLASS="small"><tt>A(1,3) = 0.0;</tt> sets one element of a Matrix to zero. <tt>A = 0.0;</tt> sets all the
+elements to zero. This is very convenient but also a source of error that is
+
 hard to see if you wanted <tt>A(1,3) = 0.0;</tt> but left out the element details.</p>
 </blockquote>
 <p><b>Symmetry not detected automatically</b></p>
 <blockquote>
-<p CLASS="small">For example, <tt>SymmetricMatrix SM = A.t() * A;</tt> will fail. Use <tt>SymmetricMatrix 
+<p CLASS="small">For example, <tt>SymmetricMatrix SM = A.t() * A;</tt> will fail. Use <tt>SymmetricMatrix
 SM; SM &lt;&lt; A.t() * A;</tt></p>
 </blockquote>
 <p><b><tt>&lt;&lt;</tt> does not work with constructors</b></p>
@@ -887,7 +887,7 @@ SM; SM &lt;&lt; A.t() * A;</tt></p>
 </blockquote>
 <p><b>Multiple multiplication may be inefficient</b></p>
 <blockquote>
-<p CLASS="small">For example, <tt>A * B * X</tt> where <tt>A</tt> and <tt>B</tt> are matrices and <tt>X</tt> is a column vector is 
+<p CLASS="small">For example, <tt>A * B * X</tt> where <tt>A</tt> and <tt>B</tt> are matrices and <tt>X</tt> is a column vector is
 likely to be much slower than <tt>A * (B * X)</tt>.</p>
 </blockquote>
 <p>&nbsp;</p>
@@ -1381,7 +1381,7 @@ Constructors </A><BR>
 <A
 HREF="#output">3.17 Output</A><br>
 <A HREF="#unspec">3.18 Accessing unspecified type</A></TD>
-<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%">  
+<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%">
 <A HREF="#cholesky">3.19 Cholesky decomposition </A><BR>
 <A HREF="#qr">3.20 QR decomposition </A><BR>
 <A HREF="#svd">3.21 Singular value decomposition </A><BR>
@@ -1422,7 +1422,7 @@ use, for example </P>
     DiagonalMatrix D(n);
 </PRE>
 
-<P>Band matrices need to include bandwidth information in their constructors. 
+<P>Band matrices need to include bandwidth information in their constructors.
 </P>
 <PRE>    BandMatrix BM(n, lower, upper);
     UpperBandMatrix UB(n, upper);
@@ -1432,7 +1432,7 @@ use, for example </P>
 
 <P>The integers <I>upper</I> and <I>lower</I> are the number of non-zero
 diagonals above and below the diagonal (<I>excluding</I> the diagonal)
-respectively.&nbsp; The UpperBandMatrix and LowerBandMatrix are upper and lower 
+respectively.&nbsp; The UpperBandMatrix and LowerBandMatrix are upper and lower
 triangular band matrices. So an UpperBandMatrix is essentially a BandMatrix with
 <i>lower</i> = 0 and a LowerBandMatrix is a BandMatrix with <i>upper</i> = 0.</P>
 <P>The RowVector and ColumnVector types take just one argument in their
@@ -1447,10 +1447,10 @@ To set all the elements to zero use, for example, </P>
 <PRE>    Matrix A(m, n); A = 0.0;
 </PRE>
 
-<P>The IdentityMatrix takes one argument in its constructor specifying its 
+<P>The IdentityMatrix takes one argument in its constructor specifying its
 dimension.</P>
 <pre>    IdentityMatrix I(n);</pre>
-<p>The value of the diagonal elements <b>is</b> set to 1 by default, but you can 
+<p>The value of the diagonal elements <b>is</b> set to 1 by default, but you can
 change this value as with other matrix types. </p>
 
 <P>You can also construct vectors and matrices without specifying the
@@ -1468,7 +1468,7 @@ matrix expression. </P>
 
 <P>Only conversions that don't lose information are supported - eg you cannot
 convert an upper triangular matrix into a diagonal matrix using =. </P>
-<H2><A NAME="elements"></A>3.2 Accessing elements 
+<H2><A NAME="elements"></A>3.2 Accessing elements
 </H2>
 <P CLASS="small"><A HREF="#copy">next</A> - <A HREF="#copy">skip</A> -
 <A HREF="#refer">up</A> - <A HREF="#top">start</A></P>
@@ -1496,7 +1496,7 @@ will swap <TT>i</TT> and <TT>j</TT> if necessary; so it doesn't matter if you
 think of the storage as being in the upper triangle (but it <I>does</I> matter
 in some other situations such as when <A HREF="#entering">entering</A> data).</P>
 <P>The IdentityMatrix type does not support element access.</P>
-<P>For interfacing with traditional C functions that involve one and two 
+<P>For interfacing with traditional C functions that involve one and two
 dimensional arrays see <a href="#RealStarStar">accessing C functions</a>.</P>
 <H2><A NAME="copy"></A>3.3 Assignment and copying</H2>
 <P CLASS="small"><A HREF="#entering">next</A> - <A HREF="#entering">skip</A> -
@@ -1559,24 +1559,24 @@ the left hand side. See the section on <A HREF="#submat">submatrices</A>. </P>
     Matrix A(m,n); A = r;</PRE>
 
 
-To swap the values in two matrices <tt>A</tt> and <tt>B</tt> use one of the 
+To swap the values in two matrices <tt>A</tt> and <tt>B</tt> use one of the
 following expressions<pre>   A.swap(B);</pre>
 <pre>   swap(A,B);</pre>
-The matrices <tt>A</tt> and <tt>B</tt> must be of the same type. This can be any 
+The matrices <tt>A</tt> and <tt>B</tt> must be of the same type. This can be any
 of the matrix types listed in the <a href="#constr">section on constructors</a>,
 <a href="#solve">CroutMatrix, BandLUMatrix</a> or <a href="#unspec">
-GenericMatrix</a>. Swap works by switching pointers and does not do any actual copying 
+GenericMatrix</a>. Swap works by switching pointers and does not do any actual copying
 of the main data arrays.<p>Notes:</p>
 
 <ul>
-  <li>When you do a matrix assignment to another matrix or matrix expression with 
-either <tt>=</tt> or <tt>&lt;&lt;</tt> the original data array associated with the matrix 
-  being assigned to is destroyed 
-even if there is no change in length. See the section on <a href="#stor">storage</a>. 
+  <li>When you do a matrix assignment to another matrix or matrix expression with
+either <tt>=</tt> or <tt>&lt;&lt;</tt> the original data array associated with the matrix
+  being assigned to is destroyed
+even if there is no change in length. See the section on <a href="#stor">storage</a>.
 This means, in particular, that pointers to matrix elements - e.g.
-<tt>Real* a; a = &amp;(A(1,1));</tt> become invalid. If you want avoid this you 
-  can use 
-<tt>Inject</tt> rather than <tt>=</tt>. But remember that you may need to zero 
+<tt>Real* a; a = &amp;(A(1,1));</tt> become invalid. If you want avoid this you
+  can use
+<tt>Inject</tt> rather than <tt>=</tt>. But remember that you may need to zero
   the matrix first.<br>
   </li>
 </ul>
@@ -1649,7 +1649,7 @@ data. </p>
     RowVector X = A.sum_square_columns();  // sum of squares of
                                            // elements of each column</PRE>
 
-<p class="small">See the <a href="#function">function summary list</a> for the older 
+<p class="small">See the <a href="#function">function summary list</a> for the older
 depreciated function name.</p>
 
 
@@ -1706,34 +1706,34 @@ the elements of the <I>k</I>-th column of <TT>B</TT>. </LI>
 <A HREF="#submat">submatrices</A>. </LI>
 <LI>See the section on <A HREF="#submat">submatrices</A> on using a submatrix
 on the RHS of an expression.</LI>
-<LI>crossproduct - assumes A and B are both RowVectors of length 3 or both 
-ColumnVectors of length 3. Result is a Matrix of same dimension as A or B (will 
-automatically convert to RowVector if A and B are RowVectors and ColumnVector if 
+<LI>crossproduct - assumes A and B are both RowVectors of length 3 or both
+ColumnVectors of length 3. Result is a Matrix of same dimension as A or B (will
+automatically convert to RowVector if A and B are RowVectors and ColumnVector if
 they are ColumnVectors).</LI>
-<LI>crossproduct_rows - assumes A and B are of type Matrix with the same number 
+<LI>crossproduct_rows - assumes A and B are of type Matrix with the same number
 of rows and 3 columns. Does a cross product on corresponding pairs of rows.</LI>
-<LI>crossproduct_columns - assumes A and B are of type Matrix with&nbsp; the same 
-number of columns and 3 rows. Does a cross product on corresponding pairs of 
+<LI>crossproduct_columns - assumes A and B are of type Matrix with&nbsp; the same
+number of columns and 3 rows. Does a cross product on corresponding pairs of
 columns.</LI>
 <LI>Two matrices are equal if their difference is zero. They may be of
 different types. For the CroutMatrix or BandLUMatrix they must be of the same
 type and have all their elements equal. This is not a very useful operator and
 is included for compatibility with some container templates. </LI>
-<LI>The inequality operators are included for compatibility with some versions 
+<LI>The inequality operators are included for compatibility with some versions
 of the
 <A HREF="#stl">standard template library</A>. If actually called, they will
 throw an exception. So don't try to sort a <I>list</I> of matrices. </LI>
 <LI> A row vector multiplied by a column vector yields a 1x1 matrix, <I>not</I>
 a Real. To get a Real result use either <a href="#scalar3">as_scalar or
 dotproduct</a>. </LI>
-<LI> The result from Kronecker product, <tt>KP(A, B)</tt>, possesses an attribute such as 
-upper triangular, lower triangular, band, symmetric, diagonal if both of the 
-matrices <TT>A</TT> and <TT>B</TT> have the attribute. If <TT>A</TT> is band and <TT>B</TT> is a square type 
-(eg SquareMatrix, Diagonal, LowerTriangularMatrix etc) then 
+<LI> The result from Kronecker product, <tt>KP(A, B)</tt>, possesses an attribute such as
+upper triangular, lower triangular, band, symmetric, diagonal if both of the
+matrices <TT>A</TT> and <TT>B</TT> have the attribute. If <TT>A</TT> is band and <TT>B</TT> is a square type
+(eg SquareMatrix, Diagonal, LowerTriangularMatrix etc) then
 the result is band.</LI>
-<LI> Elementwise product is also known as the Schur product or the Hadamard 
+<LI> Elementwise product is also known as the Schur product or the Hadamard
 product.</LI>
-<LI> See the <a href="#function">function summary list</a> for the older 
+<LI> See the <a href="#function">function summary list</a> for the older
 depreciated function names.</LI>
 </UL>
 <P CLASS="small">Remember that the product of symmetric matrices is not
@@ -1755,14 +1755,14 @@ use</P>
 <A HREF="#refer">up</A> - <A HREF="#top">start</A></P>
 <P>The following expressions multiply the elements of a matrix <TT>A</TT> by a
 scalar <TT>f</TT>: <TT>A * f</TT> or <TT>f * A</TT> . Likewise one can divide
-the elements of a matrix <TT>A</TT> by a scalar <TT>f</TT>: <TT>A / f</TT> . 
+the elements of a matrix <TT>A</TT> by a scalar <TT>f</TT>: <TT>A / f</TT> .
 </P>
 <P>The expressions <TT>A + f</TT> and <TT>A - f</TT> add or subtract a
 rectangular matrix of the same dimension as <TT>A</TT> with elements equal to
 <TT>f</TT> to or from the matrix <TT>A</TT> . </P>
 <P>The expression <TT>f + A</TT> is an alternative to <TT>A + f</TT>. The
 expression <TT>f - A</TT> subtracts matrix <TT>A</TT> from a rectangular matrix
-of the same dimension as <TT>A</TT> and with elements equal to <TT>f</TT> . 
+of the same dimension as <TT>A</TT> and with elements equal to <TT>f</TT> .
 </P>
 <P>The expression <TT>A += f</TT> replaces <TT>A</TT> by <TT>A + f</TT>.
 Operators <TT>-=</TT>, <TT>*=</TT>, <TT>/=</TT> are similarly defined. </P>
@@ -1788,10 +1788,10 @@ functions. </P>
 <TT>mt.value()</TT> to get a string (UT, LT, Rect, Sym, Diag, Band, UB, LB,
 Crout, BndLU) showing the type (Vector types are returned as Rect). </P>
 <P><TT>MatrixBandWidth</TT> has member functions <TT>upper()</TT> and
-<TT>lower()</TT> for finding the upper and lower bandwidths (number of diagonals 
-above and below the diagonal, both zero for a diagonal matrix). For non-band 
+<TT>lower()</TT> for finding the upper and lower bandwidths (number of diagonals
+above and below the diagonal, both zero for a diagonal matrix). For non-band
 matrices -1 is returned for both these values.</P>
-<P class="small">See the <a href="#function">function summary list</a> for the older 
+<P class="small">See the <a href="#function">function summary list</a> for the older
 depreciated function names.</P>
 <H2><A NAME="scalar2"></A>3.9 Scalar functions of a
 matrix - maximum &amp; minimum</H2>
@@ -1848,7 +1848,7 @@ matrix - numerical</H2>
                                            // interpreted as vectors
 </PRE>
 
-<P class="small">See the <a href="#function">function summary list</a> for the older 
+<P class="small">See the <a href="#function">function summary list</a> for the older
 depreciated function names.</P>
 
 <P><TT>A.log_determinant()</TT> returns a value of type <i>LogAndSign</i>. If ld is of
@@ -1875,7 +1875,7 @@ column vectors. </P>
 <P>The versions sum(A), sum_square(A), sum_absolute_value(A), trace(A),
 log_determinant(A), determinant(A), norm1(A), norm_infinity(A), norm_Frobenius(A)
 can be used in place of A.sum(), A.sum_square(), A.sum_absolute_value(),
-A.trace(), A.log_determinant(), A.determinant(A), A.norm1(), A.norm_infinity(), A.norm_Frobenius(). 
+A.trace(), A.log_determinant(), A.determinant(A), A.norm1(), A.norm_infinity(), A.norm_Frobenius().
 </P>
 <H2><A NAME="submat"></A>3.11 Submatrices</H2>
 <P CLASS="small"><A HREF="#dimen">next</A> - <A HREF="#dimen">skip</A> -
@@ -1885,7 +1885,7 @@ A.trace(), A.log_determinant(), A.determinant(A), A.norm1(), A.norm_infinity(), 
 
 <P>This selects a submatrix from <TT>A</TT>. The arguments
 <TT>fr</TT>,<TT>lr</TT>,<TT>fc</TT>,<TT>lc</TT> are the first row, last row,
-first column, last column of the submatrix with the numbering beginning at 1. 
+first column, last column of the submatrix with the numbering beginning at 1.
 </P>
 <P>I allow <TT>lr = fr-1</TT> or <TT>lc = fc-1</TT> or to indicate that a
 matrix of zero rows or columns is to be returned. </P>
@@ -1904,7 +1904,7 @@ no information loss. You can also use the construction </P>
     A.column(f)                     //   select single column
 </PRE>
 
-<P class="small">See the <a href="#function">function summary list</a> for the older 
+<P class="small">See the <a href="#function">function summary list</a> for the older
 depreciated function names.</P>
 
 <P>In each case <TT>f</TT> and <TT>l</TT> mean the first and last row or column
@@ -1941,8 +1941,8 @@ Load only the number of elements that are actually going to be stored in
 memory. </P>
 <P><b>Do not use the <TT>+=</TT> and <TT>-=</TT> operations with a submatrix of a
 SymmetricMatrix or BandSymmetricMatrix on the LHS.</b></P>
-<P>You can't pass a submatrix (or any of its variants) as a reference 
-non-constant matrix in a function argument. For example, the following will not 
+<P>You can't pass a submatrix (or any of its variants) as a reference
+non-constant matrix in a function argument. For example, the following will not
 work:</P>
 <pre>   void YourFunction(Matrix&amp; A);
    ...
@@ -1954,9 +1954,9 @@ HREF="#binary">concatenation operators</A>. </P>
 <H2><A NAME="dimen"></A>3.12 Change dimensions</H2>
 <P CLASS="small"><A HREF="#ch_type">next</A> - <A HREF="#ch_type">skip</A> -
 <A HREF="#refer">up</A> - <A HREF="#top">start</A></P>
-<P>The following operations change the dimensions of a matrix. The values of the 
-elements are lost, for <TT>resize</TT>. <tt>resize_keep</tt> keeps element 
-values and zeros the elements in the matrix with the new size that are not in 
+<P>The following operations change the dimensions of a matrix. The values of the
+elements are lost, for <TT>resize</TT>. <tt>resize_keep</tt> keeps element
+values and zeros the elements in the matrix with the new size that are not in
 the matrix with the old size.</P>
 <PRE>    A.resize(nrows,ncols);        // for type Matrix or nricMatrix
     A.resize(n);                  // for other types, except Band
@@ -1976,9 +1976,9 @@ release all the heap memory. </P>
 <TT>B</TT>. This includes the band-width in the case of a band matrix. It is an
 error for <TT>A</TT> to be a band matrix and <TT>B</TT> not a band matrix (or
 diagonal matrix). </P>
-<P>Remember that <TT>resize</TT> destroys values. If you want to resize, but 
+<P>Remember that <TT>resize</TT> destroys values. If you want to resize, but
 keep the values in the bit that is left use <tt>resize_keep</tt>.</P>
-<P class="small">See the <a href="#function">function summary list</a> for the older 
+<P class="small">See the <a href="#function">function summary list</a> for the older
 depreciated function names.</P>
 
 <H2><A NAME="ch_type"></A>3.13 Change type</H2>
@@ -1996,7 +1996,7 @@ avoided where these occur as part of a more complicated expression. </P>
 
 <P>The expression <TT>A.as_scalar()</TT> is used to convert a 1 x 1 matrix to a
 scalar.</P>
-<P class="small">See the <a href="#function">function summary list</a> for the older 
+<P class="small">See the <a href="#function">function summary list</a> for the older
 depreciated function names.</P>
 <H2><A NAME="solve"></A>3.14 Multiple matrix solve</H2>
 <P CLASS="small"><A HREF="#memory">next</A> - <A HREF="#memory">skip</A> -
@@ -2016,7 +2016,7 @@ where you want to solve a matrix equation and also find the determinant of
 <TT>A</TT>. In these cases you probably want to avoid repeating the LU
 decomposition of <TT>A</TT> for each solve or determinant calculation. </P>
 <P>If <TT>A</TT> is a square or symmetric matrix use </P>
-<PRE>    ColumnVector p, q;    
+<PRE>    ColumnVector p, q;
     ...
     CroutMatrix X = A;                // carries out LU decomposition
     ColumnVector Ap = X.i()*p; ColumnVector Aq = X.i()*q;
@@ -2024,7 +2024,7 @@ decomposition of <TT>A</TT> for each solve or determinant calculation. </P>
 </PRE>
 
 <P>rather than </P>
-<PRE>    ColumnVector p, q;    
+<PRE>    ColumnVector p, q;
     ...
     ColumnVector Ap = A.i()*p; ColumnVector Aq = A.i()*q;
     LogAndSign ld = A.log_determinant();
@@ -2035,12 +2035,12 @@ decomposition of <TT>A</TT> for each solve or determinant calculation. </P>
 <PRE>    BandLUMatrix X = A;               // carries out LU decomposition
 </PRE>
 
-<P>A CroutMatrix or BandLUMatrix can be copied and you can have a constructor 
+<P>A CroutMatrix or BandLUMatrix can be copied and you can have a constructor
 with no parameters (use <tt>=</tt> to give it values). They work with
 <a href="#memory"><i>release()</i>, <i>release_and_delete</i></a> and
-<a href="#unspec">GenericMatrix</a> and <a href="#memory">ReturnMatrix</a>. You 
+<a href="#unspec">GenericMatrix</a> and <a href="#memory">ReturnMatrix</a>. You
 can't do any other manipulation apart from taking the inverse or solving with
-<tt>i()</tt>, or finding the determinant or log determinant. See the <a href="#function">function summary list</a> 
+<tt>i()</tt>, or finding the determinant or log determinant. See the <a href="#function">function summary list</a>
 for accessing the internals of a CroutMatrix or BandLUMatrix.</P>
 <P>You can alternatively use </P>
 <PRE>    LinearEquationSolver X = A;
@@ -2048,8 +2048,8 @@ for accessing the internals of a CroutMatrix or BandLUMatrix.</P>
 
 <P>This will choose the most appropriate decomposition of <TT>A</TT>. That is,
 the band form if <TT>A</TT> is banded; the Crout decomposition if <TT>A</TT> is
-square or symmetric and no decomposition if <TT>A</TT> is triangular or 
-diagonal. It doesn't know about positive definite matrices so won't use 
+square or symmetric and no decomposition if <TT>A</TT> is triangular or
+diagonal. It doesn't know about positive definite matrices so won't use
 Cholesky.</P>
 <H2><A NAME="memory"></A>3.15 Memory management</H2>
 <P CLASS="small"><A HREF="#efficien">next</A> - <A HREF="#efficien">skip</A> -
@@ -2091,7 +2091,7 @@ created with new). For example </P>
     }
 </PRE>
 
-<P>If your compiler objects to this code, replace the return statements with 
+<P>If your compiler objects to this code, replace the return statements with
 </P>
 <PRE>    return A.for_return();
 </PRE>
@@ -2109,7 +2109,7 @@ created with new). For example </P>
        ......
        A.release(); return A;   // will compile but could give <b>wrong answers</b>.
     }</pre>
-<P>since with some compilers <tt>A</tt> might retain its <i>released</i> status 
+<P>since with some compilers <tt>A</tt> might retain its <i>released</i> status
 after being returned.</P>
 <P>You can also use <TT>.release()</TT> or <TT>-&gt;release_and_delete()</TT> to
 allow a matrix expression to recycle space. Suppose you call </P>
@@ -2122,7 +2122,7 @@ expression. In either case, <TT>A</TT>'s memory is destroyed. This procedure
 can be used to improve efficiency and reduce the use of memory. </P>
 <P>Use <TT>-&gt;release_and_delete</TT> for matrices created by new if you want
 to completely delete the matrix after it is accessed.</P>
-<P class="small">See the <a href="#function">function summary list</a> for the older 
+<P class="small">See the <a href="#function">function summary list</a> for the older
 depreciated function names.</P>
 <H2><A NAME="efficien"></A>3.16 Efficiency</H2>
 <P CLASS="small"><A HREF="#output">next</A> - <A HREF="#output">skip</A> -
@@ -2148,7 +2148,7 @@ ones. </P>
 </PRE>
 
 <P>This will work only with systems that support the standard input/output
-routines including manipulators. The scientific and fixed manipulators won't 
+routines including manipulators. The scientific and fixed manipulators won't
 work with Visual C++, version 6.</P>
 <P>You need to #include the files iostream.h,
 iomanip.h, newmatio.h in your C++ source files that use this facility. The
@@ -2186,11 +2186,11 @@ can construct a matrix of type <TT>GenericMatrix</TT>. Eg </P>
 </PRE>
 
 <P>A GenericMatrix matrix can be used anywhere where a matrix expression can be
-used and also on the left hand side of an <TT>=</TT>. You can pass any type of 
+used and also on the left hand side of an <TT>=</TT>. You can pass any type of
 matrix to a <TT>const
 GenericMatrix&amp;</TT> argument in a function. However most scalar functions
 including nrows(), ncols(), type() and element access do not work with it. Nor
-does the ReturnMatrix construct. <tt><a href="#copy">swap</a></tt> does work with objects of type 
+does the ReturnMatrix construct. <tt><a href="#copy">swap</a></tt> does work with objects of type
 GenericMatrix. See also the paragraph on <A
 HREF="#solve">LinearEquationSolver</A>. </P>
 <P>An alternative and less flexible approach is to use BaseMatrix or
@@ -2235,13 +2235,13 @@ calculate this use </P>
 </PRE>
 
 <P>If <TT>S</TT> is a symmetric band matrix then <TT>L</TT> is a band matrix
-and an alternative procedure is provided for carrying out the decomposition: 
+and an alternative procedure is provided for carrying out the decomposition:
 </P>
 <PRE>    SymmetricBandMatrix S;
     ......
     LowerBandMatrix L = Cholesky(S);</PRE>
 
-<p>See section <a href="#upd_chol">3.32</a> on updating a Cholesky 
+<p>See section <a href="#upd_chol">3.32</a> on updating a Cholesky
 decomposition.<br>
 </p>
 
@@ -2264,7 +2264,7 @@ matrix Q to get </P>
          s    t
 </PRE>
 
-<P>where <TT>U</TT> is upper triangular (the R of the QR transform). That is 
+<P>where <TT>U</TT> is upper triangular (the R of the QR transform). That is
 </P>
 <PRE>      Q  / 0   0 \  =  / U   M \
          \ X   Y /     \ 0   Z / </PRE>
@@ -2299,12 +2299,12 @@ and forms <TT>M</TT>. There is also a routine</P>
 <P>The are also routines <TT>QRZT(X, L)</TT>, <TT>QRZT(X, Y, M)</TT>
 and <TT>QRZT(X, Y, L, M)</TT>
 which do the same decomposition on the transposes of all these matrices. <tt>QRZT</tt>
-replaces the routines <tt>HHDecompose</tt> in earlier versions of <i>newmat</i>. 
+replaces the routines <tt>HHDecompose</tt> in earlier versions of <i>newmat</i>.
 <tt>HHDecompose</tt> is
 still defined but just calls <tt>QRZT</tt>.</P>
 <P>For an example of the use of this decomposition see the file
 <A HREF="#example">example.cpp</A>. </P>
-<P>See the section on <a href="#upd_chol">updating a Cholesky decomposition</a> 
+<P>See the section on <a href="#upd_chol">updating a Cholesky decomposition</a>
 for updating <tt>U</tt>.</P>
 <P>Alternatively to update <TT>U</TT> or <TT>L</TT> with a new block of data, <tt>X</tt>, one can use</P>
 <pre>    updateQRZ(X, U);
@@ -2313,10 +2313,10 @@ for updating <tt>U</tt>.</P>
 <pre>    updateQRZT(X, L);</pre>
 <p>You can update the M matrix with</p>
 <pre>    updateQRZ(X, Y, M);</pre>
-<p>At present, there is no corresponding function for <tt>updateQRZT</tt>. Also 
+<p>At present, there is no corresponding function for <tt>updateQRZT</tt>. Also
 note, at present, <tt>updateQRZ(X, Y, M)</tt> is not optimised for accessing
 <a href="#mem_man2">contiguous locations</a>.</p>
-<p>If you have carried out QRZ transforms on two blocks of data, <tt>X1</tt>, <tt>X2</tt>, 
+<p>If you have carried out QRZ transforms on two blocks of data, <tt>X1</tt>, <tt>X2</tt>,
 (same number of columns in each) with the data to be fitted in <tt>Y1</tt>, <tt>
 Y2</tt>, you can combine them as follows</p>
 <pre>    // QRZ transforms of two blocks of data
@@ -2327,28 +2327,28 @@ Y2</tt>, you can combine them as follows</p>
     updateQRZ(U1, U2); updateQRZ(U1, M1, M2);</pre>
 <p>Results are in <tt>U2</tt> and <tt>M2</tt>. The values in <tt>U1</tt> and <tt>
 M1</tt> are modified so use copies if you still need the original values.</p>
-<p>The functions <tt>updateQRZ(U1, U2)</tt> and <tt>updateQRZ(U1, M1, M2)</tt> 
-are not optimised for accessing <a href="#mem_man2">contiguous locations</a>. 
-This is probably not an issue, since usually all the data will fit into cache 
+<p>The functions <tt>updateQRZ(U1, U2)</tt> and <tt>updateQRZ(U1, M1, M2)</tt>
+are not optimised for accessing <a href="#mem_man2">contiguous locations</a>.
+This is probably not an issue, since usually all the data will fit into cache
 memory.&nbsp; </p>
 <p><b>Notes on updateQRZ and updateQRZT:</b></p>
 <ul>
-  <li>Use these routines if your data is arriving in blocks or there is too much to 
+  <li>Use these routines if your data is arriving in blocks or there is too much to
 fit into memory.</li>
   <li>Use <TT>QRZ</TT> or <TT>QRZT</TT> on the first block of data or you can use <TT>
-  updateQRZ</TT> or 
+  updateQRZ</TT> or
 <TT>updateQRZT</TT> if <TT>U</TT> or <TT>L</TT> is correctly dimensioned and set to zero.</li>
-  <li>The block of data, <tt>X</tt>, will be modified by these routines but the 
+  <li>The block of data, <tt>X</tt>, will be modified by these routines but the
 modified data is probably not useful for further analysis.</li>
-  <li>The signs of some of the rows of <TT>U</TT> or columns of <TT>L</TT> maybe the reverse of what you would 
-expect (i.e. you get the negative of what you get from QRZ or QRZT applied to 
+  <li>The signs of some of the rows of <TT>U</TT> or columns of <TT>L</TT> maybe the reverse of what you would
+expect (i.e. you get the negative of what you get from QRZ or QRZT applied to
 	the whole dataset). Usually this will not be a problem.</li>
-	<li>The second version of updateQRZ is sometimes a more useful way of 
-	combining blocks, especially if you want to use the <i>reduce</i> function 
-	in <i>Intel's Threaded Building Blocks</i> to parallelise QRZ. (Contact me 
-	for what you need to do to make Newmat compatible with <i>Threaded Building 
+	<li>The second version of updateQRZ is sometimes a more useful way of
+	combining blocks, especially if you want to use the <i>reduce</i> function
+	in <i>Intel's Threaded Building Blocks</i> to parallelise QRZ. (Contact me
+	for what you need to do to make Newmat compatible with <i>Threaded Building
 	Blocks</i>).</li>
-  <li>See the <a href="#function">function summary list</a> for the older 
+  <li>See the <a href="#function">function summary list</a> for the older
 depreciated function names.</li>
 </ul>
 <p>&nbsp;</p>
@@ -2390,8 +2390,8 @@ if the signs in the corresponding column in <TT>V</TT> are reversed. If a
 number of the singular values are identical one can apply an orthogonal
 transformation to the corresponding columns of <TT>U</TT> and the corresponding
 columns of <TT>V</TT>.</P>
-<P CLASS="small">If <i>m</i> &lt; <i>n</i> apply the SVD transform to the transpose 
-of A and swap U and V. If necessary, extend U to a square matrix as described 
+<P CLASS="small">If <i>m</i> &lt; <i>n</i> apply the SVD transform to the transpose
+of A and swap U and V. If necessary, extend U to a square matrix as described
 above.</P>
 <H2><A NAME="evalues"></A>3.22 Eigenvalue
 decomposition</H2>
@@ -2435,7 +2435,7 @@ forms with matrix <TT>V</TT>. The eigenvectors are returned as the columns of
 <P CLASS="small">Remember that an eigenvalue decomposition is not completely
 unique - see the comments about the <A HREF="#svd">SVD</A>
 decomposition.</P>
-<P CLASS="small">See the <a href="#function">function summary list</a> for the older 
+<P CLASS="small">See the <a href="#function">function summary list</a> for the older
 depreciated function names. </P>
 <H2><A NAME="sorting"></A>3.23 Sorting</H2>
 <P CLASS="small"><A HREF="#fft">next</A> - <A HREF="#fft">skip</A> -
@@ -2452,9 +2452,9 @@ Sedgewick's algorithms in C++. If the sort seems to be failing (as quicksort
 can do) an exception is thrown. </P>
 <P>You will get incorrect results if you try to sort a band matrix - but why
 would you want to sort a band matrix? </P>
-<P class="small">See the <a href="#function">function summary list</a> for the older 
+<P class="small">See the <a href="#function">function summary list</a> for the older
 depreciated function names.</P>
-<H2><A NAME="fft"></A>3.24 Fast Fourier transform 
+<H2><A NAME="fft"></A>3.24 Fast Fourier transform
 </H2>
 <P CLASS="small"><A HREF="#trigtran">next</A> - <A HREF="#trigtran">skip</A> -
 <A HREF="#refer">up</A> - <A HREF="#top">start</A></P>
@@ -2476,7 +2476,7 @@ less than about 10 for fast execution. </P>
 <TT>Y(j+1)</TT>. Likewise <TT>h[k]</TT> is complex and stored in
 <TT>F(k+1)</TT> and <TT>G(k+1)</TT>. The fast Fourier algorithm takes order <I>
 n</I> log(<I>n</I>) operations (for <I>good</I> values of <I>n</I>) rather than
-<I>n</I>**2 that straight evaluation (see the file <TT>tmtf.cpp</TT>) takes. 
+<I>n</I>**2 that straight evaluation (see the file <TT>tmtf.cpp</TT>) takes.
 </P>
 <P>I use one of two methods: </P>
 <UL>
@@ -2507,7 +2507,7 @@ transforms</A>.</P>
    FFT2I(F, G, X, Y);                      // inverse, X=F and Y=G are OK</pre>
 <p>where <TT>X</TT>, <TT>Y</TT>, <TT>F</TT>, <TT>G</TT> are of type Matrix.
 <TT>X</TT> and <TT>Y</TT> are the real and imaginary input matrices; <TT>F</TT>
-and <TT>G</TT> are the real and imaginary output matrices. The dimensions of <TT>Y</TT> 
+and <TT>G</TT> are the real and imaginary output matrices. The dimensions of <TT>Y</TT>
 must be the same as those of <TT>X</TT> and should be the product of numbers
 less than about 10 for fast execution. </p>
 <P>The formula is </P>
@@ -2518,7 +2518,7 @@ less than about 10 for fast execution. </p>
 
 <P>where <TT>z[j,k]</TT> is stored complex and stored in <TT>X(j+1,k+1)</TT> and
 <TT>Y(j+1,k+1)</TT> and <TT>X</TT> and <TT>Y</TT> have dimension <TT>m x n</TT>. Likewise <TT>h[p,q]</TT> is complex and stored in
-<TT>F(p+1,q+1)</TT> and <TT>G(p+1,q+1)</TT>. 
+<TT>F(p+1,q+1)</TT> and <TT>G(p+1,q+1)</TT>.
 </P>
 <P>&nbsp;</P>
 <H2><A NAME="trigtran"></A>3.25 Fast trigonometric
@@ -2589,8 +2589,8 @@ used in <I>newmat</I> is different for DST_II (and DST_II_inverse). </P>
 Recipes in C</H2>
 <P CLASS="small"><A HREF="#except">next</A> - <A HREF="#except">skip</A> -
 <A HREF="#refer">up</A> - <A HREF="#top">start</A></P>
-<P>This section refers to <i>Numerical Recipes in C</i>. This section is <b>not</b> 
-relevant to <i>Numerical Recipes in C++</i>. I'll put a note on the website soon 
+<P>This section refers to <i>Numerical Recipes in C</i>. This section is <b>not</b>
+relevant to <i>Numerical Recipes in C++</i>. I'll put a note on the website soon
 on how to interface with <i>Numerical Recipes in C++.</i></P>
 <P>This package can be used with the vectors and matrices defined in
 <I>Numerical Recipes in C</I>. You need to edit the routines in Numerical
@@ -2658,10 +2658,10 @@ of the routine detecting the exception, and any other information set by the
 <A HREF="#error">Tracer</A> class. Also see the section on <A
 HREF="#error">error messages</A> for additional notes on the messages generated
 by the exceptions. </P>
-<P>You can also print this information in a <i>catch</i> clause by printing <TT>Exception::what()</TT>. 
+<P>You can also print this information in a <i>catch</i> clause by printing <TT>Exception::what()</TT>.
 </P>
 <P>If you are using <i> compiler supported</i> exceptions then see the section
-on <a href="#except_1">catching exceptions</a>.&nbsp; 
+on <a href="#except_1">catching exceptions</a>.&nbsp;
 </P>
 <P>See the file <TT>test_exc.cpp</TT> as an example of catching an exception
 and printing the error message. </P>
@@ -2672,10 +2672,10 @@ such as <TT>cout &lt;&lt; Exception::what() &lt;&lt; endl;</TT> in the
 <TT>Catch</TT> or <TT>CatchAll</TT> block to determine the action. </P>
 <P>The library includes the alternatives of using the inbuilt exceptions
 provided by a compiler, simulating exceptions, or disabling exceptions. See
-<A HREF="#custom">customising</A> for selecting the correct exception option. 
+<A HREF="#custom">customising</A> for selecting the correct exception option.
 </P>
 <P>The rest of this section describes my partial simulation of exceptions for
-compilers which do not support C++ exceptions. Skip the rest of this section and 
+compilers which do not support C++ exceptions. Skip the rest of this section and
 the next section if you are using compiler supported exceptions. I use Carlos Vidal's article in
 the September 1992 <I>C Users Journal</I> as a starting point. </P>
 <P>Newmat does a partial clean up of memory following throwing an exception -
@@ -2729,7 +2729,7 @@ occupy space until the program terminates. </P>
 <P>To overcome this problem newmat keeps a list of all the currently declared
 matrices and its exception mechanism will return heap memory when you do a
 Throw and Catch. </P>
-<P>However it will not return heap memory from objects from other packages. 
+<P>However it will not return heap memory from objects from other packages.
 </P>
 <P>If you want the mechanism to work with another class you will have to do
 four things: </P>
@@ -2750,7 +2750,7 @@ something like <PRE>      X(const X&amp;);
 
 </LI>
 </OL>
-<P>Use <TT>CleanUp()</TT> rather than <TT>cleanup()</TT> since this is what is 
+<P>Use <TT>CleanUp()</TT> rather than <TT>cleanup()</TT> since this is what is
 defined in class Janitor.</P>
 <P>Note that the function <TT>CleanUp()</TT> does somewhat the same duties as
 the destructor. However <TT>CleanUp()</TT> has to do the <I>cleaning</I> for
@@ -2769,13 +2769,13 @@ it is a useful program and because it is a simpler version of the coding techniq
 in the non-linear least squares. </P>
 <P>Files newmatnl.h, newmatnl.cpp contain a series of classes for non-linear
 least squares and maximum likelihood. These classes work on very well-behaved
-functions but need upgrading for less well-behaved functions. I haven't followed 
-the usual practice of inflating the values of the diagonal elements of the 
-matrix of second derivatives. I originally thought I could avoid this if my 
-program had a good line search. But this was wrong and when I use this program 
-on all but the most well-behaved problems I run the fit first with the diagonal 
-elements inflated by a factor of 2 to 5 and the critical value for the stopping 
-criterion set to something like 50. Then rerun with with no inflation factor and 
+functions but need upgrading for less well-behaved functions. I haven't followed
+the usual practice of inflating the values of the diagonal elements of the
+matrix of second derivatives. I originally thought I could avoid this if my
+program had a good line search. But this was wrong and when I use this program
+on all but the most well-behaved problems I run the fit first with the diagonal
+elements inflated by a factor of 2 to 5 and the critical value for the stopping
+criterion set to something like 50. Then rerun with with no inflation factor and
 critical value 0.0001.</P>
 <P>Documentation for both of these is in the definition files. Simple examples
 are in sl_ex.cpp, nl_ex.cpp and garch.cpp.</P>
@@ -2794,7 +2794,7 @@ inequality </A>operators which seem to be required by some versions of the STL.<
 <LI>Make sure the option <A HREF="#custom">DO_FREE_CHECK</A> is <EM>not</EM>
 turned on. </LI>
 <LI>You can store only one type of matrix in a container. If you want to use a
-variety of types use the GenericMatrix type or store pointers to the matrices. 
+variety of types use the GenericMatrix type or store pointers to the matrices.
 </LI>
 <LI>The vector and deque container templates like to copy their elements. For
 the vector container this happens when you insert an element anywhere except at
@@ -2818,7 +2818,7 @@ include either the statement </P>
 </PRE>
 
 <P>at the beginning of any file that needs to access all my libraries. </P>
-<P>This works correctly with <A HREF="#borland">Borland</A> C++ version 5 and 
+<P>This works correctly with <A HREF="#borland">Borland</A> C++ version 5 and
 Builder 5 and 6. </P>
 <P><A HREF="#microso">Microsoft</A> Visual C++ version 5 works in my example
 and test files, but fails with apparently insignificant changes (it may be more
@@ -2826,7 +2826,7 @@ reliable if you have applied service pack 3). If you #include
 &quot;newmatap.h&quot;, but no other newmat include file, then also #include
 &quot;newmatio.h&quot;. It seems to work with <A HREF="#microso">Microsoft</A>
 Visual C++ version 6 <I>if</I> you have applied at least service pack 2.</P>
-<P>My use of namespace does not work with <A HREF="#gcc">Gnu g++</A> version 
+<P>My use of namespace does not work with <A HREF="#gcc">Gnu g++</A> version
 2.8.1 but does work with versions 3.x. </P>
 <P>I have defined the following namespaces: </P>
 <UL>
@@ -2850,8 +2850,8 @@ Visual C++ version 6 <I>if</I> you have applied at least service pack 2.</P>
 <pre>   UpperTriangularMatrix U;
    QRZ(X, U);</pre>
 <p>See sections <a href="#cholesky">3.19</a> and <a href="#qr">3.20</a>.</p>
-<p>Now suppose we want to append an extra row to <tt>X</tt> or delete a row from <tt>X</tt> 
-or rearrange the columns of <tt>X.</tt> The functions described here allow you to 
+<p>Now suppose we want to append an extra row to <tt>X</tt> or delete a row from <tt>X</tt>
+or rearrange the columns of <tt>X.</tt> The functions described here allow you to
 update <tt>U</tt> without&nbsp;&nbsp;recalculating it.</p>
 
 
@@ -2859,33 +2859,33 @@ update <tt>U</tt> without&nbsp;&nbsp;recalculating it.</p>
    downdate_Cholesky(U, x);                  // x is a RowVector
    right_circular_update_Cholesky(U, j, k);  // j and k are integers
    left_circular_update_Cholesky(U, j, k);   // j and k are integers</pre>
-<p><tt>update_Cholesky</tt> carries out the modification of <tt>U</tt> corresponding to appending 
+<p><tt>update_Cholesky</tt> carries out the modification of <tt>U</tt> corresponding to appending
 an extra row <tt>x</tt> to <tt>X</tt>.</p>
 
 
-<p> <tt>downdate_Cholesky</tt> carries out the modification corresponding 
-to removing a row <tt>x</tt> from <tt>X</tt>. A <tt>ProgramException</tt> exception is 
+<p> <tt>downdate_Cholesky</tt> carries out the modification corresponding
+to removing a row <tt>x</tt> from <tt>X</tt>. A <tt>ProgramException</tt> exception is
 thrown if the modification fails.</p>
 
 
-<p><tt>right_circular_update_Cholesky</tt> supposes that columns <tt>j,j+1,...k</tt> of <tt>X</tt> are 
+<p><tt>right_circular_update_Cholesky</tt> supposes that columns <tt>j,j+1,...k</tt> of <tt>X</tt> are
 replaced by columns <tt>k,j,j+1,...k-1</tt>.</p>
 
 
-<p><tt>left_circular_update_Cholesky</tt> supposes that columns <tt>j,j+1,...k</tt> of <tt>X</tt> are replaced 
+<p><tt>left_circular_update_Cholesky</tt> supposes that columns <tt>j,j+1,...k</tt> of <tt>X</tt> are replaced
 by columns <tt>j+1,...k,j</tt>.</p>
 
 
-<p>These functions are based on a contribution from Nick Bennett of 
-Schlumberger-Doll Research. See also the LINPACK User's Guide, Chapter 10, 
+<p>These functions are based on a contribution from Nick Bennett of
+Schlumberger-Doll Research. See also the LINPACK User's Guide, Chapter 10,
 Dongarra et. al., SIAM, Philadelphia, 1979.</p>
 
 
-<p>Where you want to append a number of new rows consider using the update 
+<p>Where you want to append a number of new rows consider using the update
 routine in section <a href="#qr">3.20</a>.</p>
 
 
-<p class="small">See the <a href="#function">function summary list</a> for the older 
+<p class="small">See the <a href="#function">function summary list</a> for the older
 depreciated function names.</p>
 
 
@@ -2896,21 +2896,21 @@ depreciated function names.</p>
 <A HREF="#refer">up</A> - <A HREF="#top">start</A></p>
 
 
-<p>You have a <i>C</i> function that uses one and two dimensional arrays as 
+<p>You have a <i>C</i> function that uses one and two dimensional arrays as
 vectors and matrices. You want to access it from <i>Newmat</i>.</p>
 
 
-<p>One dimensional arrays are easy. Set up a <i>ColumnVector</i>, <i>RowVector</i> 
+<p>One dimensional arrays are easy. Set up a <i>ColumnVector</i>, <i>RowVector</i>
 or <i>DiagonalMatrix</i> with the correct dimension and where the function has a
 <tt>double*</tt> argument enter <tt>X.data()</tt> where <tt>X</tt> denotes the <i>
-ColumnVector</i>, <i>RowVector</i> or <i>DiagonalMatrix</i>. (I am assuming you 
+ColumnVector</i>, <i>RowVector</i> or <i>DiagonalMatrix</i>. (I am assuming you
 have left <i>Real</i> being <i>typedef</i>ed as a <i>double</i>). If you have a
 <tt>const double*</tt> argument use <tt>X.const_data()</tt>.</p>
 
 
-<p>You can't do this with two dimensional arrays where you have a <tt>double**</tt> 
-argument. <i>Newmat</i> includes  classes <i>RealStarStar</i> and <i>ConstRealStarStar</i> for this situation. 
-To access a <tt>Matrix A</tt> from a function <tt>c_function(double** a)</tt> 
+<p>You can't do this with two dimensional arrays where you have a <tt>double**</tt>
+argument. <i>Newmat</i> includes  classes <i>RealStarStar</i> and <i>ConstRealStarStar</i> for this situation.
+To access a <tt>Matrix A</tt> from a function <tt>c_function(double** a)</tt>
 use either</p>
 
 
@@ -2921,15 +2921,15 @@ use either</p>
 <p>If the argument is <tt>const double**</tt> use <i>ConstRealStarStar</i>.</p>
 
 
-<p>The <tt>Matrix A</tt> must be&nbsp;correctly dimensioned and must not be 
-resized or set equal to another matrix between setting up the <i>RealStarStar</i> 
-object and its use in the function. Also the following construction will not 
+<p>The <tt>Matrix A</tt> must be&nbsp;correctly dimensioned and must not be
+resized or set equal to another matrix between setting up the <i>RealStarStar</i>
+object and its use in the function. Also the following construction will not
 work</p>
 
 
 <pre>   double** a = RealStarStar(A);      // wrong
    c_function(a);</pre>
-<p>since the <i>RealStarStar</i> structure will have been destroyed before you 
+<p>since the <i>RealStarStar</i> structure will have been destroyed before you
 get to the second line.</p>
 
 
@@ -2940,8 +2940,8 @@ get to the second line.</p>
 <A HREF="#refer">up</A> - <A HREF="#top">start</A></p>
 
 
-<p>This is primarily for use within <i>Newmat</i>. You can set up a simple array 
-of integers with the <i>SimpleIntArray</i> class. Here are the descriptions of 
+<p>This is primarily for use within <i>Newmat</i>. You can set up a simple array
+of integers with the <i>SimpleIntArray</i> class. Here are the descriptions of
 the constructors and functions.</p>
 
 
@@ -2952,18 +2952,18 @@ the constructors and functions.</p>
 </TR>
 <TR>
 <TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> <tt>SimpleIntArray A(n);</tt></TD>
-<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> Constructs int array of length <i>n</i> - 
+<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> Constructs int array of length <i>n</i> -
 individual elements are <i>not</i> initialised</TD>
 </TR>
 <TR>
 <TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> <tt>A = i;</tt></TD>
-<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> sets values to <i>i</i> where <i>i</i> is an int 
+<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> sets values to <i>i</i> where <i>i</i> is an int
 variable</TD>
 </TR>
 <TR>
 <TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> <tt>A = B;</tt></TD>
-<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> sets values to those of <i>B</i> where 
-<i>B</i> is 
+<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> sets values to those of <i>B</i> where
+<i>B</i> is
 a SimpleIntArray, change size if necessary.</TD>
 </TR>
 <TR>
@@ -2972,17 +2972,17 @@ a SimpleIntArray, change size if necessary.</TD>
 </TR>
 <TR>
 <TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> <tt>A.resize(n);</tt></TD>
-<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> change the length of <i>A</i>, don't keep 
+<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> change the length of <i>A</i>, don't keep
 values</TD>
 </TR>
 <TR>
 <TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> <tt>A.resize_keep(n);</tt></TD>
-<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> change the length of <i>A</i>, do keep 
+<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> change the length of <i>A</i>, do keep
 values; if length is being increased set new elements to zero.</TD>
 </TR>
 <TR>
 <TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> <tt>int x = A[i];</tt></TD>
-<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> element access; <i>i</i> runs from 0 to 
+<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> element access; <i>i</i> runs from 0 to
 <i>n</i>-1</TD>
 </TR>
 <TR>
@@ -2991,12 +2991,12 @@ values; if length is being increased set new elements to zero.</TD>
 </TR>
 <TR>
 <TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> <tt>const int* d = A.data();</tt></TD>
-<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> get beginning of data array as const 
+<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> get beginning of data array as const
 int* if <i>A</i> is const</TD>
 </TR>
 <TR>
 <TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> <tt>const int* d = A.const_data();</tt></TD>
-<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> get beginning of data array as const 
+<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> get beginning of data array as const
 int*</TD>
 </TR>
 <TR>
@@ -3010,12 +3010,12 @@ int*</TD>
 Extend orthonormal set of columns</h2>
 <p class = "small"><A HREF="#misc_fn">next</A> - <A HREF="#misc_fn">skip</A> -
 <A HREF="#refer">up</A> - <A HREF="#top">start</A></p>
-<p>Suppose a <i>Matrix</i> <tt>A</tt>'s first <tt>n</tt> columns are orthonormal so that 
+<p>Suppose a <i>Matrix</i> <tt>A</tt>'s first <tt>n</tt> columns are orthonormal so that
 <tt>A.Columns(1,n).t() * A.Columns(1,n)</tt> is the identity matrix. Suppose
-we want to fill out the remaining columns of <tt>A</tt> to make them orthonormal so 
+we want to fill out the remaining columns of <tt>A</tt> to make them orthonormal so
 that <tt>A.t() * A</tt> is the identity matrix. Then use the function</p>
 <pre>   extend_orthonormal(A, n);</pre>
-<p>Matrix <tt>A</tt> is then <i>replaced</i> by the matrix with the additional 
+<p>Matrix <tt>A</tt> is then <i>replaced</i> by the matrix with the additional
 columns.</p>
 <p>Use this function to extend <tt>U</tt> from the <a href="#qr">QRZ</a> or
 <a href="#svd">SVD</a> decompositions to form a square (orthogonal) matrix.</p>
@@ -3023,19 +3023,19 @@ columns.</p>
 <ul>
   <li>the first <tt>n</tt> columns of <tt>A</tt> must be orthonormal</li>
   <li><tt>n</tt> must be less or equal to the number of columns of <tt>A</tt></li>
-  <li>the number of columns of <tt>A</tt> must be less than or equal to the number of 
+  <li>the number of columns of <tt>A</tt> must be less than or equal to the number of
   rows of <tt>A</tt></li>
 </ul>
 
 <h2><a name="misc_fn"></a>3.36 Miscellaneous functions</h2>
 <p class="small"><A HREF="#error">next</A> - <A HREF="#error">skip</A> -
 <A HREF="#refer">up</A> - <A HREF="#top">start</A></p>
-<p>The section includes some miscellaneous functions I have needed for my work. So 
+<p>The section includes some miscellaneous functions I have needed for my work. So
 far there are only the Helmert transforms.</p>
 <h4>Helmert transforms</h4>
-<p>This section refers to the Helmert transform used in some statistical 
-packages for extracting contrasts. It is different from the Helmert transform 
-used in geodesy. The version of the transform I am going to use is based on the 
+<p>This section refers to the Helmert transform used in some statistical
+packages for extracting contrasts. It is different from the Helmert transform
+used in geodesy. The version of the transform I am going to use is based on the
 <tt>n x n</tt> matrix</p>
 <pre class="small">| 1/sqrt(1*2)                       | * | -1  1              |
 |     1/sqrt(2*3)                   |   | -1 -1  2           |
@@ -3043,14 +3043,14 @@ used in geodesy. The version of the transform I am going to use is based on the
 |               ...                 |   |  ...               |
 |                  1/(sqrt(n-1)*n)  |   | -1 -1  ...  -1 n-1 |
 |                         1/sqrt(n) |   |  1  1  ...       1 | </pre>
-<p>You can interpret multiplying a column vector by this matrix as follows. Form 
-the <i>k</i>-th element in the resulting column vector by taking the <i>k+1</i>-th 
-element and subtracting the average of the previous <i>k</i> elements. Then 
-multiply by sqrt((<i>k+1</i>)/<i>k</i>) so we get an orthonormal transform. The 
-last element is just the sum divided by sqrt(<i>n</i>). Usually one will omit 
+<p>You can interpret multiplying a column vector by this matrix as follows. Form
+the <i>k</i>-th element in the resulting column vector by taking the <i>k+1</i>-th
+element and subtracting the average of the previous <i>k</i> elements. Then
+multiply by sqrt((<i>k+1</i>)/<i>k</i>) so we get an orthonormal transform. The
+last element is just the sum divided by sqrt(<i>n</i>). Usually one will omit
 the last element since we want just the contrasts.</p>
-<p>Here are the functions. <tt>X</tt> and <tt>Y</tt> are ColumnVectors, <tt>A</tt> 
-and <tt>B</tt> are matrices, <tt>b</tt> is a boolean, <tt>j</tt>, <tt>n</tt> are 
+<p>Here are the functions. <tt>X</tt> and <tt>Y</tt> are ColumnVectors, <tt>A</tt>
+and <tt>B</tt> are matrices, <tt>b</tt> is a boolean, <tt>j</tt>, <tt>n</tt> are
 integers, <tt>x</tt> is a Real.</p>
 
 
@@ -3058,7 +3058,7 @@ integers, <tt>x</tt> is a Real.</p>
 <TR>
 <TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> <tt>A = Helmert(n, b);</tt><br>
 <tt>A = Helmert(n);</tt></TD>
-<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> Return the <i>n</i> x <i>n</i> 
+<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> Return the <i>n</i> x <i>n</i>
 Helmert matrix or the (<i>n</i>-1) x <i>n</i> version with the last row omitted.</TD>
 </TR>
 <TR>
@@ -3069,36 +3069,36 @@ Helmert matrix or the (<i>n</i>-1) x <i>n</i> version with the last row omitted.
 <TR>
 <TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> <tt>Y = Helmert(n,j,b);</tt><br>
 <tt>Y = Helmert(n,j);</tt></TD>
-<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> Return <i>j</i>-th column of Helmert 
+<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> Return <i>j</i>-th column of Helmert
 matrix as a ColumnVector.</TD>
 </TR>
 <TR>
 <TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> <tt>X = Helmert_transpose(Y,b);</tt><br>
 <tt>X = Helmert_transpose(Y);</tt></TD>
-<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> Multiply by the transpose of the 
+<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> Multiply by the transpose of the
 Helmert matrix.</TD>
 </TR>
 <TR>
 <TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> <tt>x = Helmert_transpose(Y,j,b);</tt><br>
 <tt>x = Helmert_transpose(Y,j);</tt></TD>
-<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> Multiply by the transpose of the 
+<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> Multiply by the transpose of the
 Helmert matrix, return just the <i>j</i>-th element.</TD>
 </TR>
 <TR>
 <TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> <tt>B = Helmert(A,b);</tt><br>
 <tt>B = Helmert(A);</tt></TD>
-<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> Multiply a Matrix by the Helmert 
+<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> Multiply a Matrix by the Helmert
 matrix.</TD>
 </TR>
 <TR>
 <TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> <tt>A = Helmert_transpose(B,b);</tt><br>
 <tt>A = Helmert_transpose(B);</tt></TD>
-<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> Multiply a Matrix by the transpose of 
+<TD VALIGN="TOP" ALIGN="LEFT" WIDTH="50%"> Multiply a Matrix by the transpose of
 the Helmert matrix.</TD>
 </TR>
 </TABLE>
 
-<p>If <i>b</i> is true the full Helmert matrix is used, if it is false or 
+<p>If <i>b</i> is true the full Helmert matrix is used, if it is false or
 omitted the <i>n</i>-th row (or <i>n</i>-column of the transpose) is omitted.</p>
 <p>&nbsp;</p>
 
@@ -3181,7 +3181,7 @@ efficiency</H2>
 <P>By <B>safety</B>, I mean getting the right answer, and not causing crashes
 or damage to the computer system. </P>
 <P>By <B>usability</B>, I mean being easy to learn and use, including not being
-too complicated, being intuitive, saving the users' time, being nice to use. 
+too complicated, being intuitive, saving the users' time, being nice to use.
 </P>
 <P><B>Efficiency</B> means minimising the use of computer memory and time. </P>
 <P>In the early days of computers the emphasis was on efficiency. But computer
@@ -3238,53 +3238,53 @@ efficiency is compromised a little. If you penetrate inside the <I>box</I>
 safety is reduced but you can get better efficiency. </P>
 <H3>Some performance data</H3>
 <P>This section looks at the performance on <I>newmat</I> for simple sums,
-comparing it with C code and with a simple array program. 
+comparing it with C code and with a simple array program.
 (This is now very old data).</P>
 <P>The following table lists the time (in seconds) for carrying out the
 operations <TT>X=A+B;</TT>, <TT>X=A+B+C;</TT>, <TT>X=A+B+C+D;</TT>, <TT>X=A+B+C+D+E;</TT> where
 <TT>X,A,B,C,D,E</TT> are of type ColumnVector, with a variety of programs. I am
-using Microsoft VC++, version 6 in  console mode under windows 2000 on a PC with 
+using Microsoft VC++, version 6 in  console mode under windows 2000 on a PC with
 a 1 ghz Pentium III and 512 mbytes of memory. </P>
 <pre>    length    iters. newmat      C C-res.  subs.  array
 <b>X = A + B</b>
-         2   5000000   27.8    0.3    8.8    1.9    9.5 
-        20    500000    3.0    0.3    1.1    1.9    1.2 
-       200     50000    0.5    0.3    0.4    1.9    0.3 
-      2000      5000    0.4    0.3    0.4    2.0    1.0 
-     20000       500    4.5    4.5    4.5    6.7    4.4 
-    200000        50    5.2    4.7    5.5    5.8    5.2 
+         2   5000000   27.8    0.3    8.8    1.9    9.5
+        20    500000    3.0    0.3    1.1    1.9    1.2
+       200     50000    0.5    0.3    0.4    1.9    0.3
+      2000      5000    0.4    0.3    0.4    2.0    1.0
+     20000       500    4.5    4.5    4.5    6.7    4.4
+    200000        50    5.2    4.7    5.5    5.8    5.2
 
 <b>X = A + B + C</b>
-         2   5000000   36.6    0.4    8.9    2.5   12.2 
-        20    500000    4.0    0.4    1.2    2.5    1.6 
-       200     50000    0.8    0.3    0.5    2.5    0.5 
-      2000      5000    3.6    4.4    4.6    9.0    4.4 
-     20000       500    6.8    5.4    5.4    9.6    6.8 
-    200000        50    8.6    6.0    6.7    7.1    8.6 
+         2   5000000   36.6    0.4    8.9    2.5   12.2
+        20    500000    4.0    0.4    1.2    2.5    1.6
+       200     50000    0.8    0.3    0.5    2.5    0.5
+      2000      5000    3.6    4.4    4.6    9.0    4.4
+     20000       500    6.8    5.4    5.4    9.6    6.8
+    200000        50    8.6    6.0    6.7    7.1    8.6
 
 <b>X = A + B + C + D</b>
-         2   5000000   44.0    0.7    9.3    3.1   14.6 
-        20    500000    4.9    0.6    1.5    3.1    1.9 
-       200     50000    1.0    0.6    0.8    3.2    0.8 
-      2000      5000    5.6    6.6    6.8   11.5    5.9 
-     20000       500    9.0    6.7    6.8   11.0    8.5 
-    200000        50   11.9    7.1    7.9    9.5   12.0 
+         2   5000000   44.0    0.7    9.3    3.1   14.6
+        20    500000    4.9    0.6    1.5    3.1    1.9
+       200     50000    1.0    0.6    0.8    3.2    0.8
+      2000      5000    5.6    6.6    6.8   11.5    5.9
+     20000       500    9.0    6.7    6.8   11.0    8.5
+    200000        50   11.9    7.1    7.9    9.5   12.0
 
 <b>X = A + B + C + D + E</b>
-         2   5000000   50.6    1.0    9.5    3.8   17.1 
-        20    500000    5.7    0.8    1.7    3.9    2.4 
-       200     50000    1.3    0.9    1.0    3.9    1.0 
-      2000      5000    7.0    8.3    8.2   13.8    7.1 
-     20000       500   11.5    8.1    8.4   13.2   11.0 
-    200000        50   15.2    8.7    9.5   12.4   15.4 
+         2   5000000   50.6    1.0    9.5    3.8   17.1
+        20    500000    5.7    0.8    1.7    3.9    2.4
+       200     50000    1.3    0.9    1.0    3.9    1.0
+      2000      5000    7.0    8.3    8.2   13.8    7.1
+     20000       500   11.5    8.1    8.4   13.2   11.0
+    200000        50   15.2    8.7    9.5   12.4   15.4
 </pre>
-<P>I have <a target="_blank" href="add_time.png">graphed</a> the results 
+<P>I have <a target="_blank" href="add_time.png">graphed</a> the results
 and included rather more array lengths.</P>
 
 <P>The first column gives the lengths of the arrays, the second the number of
 iterations and the remaining columns the total time required in seconds. If the
 only thing that consumed time was the double precision addition then the
-numbers within each block of the table would be the same. The summation is 
+numbers within each block of the table would be the same. The summation is
 repeated 5 times within each loop, for example:</P>
 <pre>   for (i=1; i&lt;=m; ++i)
    {
@@ -3294,30 +3294,30 @@ repeated 5 times within each loop, for example:</P>
 <P>The column labelled <I>newmat</I> is using the standard <I>newmat</I> add. The column labelled <I>C</I> uses the usual C method: <TT>while
 (j1--) *x1++ = *a1++ + *b1++;</TT> . The following column also includes an
 <TT>X.resize()</TT> in the outer loop to correspond to the reassignment of
-memory that <I>newmat</I> would do. In the next column the calculation is using 
+memory that <I>newmat</I> would do. In the next column the calculation is using
 the usual C style <I>for</I> loop
 and accessing the elements using <I>newmat</I> subscripts such as
 <TT>A(i)</TT>. The final column is the time taken by a
-simple array package. This uses an alternative method for avoiding temporaries 
+simple array package. This uses an alternative method for avoiding temporaries
 and unnecessary copies that does not involve runtime tests. It does its sums in blocks of 4 and copies in blocks of
 8 in the same way that <I>newmat</I> does. </P>
 <P>Here are my conclusions. </P>
 <UL>
 <LI><I>Newmat</I> does very badly for length 2 and doesn't do  well for
 length 20. There is  a lot of code in <I>newmat</I> for
-determining which sum algorithm to use and it is not surprising that this 
+determining which sum algorithm to use and it is not surprising that this
 impacts on performance for small lengths.
 However the <I>array</I> program is also having difficulty with length 2 so it
 is unlikely that the problem could be completely eliminated. </LI>
 <LI>For arrays of length 2000 or longer <I>newmat</I> is doing about as well as
 C and slightly better than C with resize in the <TT>X=A+B</TT> table. For the
 other two tables it tends to be slower, but not dramatically so. </LI>
-<LI>It is really important for fast processing with the Pentium III to stay 
+<LI>It is really important for fast processing with the Pentium III to stay
 within the Pentium cache.</LI>
 <LI>Addition using the <I>newmat</I> subscripts, while considerably slower than
 the others, is still surprisingly good for the longer arrays. </LI>
 <LI>The <I>array</I> program and <I>newmat</I> are similar for
-lengths 2000 or higher (the longer times for the array program for the longest 
+lengths 2000 or higher (the longer times for the array program for the longest
 arrays shown on the graph are probably a quirk of the timing program). </LI>
 </UL>
 <P>In summary: for the situation considered here, <I>newmat</I> is doing very
@@ -3454,7 +3454,7 @@ The user typedefs Real to float or double. </P>
 <P>It might also be worth including symmetric and triangular matrices with
 extra precision elements (double or long double) to be used for storage only
 and with a minimum of operations defined. These would be used for accumulating
-the results of sums of squares and product matrices or multi-stage QR 
+the results of sums of squares and product matrices or multi-stage QR
 decompositions. </P>
 <H3>Allow matrix expressions</H3>
 <P>I want to be able to write matrix expressions the way I would on paper. So
@@ -3479,9 +3479,9 @@ scheme that makes sense to you. </P>
 <P>Exceptions to the general rule are the functions for transpose and inverse.
 To make matrix expressions more like the corresponding mathematical formulae, I
 have used the single letter abbreviations, <TT>t()</TT> and <TT>i()</TT>. </P>
-<P>I am now switching to using lowercase for  functions with individual 
-words separated by &quot;<tt>_</tt>&quot;. This is following the convention in 
-the standard library and I think it looks neater. Class names will remain with 
+<P>I am now switching to using lowercase for  functions with individual
+words separated by &quot;<tt>_</tt>&quot;. This is following the convention in
+the standard library and I think it looks neater. Class names will remain with
 individual words being capitalised.</P>
 <H3>Row and column index ranges</H3>
 <P>In mathematical work matrix subscripts usually start at one. In C, array
@@ -3521,70 +3521,70 @@ and column functions. </P>
 <P CLASS="small"><A HREF="#mem_man">next</A> - <A HREF="#mem_man">skip</A> -
 <A HREF="#design">up</A> - <A HREF="#top">start</A> </P>
 <H3>The stack and heap</H3>
-<p>To understand how <i>newmat</i> stores matrices you need to know a little bit 
+<p>To understand how <i>newmat</i> stores matrices you need to know a little bit
 about the <i>heap</i> and <i>stack</i>.</p>
-<p>The data values of variables or objects in a C++ program are stored in either 
-of two sections of memory called the <i>stack</i> and the <i>heap</i>. Sometimes 
+<p>The data values of variables or objects in a C++ program are stored in either
+of two sections of memory called the <i>stack</i> and the <i>heap</i>. Sometimes
 there is more than one <i>heap</i> to cater for different sized variables.</p>
 <p>If you declare an <i>automatic</i> variable</p>
 <pre>   int x;</pre>
-<p>then the value of <i>x</i> is stored on the <i>stack</i>. As you declare more 
-variables the stack gets bigger. When you exit a block (i.e a section of code 
-delimited by curly brackets <i>{...}</i>) the memory used by the automatic 
+<p>then the value of <i>x</i> is stored on the <i>stack</i>. As you declare more
+variables the stack gets bigger. When you exit a block (i.e a section of code
+delimited by curly brackets <i>{...}</i>) the memory used by the automatic
 variables declared in the block is released and the <i>stack</i> shrinks.</p>
 <p>When you declare a variable with <i>new</i>, for example,</p>
 <pre>   int* y = new int;</pre>
-<p>the pointer <i>y</i> is stored on the <i>stack</i> but the value it is 
-pointing to is stored on the <i>heap</i>. Memory on the <i>heap</i> is not 
+<p>the pointer <i>y</i> is stored on the <i>stack</i> but the value it is
+pointing to is stored on the <i>heap</i>. Memory on the <i>heap</i> is not
 released until the program explicitly does this with a <i>delete</i> statement</p>
 <pre>   delete y;</pre>
 <p>or the program exits.</p>
-<p>On the <i>stack</i>, variables and objects are is always added to the end of 
-the <i>stack</i> and are removed in the reverse order to that in which they are 
+<p>On the <i>stack</i>, variables and objects are is always added to the end of
+the <i>stack</i> and are removed in the reverse order to that in which they are
 added - that is the last on will be the first off. This is not the case with the <i>
-heap</i>, where the variables and objects can be removed in any order. So one 
-can get alternating pieces of used and unused memory. When a new variable or 
-object is declared on the <i>heap</i> the system needs to search for piece of 
-unused memory large enough to hold it. This means that storing on the <i>heap</i> 
-will usually be a slower process than storing on the <i>stack</i>. There is also 
-likely to be waste space on the <i>heap</i> because of gaps between the used 
+heap</i>, where the variables and objects can be removed in any order. So one
+can get alternating pieces of used and unused memory. When a new variable or
+object is declared on the <i>heap</i> the system needs to search for piece of
+unused memory large enough to hold it. This means that storing on the <i>heap</i>
+will usually be a slower process than storing on the <i>stack</i>. There is also
+likely to be waste space on the <i>heap</i> because of gaps between the used
 blocks of memory that are too small for the next object you want to store on the
-<i>heap</i>. There is also the possibility of wasting space if you forget to 
-remove a variable or object on the <i>heap</i> even though you have finished 
-using it. However, the <i>stack</i> is usually limited to holding small objects 
-with size known at compile time. Large objects, objects whose size you don't 
-know at compile time, and objects that you want to persist after the end of the 
+<i>heap</i>. There is also the possibility of wasting space if you forget to
+remove a variable or object on the <i>heap</i> even though you have finished
+using it. However, the <i>stack</i> is usually limited to holding small objects
+with size known at compile time. Large objects, objects whose size you don't
+know at compile time, and objects that you want to persist after the end of the
 block need to be stored on the <i>heap</i>.</p>
-<p>In C++, the <i>constructor</i>/<i>destructor</i> system enables one to build 
-complicated objects such as matrices that behave as automatic variables stored 
-on the <i>stack</i>, so the programmer doesn't have to worry about deleting them 
-at the end of the block, but which really utilise the <i>heap</i> for storing 
+<p>In C++, the <i>constructor</i>/<i>destructor</i> system enables one to build
+complicated objects such as matrices that behave as automatic variables stored
+on the <i>stack</i>, so the programmer doesn't have to worry about deleting them
+at the end of the block, but which really utilise the <i>heap</i> for storing
 their data.</p>
 <H3>Structure of matrix objects</H3>
 <P>Each matrix object contains the basic information such as the number of rows
 and columns, the amount of memory used, a status variable and a pointer to the data array which is on
 the heap. So if you declare a matrix</P>
 <pre>   Matrix A(1000,1000);</pre>
-<p>there is an small amount of memory used on the stack for storing the numbers 
-of rows and columns, the amount of&nbsp; memory used, the status variable and 
-the pointer together with 1,000,000 <i>Real</i> locations stored on the heap. 
+<p>there is an small amount of memory used on the stack for storing the numbers
+of rows and columns, the amount of&nbsp; memory used, the status variable and
+the pointer together with 1,000,000 <i>Real</i> locations stored on the heap.
 When you exit the block in which <i>A</i> is declared, the heap memory used by
-<i>A</i> is automatically returned to the system, as well as the memory used on 
+<i>A</i> is automatically returned to the system, as well as the memory used on
 the stack.</p>
 <p>Of course, if you use new to declare a matrix</p>
 <pre>   Matrix* B = new Matrix(1000,1000);</pre>
-<p>both the information about the size and the actual data are stored on heap 
+<p>both the information about the size and the actual data are stored on heap
 and not deleted until the program exits or you do an explicit delete:</p>
 <pre>   delete B;</pre>
-<p>If you carry out an assignment with <tt>=</tt> or <tt>&lt;&lt;</tt> or do a 
-<tt>resize()</tt> the data array currently associated with a matrix is destroyed and 
+<p>If you carry out an assignment with <tt>=</tt> or <tt>&lt;&lt;</tt> or do a
+<tt>resize()</tt> the data array currently associated with a matrix is destroyed and
 a new array generated. For example</p>
 <pre>   Matrix A(1000,1000);
    Matrix B(50, 50);
    ... put some values in B
    A = B;</pre>
-<p>At the last step the heap memory associated with <i>A</i> is returned to the 
-system and a new block of heap memory is assigned to contain the new values. 
+<p>At the last step the heap memory associated with <i>A</i> is returned to the
+system and a new block of heap memory is assigned to contain the new values.
 This happens even if there is no change in the amount of memory required. </p>
 <H3>One block or several</H3>
 <P>The elements of the matrix are stored as a single array. Alternatives would
@@ -3766,9 +3766,9 @@ following table shows the current status of this process.</P>
 <TD>Could be improved?</TD>
 </TR>
 </TABLE>
-<p>This is now all rather out of date. With Pentiums, at least, the important 
-requirement for speed seems to be to minimise transfers between the RAM memory 
-and the on-chip memory. There isn't much you can do about add and subtract, but 
+<p>This is now all rather out of date. With Pentiums, at least, the important
+requirement for speed seems to be to minimise transfers between the RAM memory
+and the on-chip memory. There isn't much you can do about add and subtract, but
 there lots of possibilities for some of the other operations.</p>
 <H2><A NAME="evalx"></A>5.7 Evaluation of expressions -
 lazy evaluation</H2>
@@ -3880,7 +3880,7 @@ approach. </P>
 matrices of the same type then there is no need to access the individual rows
 or columns and a faster general algorithm is appropriate. </P>
 <P>Generally the method works well. However symmetric matrices are not always
-handled very efficiently (yet) since complete rows are not stored explicitly. 
+handled very efficiently (yet) since complete rows are not stored explicitly.
 </P>
 <P>The original version of the package did not use this access by row or column
 method and provided the multitude of algorithms for the combination of
@@ -3888,7 +3888,7 @@ different matrix types. The code file length turned out to be just a little
 longer than the present one when providing the same facilities with 5 distinct
 types of matrices. It would have been very difficult to increase the number of
 matrix types in the original version. Apparently 4 to 5 types is about the
-break even point for switching to the approach adopted in the present package. 
+break even point for switching to the approach adopted in the present package.
 </P>
 <P>However it must also be admitted that there is a substantial overhead in the
 approach adopted in the present package for small matrices. The test program
@@ -3905,10 +3905,10 @@ temporaries</H2>
 <P>Versions before version 5 of newmat did not work correctly with Gnu C++
 (version 5 or earlier). This was because the tree structure used to represent a
 matrix expression was set up on the stack.&nbsp; Early versions of Gnu C++ destroyed temporary structures as soon as the
-function that accesses them finished.  To overcome this problem, there was an 
-option to store the temporaries forming the tree structure on the heap (created 
-with new) and to delete them explicitly. Now that the C++ standards committee 
-has said that temporary structures should not be destroyed before a statement 
+function that accesses them finished.  To overcome this problem, there was an
+option to store the temporaries forming the tree structure on the heap (created
+with new) and to delete them explicitly. Now that the C++ standards committee
+has said that temporary structures should not be destroyed before a statement
 finishes, I have deleted this option.</P>
 <H2><A NAME="calc"></A>5.10 A calculus of matrix
 types</H2>
@@ -4016,9 +4016,9 @@ get a bounds error report. </P>
    }
 </PRE>
 
-<P>which is more complicated and consequently introduces more chance of error. 
+<P>which is more complicated and consequently introduces more chance of error.
 </P>
-<H2><A NAME="err_hand"></A>5.12 Error handling 
+<H2><A NAME="err_hand"></A>5.12 Error handling
 </H2>
 <P CLASS="small"><A HREF="#sparse">next</A> - <A HREF="#sparse">skip</A> -
 <A HREF="#design">up</A> - <A HREF="#top">start</A> </P>
@@ -4027,7 +4027,7 @@ use either the simulated exceptions or the compiler supported exceptions. When
 newmat08 was released (in 1995), compiler exception handling in the compilers I
 had access to was unreliable. I recommended you used my simulated exceptions.
 In 1997 compiler supported exceptions  seemed to work on a variety of
-compilers - but not all compilers. This was still true in 2001. One compiler 
+compilers - but not all compilers. This was still true in 2001. One compiler
 company was still having problems in 2003 (not sure about 2004). Try using the
 compiler supported exceptions if you have a recent compiler, but if you are
 getting strange crashes or errors try going back to my simulated exceptions.</P>
@@ -4076,7 +4076,7 @@ and really should be fully supported in a comprehensive package. </P>
 <P>You can simulate most complex operations by representing <TT>Z = X + iY</TT>
 by </P>
 <PRE>    /  X   Y \
-    \ -Y   X / 
+    \ -Y   X /
 </PRE>
 
 <P>Most matrix operations will simulate the corresponding complex operation,
@@ -4094,7 +4094,7 @@ would need with a genuine complex matrix library.</P>
 <a href="#top">up</a> - <A HREF="#top">start</A> </p>
 
 
-<p class="small"><a href="#member_functions_1">6.1 Member functions for matrices 
+<p class="small"><a href="#member_functions_1">6.1 Member functions for matrices
 and matrix expressions</a><br>
 <a href="#member_functions_2">6.2 Member functions for matrices</a><br>
 <a href="#operators">6.3 Operators</a><br>
@@ -4104,15 +4104,15 @@ and matrix expressions</a><br>
 
 
 <p>This section lists member and global functions for matrices defined in <i>
-newmat.h</i>. Where there are alternative names the lower-case non-capitalised 
+newmat.h</i>. Where there are alternative names the lower-case non-capitalised
 versions are the preferred ones.</p>
 
 
 <h2><a name="member_functions_1"></a>6.1 Member functions for matrices and matrix expressions</h2>
 <p class="small"><a href="#member_functions_2">next</a> -
 <a href="#member_functions_2">skip</a> - <a href="#function">up</a> - <A HREF="#top">start</A></p>
-<p>Member functions for matrices and matrix expressions. These do not apply to 
-<i>CroutMatrix</i> and <i>BandLUMatrix</i> 
+<p>Member functions for matrices and matrix expressions. These do not apply to
+<i>CroutMatrix</i> and <i>BandLUMatrix</i>
 unless explicitly noted.</p>
 
 
@@ -4211,8 +4211,8 @@ unless explicitly noted.</p>
     <td width="34%">select a range of columns of a matrix</td>
   </tr>
   <tr>
-    <td width="33%" rowspan="12"><a href="#scalar2">Scalar functions - maxima &amp; 
-    minima</a><p>(also global versions of maximum(), minimum(),&nbsp; 
+    <td width="33%" rowspan="12"><a href="#scalar2">Scalar functions - maxima &amp;
+    minima</a><p>(also global versions of maximum(), minimum(),&nbsp;
     maximum_absolute_value(), mimimum_absolute_value())</td>
     <td width="33%">.<b>maximum_absolute_value</b>()<b><br>
     .</b>MaximumAbsoluteValue()</td>
@@ -4331,7 +4331,7 @@ unless explicitly noted.</p>
 <P>&nbsp;</P>
 <h2><a name="member_functions_2"></a>6.2 Member functions for matrices</h2>
 <p class="small"><a href="#operators">next</a> - <a href="#operators">skip</a> - <a href="#function">up</a> - <A HREF="#top">start</A></p>
-<p>Member functions for matrices but not matrix expressions. These do not apply 
+<p>Member functions for matrices but not matrix expressions. These do not apply
 to CroutMatrix and BandLUMatrix unless explicitly noted.</p>
 <table border="1" cellpadding="0" cellspacing="1" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber2">
   <tr>
@@ -4340,7 +4340,7 @@ to CroutMatrix and BandLUMatrix unless explicitly noted.</p>
     <td width="34%"><b>description</b></td>
   </tr>
   <tr>
-    <td width="33%" rowspan="2"><a href="#elements">Element access</a><p>(see 
+    <td width="33%" rowspan="2"><a href="#elements">Element access</a><p>(see
     also <a href="#operators">operators</a>)</td>
     <td width="33%">.<b>element</b>(int,int)</td>
     <td width="34%">access element - subscripts start at 0</td>
@@ -4357,11 +4357,11 @@ to CroutMatrix and BandLUMatrix unless explicitly noted.</p>
   </tr>
   <tr>
     <td width="33%">.<b>swap</b>(Matrix&amp;)</td>
-    <td width="34%">swap bodies of two matrices of same type (also global 
+    <td width="34%">swap bodies of two matrices of same type (also global
 	version, also works with CroutMatrix and BandLUMatrix)</td>
   </tr>
   <tr>
-    <td width="33%" rowspan="9"><a href="#scalar1">Scalar functions - size and 
+    <td width="33%" rowspan="9"><a href="#scalar1">Scalar functions - size and
     shape</a><p>(also work with CroutMatrix and BandLUMatrix)</td>
     <td width="33%">.<b>type</b>()<br>
     .Type()</td>
@@ -4380,7 +4380,7 @@ to CroutMatrix and BandLUMatrix unless explicitly noted.</p>
   <tr>
     <td width="33%">.<b>size</b>()<br>
     .Storage()</td>
-    <td width="34%">number of stored elements (including unused elements in band 
+    <td width="34%">number of stored elements (including unused elements in band
 	matrices)</td>
   </tr>
   <tr>
@@ -4402,7 +4402,7 @@ to CroutMatrix and BandLUMatrix unless explicitly noted.</p>
   </tr>
   <tr>
     <td width="33%"><b>.const_data_indx</b>()</td>
-    <td width="34%">constant pointer to row swap array (CroutMatrix and BandLUMatrix 
+    <td width="34%">constant pointer to row swap array (CroutMatrix and BandLUMatrix
 	only)</td>
   </tr>
   <tr>
@@ -4414,12 +4414,12 @@ to CroutMatrix and BandLUMatrix unless explicitly noted.</p>
   <tr>
     <td width="33%">.<b>is_singular</b>()<br>
     .IsSingular()</td>
-    <td width="34%">test for exact singularity (CroutMatrix and BandLUMatrix 
+    <td width="34%">test for exact singularity (CroutMatrix and BandLUMatrix
 	only)</td>
   </tr>
   <tr>
     <td width="33%"><b>.even_exchanges</b>()</td>
-    <td width="34%">true if there have been an even number of row exchanges (CroutMatrix and BandLUMatrix 
+    <td width="34%">true if there have been an even number of row exchanges (CroutMatrix and BandLUMatrix
 	only)</td>
   </tr>
   <tr>
@@ -4452,7 +4452,7 @@ to CroutMatrix and BandLUMatrix unless explicitly noted.</p>
   <tr>
     <td width="33%">.<b>resize</b>(int,int)<br>
     .ReSize(int,int)</td>
-    <td width="34%">change the dimensions (non-square matrices, triangular band 
+    <td width="34%">change the dimensions (non-square matrices, triangular band
     matrices and symmetric band matrices)</td>
   </tr>
   <tr>
@@ -4472,7 +4472,7 @@ to CroutMatrix and BandLUMatrix unless explicitly noted.</p>
   </tr>
   <tr>
     <td width="33%"><b>.resize_keep</b>(int)</td>
-    <td width="34%">change the dimensions, keep values (vectors and square matrices, 
+    <td width="34%">change the dimensions, keep values (vectors and square matrices,
     not band)</td>
   </tr>
   <tr>
@@ -4484,7 +4484,7 @@ to CroutMatrix and BandLUMatrix unless explicitly noted.</p>
 <h2><a name="operators"></a>6.3 Operators</h2>
 <p class="small"><a href="#global_functions_1">next</a> -
 <a href="#global_functions_1">skip</a> - <a href="#function">up</a> - <A HREF="#top">start</A></p>
-<P>Operators for matrices and matrix expressions. These do not apply to CroutMatrix and BandLUMatrix 
+<P>Operators for matrices and matrix expressions. These do not apply to CroutMatrix and BandLUMatrix
 unless explicitly noted.</P>
 
 
@@ -4567,7 +4567,7 @@ unless explicitly noted.</P>
   </tr>
   <tr>
     <td width="33%"><tt>=</tt></td>
-    <td width="34%">copy <i>Real</i> 
+    <td width="34%">copy <i>Real</i>
     to all elements</td>
   </tr>
   <tr>
@@ -4599,7 +4599,7 @@ unless explicitly noted.</P>
     <td width="34%"><b>description</b></td>
   </tr>
   <tr>
-    <td width="33%" rowspan="5"><a href="#binary">Binary operators</a><p>(see 
+    <td width="33%" rowspan="5"><a href="#binary">Binary operators</a><p>(see
     also <a href="#operators">operators</a>)</td>
     <td width="33%"><b>SP</b>(const BaseMatrix&amp;, const BaseMatrix&amp;)</td>
     <td width="34%">element-wise product of two matrices</td>
@@ -4675,7 +4675,7 @@ unless explicitly noted.</P>
   <tr>
     <td width="33%" height="38"><b>updateQRZT</b>(Matrix&amp;, LowerTriangularMatrix&amp;)<br>
     UpdateQRZT(Matrix&amp;, LowerTriangularMatrix&amp;)</td>
-    <td width="34%" height="38">add extra columns to transposed version of QRZ 
+    <td width="34%" height="38">add extra columns to transposed version of QRZ
     transform</td>
   </tr>
   <tr>
@@ -4686,19 +4686,19 @@ unless explicitly noted.</P>
   <tr>
     <td width="33%" height="38"><b>updateQRZ</b>(const Matrix&amp;, Matrix&amp;, Matrix&amp;)<br>
 	UpdateQRZ(const Matrix&amp;, Matrix&amp;, Matrix&amp;)</td>
-    <td width="34%" height="38">combine the results of the solve parts of QRZ 
+    <td width="34%" height="38">combine the results of the solve parts of QRZ
 	transforms on two blocks of data</td>
   </tr>
   <tr>
     <td width="33%" height="38"><b>updateQRZ</b>(UpperTriangularMatrix&amp;, UpperTriangularMatrix&amp;)<br>
 	UpdateQRZ(UpperTriangularMatrix&amp;, UpperTriangularMatrix&amp;)</td>
-    <td width="34%" height="38">combine the results of QRZ transforms on two 
+    <td width="34%" height="38">combine the results of QRZ transforms on two
 	blocks of data</td>
   </tr>
   <tr>
     <td width="33%" height="38"><b>updateQRZ</b>(const UpperTriangularMatrix&amp;, Matrix&amp;, Matrix&amp;)<br>
 	UpdateQRZ(const UpperTriangularMatrix&amp;, Matrix&amp;, Matrix&amp;)</td>
-    <td width="34%" height="38">combine the results of the solve parts of QRZ 
+    <td width="34%" height="38">combine the results of the solve parts of QRZ
 	transforms on two blocks of data</td>
   </tr>
   <tr>
@@ -4707,7 +4707,7 @@ unless explicitly noted.</P>
     <td width="34%" height="38">extend a set of orthonormal columns</td>
   </tr>
   <tr>
-    <td width="33%" rowspan="2" height="77"><a href="#cholesky">Cholesky 
+    <td width="33%" rowspan="2" height="77"><a href="#cholesky">Cholesky
     decomposition</a></td>
     <td width="33%" height="38"><b>Cholesky</b>(const SymmetricMatrix&amp;)</td>
     <td width="34%" height="38">Cholesky decomposition of symmetric matrix</td>
@@ -4717,39 +4717,39 @@ unless explicitly noted.</P>
     <td width="34%" height="38">Cholesky decomposition of symmetric band matrix</td>
   </tr>
   <tr>
-    <td width="33%" rowspan="4" height="155"><a href="#upd_chol">Update Cholesky 
+    <td width="33%" rowspan="4" height="155"><a href="#upd_chol">Update Cholesky
     decomposition</a></td>
-    <td width="33%" height="38"><b>update_Cholesky </b>(UpperTriangularMatrix&amp;, 
+    <td width="33%" height="38"><b>update_Cholesky </b>(UpperTriangularMatrix&amp;,
     RowVector)<br>
-    UpdateCholesky<b> </b>(UpperTriangularMatrix&amp;, 
+    UpdateCholesky<b> </b>(UpperTriangularMatrix&amp;,
     RowVector)</td>
     <td width="34%" height="38">add extra row to Cholesky/QR decomposition</td>
   </tr>
   <tr>
-    <td width="33%" height="38"><b>downdate_Cholesky </b>(UpperTriangularMatrix&amp;, 
+    <td width="33%" height="38"><b>downdate_Cholesky </b>(UpperTriangularMatrix&amp;,
     RowVector)<br>
-    DowndateCholesky<b> </b>(UpperTriangularMatrix&amp;, 
+    DowndateCholesky<b> </b>(UpperTriangularMatrix&amp;,
     RowVector)</td>
     <td width="34%" height="38">remove row from Cholesky/QR decomposition</td>
   </tr>
   <tr>
-    <td width="33%" height="38"><b>right_circular_update_Cholesky </b>(UpperTriangularMatrix&amp;, 
+    <td width="33%" height="38"><b>right_circular_update_Cholesky </b>(UpperTriangularMatrix&amp;,
     int, int)<br>
-    RightCircularUpdateCholesky<b> </b>(UpperTriangularMatrix&amp;, 
+    RightCircularUpdateCholesky<b> </b>(UpperTriangularMatrix&amp;,
     int, int)</td>
     <td width="34%" height="38">rearrange columns in Cholesky/QR decomposition</td>
   </tr>
   <tr>
-    <td width="33%" height="38"><b>left_circular_update_Cholesky </b>(UpperTriangularMatrix&amp;, 
+    <td width="33%" height="38"><b>left_circular_update_Cholesky </b>(UpperTriangularMatrix&amp;,
     int, int)<br>
-    LeftCircularUpdateCholesky<b> </b>(UpperTriangularMatrix&amp;, 
+    LeftCircularUpdateCholesky<b> </b>(UpperTriangularMatrix&amp;,
     int, int)</td>
     <td width="34%" height="38">rearrange columns in Cholesky/QR decomposition</td>
   </tr>
   <tr>
-    <td width="33%" rowspan="3" height="99"><a href="#svd">Singular value 
+    <td width="33%" rowspan="3" height="99"><a href="#svd">Singular value
     decomposition</a></td>
-    <td width="33%" height="38"><b>SVD</b>(const Matrix&amp;, DiagonalMatrix&amp;, 
+    <td width="33%" height="38"><b>SVD</b>(const Matrix&amp;, DiagonalMatrix&amp;,
     Matrix&amp;, Matrix&amp;, bool, bool)</td>
     <td width="34%" height="38">singular value decomposition - get U and V</td>
   </tr>
@@ -4758,57 +4758,57 @@ unless explicitly noted.</P>
     <td width="34%" height="21">SVD decomposition - get just singular values</td>
   </tr>
   <tr>
-    <td width="33%" height="38"><b>SVD</b>(const Matrix&amp; A, DiagonalMatrix&amp; D, 
+    <td width="33%" height="38"><b>SVD</b>(const Matrix&amp; A, DiagonalMatrix&amp; D,
     Matrix&amp;, bool)</td>
     <td width="34%" height="38">SVD decomposition - get U</td>
   </tr>
   <tr>
-    <td width="33%" rowspan="7" height="234"><a href="#evalues">Eigenvalue 
+    <td width="33%" rowspan="7" height="234"><a href="#evalues">Eigenvalue
     decomposition of a symmetric matrix</a></td>
-    <td width="33%" height="19"><b>Jacobi</b>(const SymmetricMatrix&amp;, 
+    <td width="33%" height="19"><b>Jacobi</b>(const SymmetricMatrix&amp;,
     DiagonalMatrix&amp;)</td>
     <td width="34%" height="19">Jacobi eigenvalue decomposition - get only eigenvalues</td>
   </tr>
   <tr>
-    <td width="33%" height="38"><b>Jacobi</b>(const SymmetricMatrix&amp;, 
+    <td width="33%" height="38"><b>Jacobi</b>(const SymmetricMatrix&amp;,
     DiagonalMatrix&amp;, SymmetricMatrix&amp;)</td>
-    <td width="34%" height="38">Jacobi eigenvalue decomposition - get only 
+    <td width="34%" height="38">Jacobi eigenvalue decomposition - get only
     eigenvalues</td>
   </tr>
   <tr>
-    <td width="33%" height="38"><b>Jacobi</b>(const SymmetricMatrix&amp;, 
+    <td width="33%" height="38"><b>Jacobi</b>(const SymmetricMatrix&amp;,
     DiagonalMatrix&amp;, Matrix&amp;)</td>
-    <td width="34%" height="38">Jacobi eigenvalue decomposition - get 
+    <td width="34%" height="38">Jacobi eigenvalue decomposition - get
     eigenvalues and eigenvectors</td>
   </tr>
   <tr>
-    <td width="33%" height="38"><b>Jacobi</b>(const SymmetricMatrix&amp;, 
+    <td width="33%" height="38"><b>Jacobi</b>(const SymmetricMatrix&amp;,
     DiagonalMatrix&amp;, SymmetricMatrix&amp;, Matrix&amp;, bool)</td>
-    <td width="34%" height="38">Jacobi eigenvalue decomposition - get 
+    <td width="34%" height="38">Jacobi eigenvalue decomposition - get
     eigenvalues and eigenvectors</td>
   </tr>
   <tr>
-    <td width="33%" height="19"><b>eigenvalues</b>(const SymmetricMatrix&amp;, 
+    <td width="33%" height="19"><b>eigenvalues</b>(const SymmetricMatrix&amp;,
     DiagonalMatrix&amp;)<br>
-    EigenValues(const SymmetricMatrix&amp;, 
+    EigenValues(const SymmetricMatrix&amp;,
     DiagonalMatrix&amp;)</td>
-    <td width="34%" height="19">Householder eigenvalue decomposition - get only 
+    <td width="34%" height="19">Householder eigenvalue decomposition - get only
     eigenvalues </td>
   </tr>
   <tr>
-    <td width="33%" height="38"><b>eigenvalues</b>(const SymmetricMatrix&amp;, 
+    <td width="33%" height="38"><b>eigenvalues</b>(const SymmetricMatrix&amp;,
     DiagonalMatrix&amp;, SymmetricMatrix&amp;)<br>
-    EigenValues(const SymmetricMatrix&amp;, 
+    EigenValues(const SymmetricMatrix&amp;,
     DiagonalMatrix&amp;, SymmetricMatrix&amp;)</td>
-    <td width="34%" height="38">Householder eigenvalue decomposition with back 
+    <td width="34%" height="38">Householder eigenvalue decomposition with back
     transform - get only eigenvalues</td>
   </tr>
   <tr>
-    <td width="33%" height="38"><b>eigenvalues</b>(const SymmetricMatrix&amp;, 
+    <td width="33%" height="38"><b>eigenvalues</b>(const SymmetricMatrix&amp;,
     DiagonalMatrix&amp;, Matrix&amp;)<br>
-    EigenValues(const SymmetricMatrix&amp;, 
+    EigenValues(const SymmetricMatrix&amp;,
     DiagonalMatrix&amp;, Matrix&amp;)</td>
-    <td width="34%" height="38">Householder eigenvalue decomposition - get 
+    <td width="34%" height="38">Householder eigenvalue decomposition - get
     eigenvalues and eigenvectors</td>
   </tr>
   <tr>
@@ -4823,45 +4823,45 @@ unless explicitly noted.</P>
     <td width="34%" height="19">descending sort</td>
   </tr>
   <tr>
-    <td width="33%" rowspan="6" height="233"><a href="#fft">Fast Fourier 
+    <td width="33%" rowspan="6" height="233"><a href="#fft">Fast Fourier
     transform</a></td>
-    <td width="33%" height="38"><b>FFT</b>(const ColumnVector&amp;, const 
+    <td width="33%" height="38"><b>FFT</b>(const ColumnVector&amp;, const
     ColumnVector&amp;, ColumnVector&amp;, ColumnVector&amp;)</td>
     <td width="34%" height="38">fast Fourier transform</td>
   </tr>
   <tr>
-    <td width="33%" height="38"><b>FFTI</b>(const ColumnVector&amp;, const 
+    <td width="33%" height="38"><b>FFTI</b>(const ColumnVector&amp;, const
     ColumnVector&amp;, ColumnVector&amp;, ColumnVector&amp;)</td>
     <td width="34%" height="38">fast Fourier transform - inverse</td>
   </tr>
   <tr>
-    <td width="33%" height="38"><b>RealFFT</b>(const ColumnVector&amp;, ColumnVector&amp;, 
+    <td width="33%" height="38"><b>RealFFT</b>(const ColumnVector&amp;, ColumnVector&amp;,
     ColumnVector&amp;)</td>
     <td width="34%" height="38">FFT of real vector</td>
   </tr>
   <tr>
-    <td width="33%" height="38"><b>RealFFTI</b>(const ColumnVector&amp;, const 
+    <td width="33%" height="38"><b>RealFFTI</b>(const ColumnVector&amp;, const
     ColumnVector&amp;, ColumnVector&amp;)</td>
     <td width="34%" height="38">FFT of real vector - inverse</td>
   </tr>
   <tr>
-    <td width="33%" height="38"><b>FFT2</b>(const Matrix&amp; U, const Matrix&amp; V, 
+    <td width="33%" height="38"><b>FFT2</b>(const Matrix&amp; U, const Matrix&amp; V,
     Matrix&amp; X, Matrix&amp; Y)</td>
     <td width="34%" height="38">two dimensional FFT</td>
   </tr>
   <tr>
-    <td width="33%" height="38"><b>FFT2I</b>(const Matrix&amp; U, const Matrix&amp; V, 
+    <td width="33%" height="38"><b>FFT2I</b>(const Matrix&amp; U, const Matrix&amp; V,
     Matrix&amp; X, Matrix&amp; Y)</td>
     <td width="34%" height="38">two dimensional FFT - inverse</td>
   </tr>
   <tr>
-    <td width="33%" rowspan="8" height="80"><a href="#trigtran">Fast 
+    <td width="33%" rowspan="8" height="80"><a href="#trigtran">Fast
     trigonometric transform</a></td>
     <td width="33%" height="19"><b>DCT_II</b>(const ColumnVector&amp;, ColumnVector&amp;)</td>
     <td width="34%" height="19">type II discrete cosine transform</td>
   </tr>
   <tr>
-    <td width="33%" height="19"><b>DCT_II_inverse</b>(const ColumnVector&amp;, 
+    <td width="33%" height="19"><b>DCT_II_inverse</b>(const ColumnVector&amp;,
     ColumnVector&amp;)</td>
     <td width="34%" height="19">type II discrete cosine transform - inverse</td>
   </tr>
@@ -4870,7 +4870,7 @@ unless explicitly noted.</P>
     <td width="34%" height="19">type II discrete sine transform</td>
   </tr>
   <tr>
-    <td width="33%" height="19"><b>DST_II_inverse</b>(const ColumnVector&amp;, 
+    <td width="33%" height="19"><b>DST_II_inverse</b>(const ColumnVector&amp;,
     ColumnVector&amp;)</td>
     <td width="34%" height="19">type II discrete sine transform - inverse</td>
   </tr>
@@ -4879,7 +4879,7 @@ unless explicitly noted.</P>
     <td width="34%" height="19">discrete cosine transform</td>
   </tr>
   <tr>
-    <td width="33%" height="19"><b>DCT_inverse</b>(const ColumnVector&amp;, 
+    <td width="33%" height="19"><b>DCT_inverse</b>(const ColumnVector&amp;,
     ColumnVector&amp;)</td>
     <td width="34%" height="19">discrete cosine transform - inverse</td>
   </tr>
@@ -4888,7 +4888,7 @@ unless explicitly noted.</P>
     <td width="34%" height="19">discrete sine transform</td>
   </tr>
   <tr>
-    <td width="33%" height="19"><b>DST_inverse</b>(const ColumnVector&amp;, 
+    <td width="33%" height="19"><b>DST_inverse</b>(const ColumnVector&amp;,
     ColumnVector&amp;)</td>
     <td width="34%" height="19">discrete sine transform - inverse</td>
   </tr>
@@ -4910,12 +4910,12 @@ unless explicitly noted.</P>
   <tr>
     <td width="33%" height="19"><b>Helmert_transpose</b>(const ColumnVector&amp;, bool=false)<br>
 	<b>Helmert_transpose</b>(const Matrix&amp;, bool=false)</td>
-    <td width="34%" height="19">multiply by transpose of Helmert transform 
+    <td width="34%" height="19">multiply by transpose of Helmert transform
 	matrix</td>
   </tr>
   <tr>
     <td width="33%" height="19"><b>Helmert_transpose</b>(const ColumnVector&amp;, int, bool=false)</td>
-    <td width="34%" height="19">multiply by transpose of Helmert transform 
+    <td width="34%" height="19">multiply by transpose of Helmert transform
 	matrix, return one element of result</td>
   </tr>
   </table>
@@ -5030,24 +5030,24 @@ unless explicitly noted.</P>
 <P CLASS="small"><a href="#problem">next</a> - <a href="#problem">skip</a> -
 <a href="#top">up</a> - <a href="#top">start</a></P>
 <P><b>Newmat11 - November, 2008:</b></P>
-<P CLASS="small">Remove work-arounds for older compilers, Borland Builder 6 and 
-Open Watcom compatibility, SquareMatrix, 
-load from array of ints, crossproducts, Cholesky and QRZ update functions, swap 
-functions, FFT2, access to arrays in traditional C functions, SimpleIntArray 
-class, compatibility with Numerical Recipes in C++, sum_rows(), sum_columns(), sum_squares_rows() and 
-sum_squares_columns() functions, extend_orthogonal function, resize_keep 
-function, speed-ups and 
-bug-fixes,  change to lower case for functions, can copy CroutMatrix, 
-BandLUMatrix, Helmert transform, compatibility fix for G++ 4.1, start inserting 
+<P CLASS="small">Remove work-arounds for older compilers, Borland Builder 6 and
+Open Watcom compatibility, SquareMatrix,
+load from array of ints, crossproducts, Cholesky and QRZ update functions, swap
+functions, FFT2, access to arrays in traditional C functions, SimpleIntArray
+class, compatibility with Numerical Recipes in C++, sum_rows(), sum_columns(), sum_squares_rows() and
+sum_squares_columns() functions, extend_orthogonal function, resize_keep
+function, speed-ups and
+bug-fixes,  change to lower case for functions, can copy CroutMatrix,
+BandLUMatrix, Helmert transform, compatibility fix for G++ 4.1, start inserting
 comments for Doxygen, SP_eq, scientific format for output, fix for 64 bits.</P>
 <P><b>Newmat10A - October, 2002, Newmat10B - January 2005:</b></P>
-<P CLASS="small">Fix error in Kronecker product; fixes for Intel and GCC3 
+<P CLASS="small">Fix error in Kronecker product; fixes for Intel and GCC3
 compilers.</P>
 <P><B>Newmat10 - January, 2002:</B> </P>
 <P CLASS="small">Improve compatibility with GCC, fix errors in FFT and
 GenericMatrix, update simulated exceptions, maxima, minima, determinant, dot
 product and Frobenius norm functions, update make files for CC and GCC, faster
-FFT, <TT>A.ReSize(B)</TT>, fix pointer arithmetic, <TT>&lt;&lt;</TT> for loading 
+FFT, <TT>A.ReSize(B)</TT>, fix pointer arithmetic, <TT>&lt;&lt;</TT> for loading
 data into rows, IdentityMatrix, Kronecker product, sort singular values.</P>
 <P><B>Newmat09 - September, 1997:</B> </P>
 <P CLASS="small">Operator <TT>==</TT>, <TT>!=</TT>, <TT>+=</TT>, <TT>-=</TT>,
@@ -5087,7 +5087,7 @@ LinearEquationSolver, primitive version of exceptions. </P>
 <P><B>Newmat05 - June 1992:</B> </P>
 <P CLASS="small">For private release only </P>
 <P><B>Newmat04 - December 1991:</B> </P>
-<P CLASS="small">Fix problem with G++1.40, some extra documentation  
+<P CLASS="small">Fix problem with G++1.40, some extra documentation
 </P>
 <P><B>Newmat03 - November 1991:</B> </P>
 <P CLASS="small">Col and Cols become Column and Columns. Added Sort, SVD,

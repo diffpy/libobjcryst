@@ -3,13 +3,13 @@
 ## Version 2024.1.1,  - 2024-02-06
 
 ### Added
-- Make sure Molecule::BuildConnectivityTable() always list all atoms, 
+- Make sure Molecule::BuildConnectivityTable() always list all atoms,
   even if their connectivity list is empty (pathological case)
 
 ## Version 2022.1.4,  - 2022-12-03
 
 ### Added
-- Add UnitCell::ChangeSpaceGroup(), which updates lattice parameter symmetry constraints. 
+- Add UnitCell::ChangeSpaceGroup(), which updates lattice parameter symmetry constraints.
 
 ### Changed
 - Take into account spacegroup clock in UnitCell::GetLatticePar and InitMatrices
@@ -20,8 +20,8 @@
 
 ### Changed
 
-- the list of HKL reflections will now be automatically be re-generated 
-  for a PowderPatternDiffraction when the Crystal's spacegroup changes,  
+- the list of HKL reflections will now be automatically be re-generated
+  for a PowderPatternDiffraction when the Crystal's spacegroup changes,
   or the lattice parameters are modified by more than 0.5%
 - Fixed the powder pattern indexing test
 
@@ -44,7 +44,7 @@
 
 ### Changed
 
-- Add relative_length_tolerance and absolute_angle_tolerance_degree to 
+- Add relative_length_tolerance and absolute_angle_tolerance_degree to
   SpaceGroupExplorer::Run() and RunAll()
 - Crystal::XMLInput(): add a hook to re-use atomic scattering power when
   mDeleteSubObjInDestructor is False
@@ -72,13 +72,13 @@
 ### Added
 - Move SpaceGroupExplorer in a separate class for non-GUI access.
   Allow keeping or not the tested spacegroup, or the best solution.
-  Sort solutions by the GoF multiplied by the ratio of the number 
+  Sort solutions by the GoF multiplied by the ratio of the number
   of non-extinct reflections in the spacegoup relative to P1.
 - MonteCarloObj: add public access to AutoLSQ option
 - OptimizationObj: add access to Options by number or name
 - RefinableObj: provide access to options by name
 - Add STL-type methods (begin, end, size) for ObjRegistry and Molecule objects
-- Add Crystal.GetFormula(). Use formula to automatically name Crystal and 
+- Add Crystal.GetFormula(). Use formula to automatically name Crystal and
   DiffractionDataSingleCrystal when imported from CIF and no name is given
 
 ### Changed
