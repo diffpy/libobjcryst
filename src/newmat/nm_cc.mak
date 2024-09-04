@@ -214,4 +214,3 @@ sl_ex.txx:     	sl_ex
 garch.txx:     	garch
 		$(PRE)garch > garch.txx
 		$(DIFF) garch.txt garch.txx
-

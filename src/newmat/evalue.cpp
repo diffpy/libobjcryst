@@ -300,4 +300,3 @@ void eigenvalues(const SymmetricMatrix& X, DiagonalMatrix& D,
 #endif
 
 ///@}
-

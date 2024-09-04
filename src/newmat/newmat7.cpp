@@ -1050,4 +1050,3 @@ ReturnMatrix crossproduct_columns(const Matrix& A, const Matrix& B)
 #endif
 
 ///@}
-

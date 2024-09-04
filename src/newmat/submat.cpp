@@ -398,4 +398,3 @@ void GetSubMatrix::operator*=(Real r)
 #endif
 
 ///@}
-

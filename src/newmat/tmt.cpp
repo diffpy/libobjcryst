@@ -554,6 +554,3 @@ time_lapse::~time_lapse()
 
 
 ///@}
-
-
-

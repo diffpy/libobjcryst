@@ -268,5 +268,3 @@ ReturnMatrix Helmert_transpose(const Matrix& Y, bool full=false);
 
 
 ///@}
-
-

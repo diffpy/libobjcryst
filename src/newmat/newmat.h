@@ -2247,7 +2247,3 @@ inline Real Dot(ColumnVector& CV1, ColumnVector& CV2)
 
 
 ///@}
-
-
-
-

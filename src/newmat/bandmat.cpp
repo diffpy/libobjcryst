@@ -714,5 +714,3 @@ Real SymmetricBandMatrix::sum() const
 #endif
 
 ///@}
-
-
