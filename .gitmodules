@@ -1,0 +1,3 @@
+[submodule "src/objcryst"]
+	path = src/objcryst
+	url = https://github.com/vincefn/objcryst

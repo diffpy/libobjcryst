@@ -105,7 +105,7 @@ install:
   # Verify version of the installed library.
   - MYINCLUDE="${MYPREFIX}/include"
   - MYLIB="${MYPREFIX}/lib"
-  - MYVERSION="${MYINCLUDE}/ObjCryst/version.h"
+  - MYVERSION="${MYINCLUDE}/version/version.h"
   - MYGIT_REV=$(grep '^#define LIBOBJCRYST_GIT_COMMIT' "$MYVERSION" | cut -d '"' -f 2)
   - if [[ "${MYCOMMIT}" != "${MYGIT_REV}" ]]; then
         echo "Version mismatch ${MYCOMMIT} vs ${MYGIT_REV}.";
