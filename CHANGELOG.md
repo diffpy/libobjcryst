@@ -1,5 +1,15 @@
 # Release notes
 
+## Version 2024.2,  - 2024-09-07
+
+### Changed
+- Switch to a git submodule for the source of the upstream objcryst project
+
+### Fixed
+- update the ScatteringComponentList when a Scatterer is removed from a Crystal.
+  [fixes https://github.com/diffpy/pyobjcryst/issues/41]
+
+
 ## Version 2024.1.1,  - 2024-02-06
 
 ### Added
