@@ -1,5 +1,10 @@
 # Release notes
 
+## Version 2024.2.1,  - 2024-09-09
+
+### Changed
+- fixed windows installation and compilation
+
 ## Version 2024.2,  - 2024-09-07
 
 ### Changed
