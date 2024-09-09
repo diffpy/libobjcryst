@@ -29,7 +29,7 @@ if env['PLATFORM'] == 'darwin':
 # Compiler specific options
 if platform.system().lower() == "windows":
     # Visual c++
-    env.PrependUnique(CCFLAGS=['/Ox', '/EHsc', '/MD'])
+    env.PrependUnique(CCFLAGS=['/Ox', '/EHsc', '/MD', '/DREAL=double'])
     env.AppendUnique(CPPDEFINES={'NDEBUG': None})
     # env.AppendUnique(LINKFLAGS='/EXPORT')
 else:
@@ -113,8 +113,10 @@ Alias('install-lib', install_lib)
 # install-include - make sure the root include directory is "ObjCryst", so tweak the path a little,
 # so it still works using the objcryst submodule
 ninc = len(Dir('.').path) + 1
+s = os.path.sep
 inc_target_path = lambda f: os.path.join(env['includedir'],
-                                         f.path[ninc:].replace('objcryst/', '').replace('version/', 'ObjCryst/'))
+                                         f.path[ninc:].replace(
+                                         'objcryst' + s, '').replace('version' + s, 'ObjCryst' + s))
 include_targets = [inc_target_path(f) for f in env['lib_includes']]
 install_include = InstallAs(include_targets, env['lib_includes'])
 Alias('install-include', install_include)
