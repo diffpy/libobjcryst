@@ -29,7 +29,7 @@ def gitinfo():
     nullfile = open(os.devnull, 'w')
     kw = dict(stdout=PIPE, stderr=nullfile, cwd=MYDIR,
               universal_newlines=True)
-    proc = Popen(['git', 'describe', '--match=v[[:digit:]]*'], **kw)
+    proc = Popen(['git', 'describe', '--match=v[[:digit:]]*', '--tags'], **kw)
     desc = proc.stdout.read()
     if proc.wait():
         _cached_gitinfo = {}
