@@ -119,6 +119,18 @@ inc_target_path = lambda f: os.path.join(env['includedir'],
                                          'objcryst' + s, '').replace('version' + s, 'ObjCryst' + s))
 include_targets = [inc_target_path(f) for f in env['lib_includes']]
 install_include = InstallAs(include_targets, env['lib_includes'])
+
+# DEBUG installation
+print("\nenv['lib_includes']:")
+for f in env['lib_includes']:
+    print(f"   {f.path}")
+print("\ninclude_targets:")
+for f in include_targets:
+    print(f"   {f}")
+print("\ninstall-include:")
+for f in install_include:
+    print(f"   {f.path}")
+
 Alias('install-include', install_include)
 
 # install
