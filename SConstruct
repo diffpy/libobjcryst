@@ -70,6 +70,7 @@ else:
         'prefix',
         'installation prefix directory',
         '/usr/local'))
+    vars.Update(env)
 
 if platform.system().lower() == "windows":
     # Installation paths
