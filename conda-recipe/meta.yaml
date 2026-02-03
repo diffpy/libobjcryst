@@ -20,7 +20,7 @@ requirements:
     - scons
     - python
   host:
-    - boost {{ boost }}
+    - libboost-headers {{ boost }}
 
 
 test:

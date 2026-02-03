@@ -1,5 +1,5 @@
 boost:
-  - 1.78
+  - 1.88
 
 # only for local build ? see https://github.com/conda/conda-build/issues/4064#issuecomment-702983257
 #CONDA_BUILD_SYSROOT:

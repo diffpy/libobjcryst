@@ -114,7 +114,7 @@ else:
 
     # Specify minimum C++ standard.  Allow later standard from sconscript.local.
     # In case of multiple `-std` options the last option holds.
-    env.PrependUnique(CXXFLAGS='-std=c++11', delete_existing=1)
+    env.PrependUnique(CXXFLAGS='-std=c++14', delete_existing=1)
 
 # for k, v in env.Dictionary().items():
 #     print(k, v)
