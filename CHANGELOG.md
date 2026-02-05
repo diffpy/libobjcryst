@@ -1,6 +1,6 @@
 # Release notes
 
-## Version 2026.1.1,  - 2026-02-05
+## Version 2026.1,  - 2026-02-05
 
 ### Changed
 - changed boost version to 1.88, switch to c++-14
