@@ -126,7 +126,10 @@ vars.Add(EnumVariable(
 vars.Add(EnumVariable(
     'warnings',
     'warning flags policy',
-    'all', allowed_values=('all', 'none', 'default')))
+    'none', allowed_values=('all', 'none', 'default')))
+vars.Add(BoolVariable(
+    'verbose',
+    'print build commands', False))
 vars.Add(EnumVariable(
     'tool',
     'C++ compiler toolkit to be used',
@@ -139,6 +142,8 @@ vars.Add(BoolVariable(
     'compile and link with the shared cctbx library', False))
 
 vars.Update(env)
+SetOption('silent', not env['verbose'])
+SetOption('no_progress', not env['verbose'])
 env.Help(MY_SCONS_HELP % vars.GenerateHelpText(env))
 
 # the CPPPATH directories are checked by scons dependency scanner

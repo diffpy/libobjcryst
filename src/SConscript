@@ -30,14 +30,22 @@ if env['PLATFORM'] == 'darwin':
 if platform.system().lower() == "windows":
     # Visual c++
     env.PrependUnique(CCFLAGS=['/Ox', '/EHsc', '/MD', '/DREAL=double'])
+    if env['warnings'] == 'none':
+        env.PrependUnique(CCFLAGS=['/w'])
     env.AppendUnique(CPPDEFINES={'NDEBUG': None})
     # env.AppendUnique(LINKFLAGS='/EXPORT')
 else:
     # Use double precision for objcryst's REAL
     env.PrependUnique(CCFLAGS=['-DREAL=double'])
+    if env['warnings'] == 'none':
+        env.PrependUnique(LINKFLAGS=['-w'])
     if icpc:
         # options for Intel C++ compiler on hpc dev-intel07
-        env.PrependUnique(CCFLAGS=['-w1', '-fp-model', 'precise'])
+        if env['warnings'] == 'none':
+            env.PrependUnique(CCFLAGS=['-w'])
+        else:
+            env.PrependUnique(CCFLAGS=['-w1'])
+        env.PrependUnique(CCFLAGS=['-fp-model', 'precise'])
         env.PrependUnique(LIBS=['imf'])
         fast_optimflags = ['-fast', '-no-ipo']
     else:
@@ -122,17 +130,6 @@ inc_target_path = lambda f: os.path.join(env['includedir'],
                                          'objcryst' + s, '').replace('version' + s, 'ObjCryst' + s))
 include_targets = [inc_target_path(f) for f in env['lib_includes']]
 install_include = InstallAs(include_targets, env['lib_includes'])
-
-# DEBUG installation
-print("\nenv['lib_includes']:")
-for f in env['lib_includes']:
-    print(f"   {f.path}")
-print("\ninclude_targets:")
-for f in include_targets:
-    print(f"   {f}")
-print("\ninstall-include:")
-for f in install_include:
-    print(f"   {f.path}")
 
 Alias('install-include', install_include)
 
