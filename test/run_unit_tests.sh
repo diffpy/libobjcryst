@@ -63,6 +63,7 @@ run_test "unit::powderpattern-import" "$SCRIPT_DIR/bin/$BIN_SUBDIR/api_powderpat
 run_test "unit::scatteringcorr-subclasses" "$SCRIPT_DIR/bin/$BIN_SUBDIR/api_powderpattern" "scatteringcorr-subclasses"
 run_test "unit::reflectionprofile-pseudo-voigt" "$SCRIPT_DIR/bin/$BIN_SUBDIR/api_powderpattern" "reflectionprofile-pseudo-voigt"
 run_test "unit::reflectionprofile-double-exponential-pv" "$SCRIPT_DIR/bin/$BIN_SUBDIR/api_powderpattern" "reflectionprofile-double-exponential-pv"
+
 # TODO: Re-enable these powder ground-truth regression checks once fixtures or
 # tolerances are reconciled between upstream ObjCryst's default single-precision
 # behavior and libobjcryst's double-precision build.

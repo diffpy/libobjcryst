@@ -31,8 +31,8 @@ CPPFLAGS += -DREAL=double \
 	-I$(BUILD_DIR)/src/version \
 	-I$(ROOT_DIR)/src/objcryst/ObjCryst \
 	-I$(ROOT_DIR)/src/objcryst/cctbx/include
-LDFLAGS += -L$(dir $(LIBOBJCRYST))
-LDLIBS += -lObjCryst
+LDFLAGS += -L$(abspath $(dir $(LIBOBJCRYST)))
+LDLIBS += $(abspath $(LIBOBJCRYST))
 ifeq ($(origin CONDA_PREFIX), undefined)
 CONDA_PREFIX :=
 endif
@@ -62,7 +62,7 @@ all: build run
 
 build: check-layout $(UNIT_BINS) $(RUNNER)
 
-run: build
+run: build $(RUNNER)
 	@cd $(UNIT_SRC_DIR) && TEST_TIMEOUT="$${FOX_TEST_TIMEOUT:-30s}" BUILD="$(BUILD)" "$(RUNNER)"
 
 check-layout:
@@ -80,7 +80,8 @@ $(OBJ_DIR)/%.o: $(UNIT_SRC_DIR)/%.cpp | $(OBJ_DIR)
 $(BIN_DIR)/%: $(OBJ_DIR)/%.o | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(RPATH_FLAG) $< -o $@ $(LDLIBS)
 
-$(RUNNER): ;
+$(RUNNER):
+	@chmod +x "$(RUNNER)"
 
 tidy:
 	@$(RM) $(UNIT_OBJS)
