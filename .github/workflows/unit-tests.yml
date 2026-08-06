@@ -18,12 +18,12 @@ jobs:
             os: ubuntu-latest
             arch: x64
             make_cmd: make
-            build_dir: build/x86_64-conda-linux-gnu-x86_64
+            build_dir: ../build/x86_64-conda-linux-gnu-x86_64
           - label: macos-arm64
             os: macos-14
             arch: arm64
             make_cmd: gmake
-            build_dir: build/arm64-apple-darwin20.0.0-arm64
+            build_dir: ../build/arm64-apple-darwin20.0.0-arm64
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     name: ${{ matrix.label }}
