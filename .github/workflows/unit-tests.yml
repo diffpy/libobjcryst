@@ -56,7 +56,7 @@ jobs:
       - name: Build libobjcryst
         shell: bash -el {0}
         run: |
-          PREFIX="$CONDA_PREFIX" python -m SCons -Q lib
+          PREFIX="$CONDA_PREFIX" python -m SCons -Q lib VERSION=2026.2
 
       - name: Run standalone unit tests
         shell: bash -el {0}
