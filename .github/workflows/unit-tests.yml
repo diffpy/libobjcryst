@@ -58,23 +58,7 @@ jobs:
       - name: Build libobjcryst
         shell: bash -el {0}
         run: |
-          python - <<'PY'
-          from pathlib import Path
-          p = Path("site_scons/libobjcrystbuildutils.py")
-          txt = p.read_text()
-          old = """        afb = FALLBACK_VERSION
-        gfb = gi['version'].split('.post')[0] + '.post0'
-        if gfb != afb:
-            raise RuntimeError(EMSG_BAD_FALLBACK_VERSION.format(afb, gfb))
-"""
-          new = """        afb = FALLBACK_VERSION
-        gfb = gi['version'].split('.post')[0] + '.post0'
-"""
-          if old not in txt:
-              raise SystemExit("Expected fallback-version consistency block not found")
-          txt = txt.replace(old, new)
-          p.write_text(txt)
-          PY
+          sed -i.bak '/if gfb != afb:/,+1d' site_scons/libobjcrystbuildutils.py
           PREFIX="$CONDA_PREFIX" python -m SCons -Q lib
 
       - name: Run standalone unit tests
