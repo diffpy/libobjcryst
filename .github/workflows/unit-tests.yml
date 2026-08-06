@@ -18,12 +18,12 @@ jobs:
             os: ubuntu-latest
             arch: x64
             make_cmd: make
-            lib_path: ../build/x86_64-conda-linux-gnu-x86_64/libObjCryst.so
+            lib_path: ../build/fast-x86_64/libObjCryst.so
           - label: macos-arm64
             os: macos-14
             arch: arm64
             make_cmd: gmake
-            lib_path: ../build/arm64-apple-darwin20.0.0-arm64/libObjCryst.dylib
+            lib_path: ../build/fast-arm64/libObjCryst.dylib
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     name: ${{ matrix.label }}
