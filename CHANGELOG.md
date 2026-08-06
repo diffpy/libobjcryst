@@ -1,5 +1,12 @@
 # Release notes
 
+## Version 2026.1.1, - 2026-08-06
+
+### Fixed
+- Updated ObjCryst++ to provide the correctly spelled `ORTHORHOMBIC`
+  crystal-system enum while retaining `ORTHOROMBIC` as a backward-compatible
+  alias.
+
 ## Version 2026.1,  - 2026-02-05
 
 ### Changed
