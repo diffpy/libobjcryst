@@ -58,10 +58,19 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-          p = Path("site_scons/fallback_version.py")
+          p = Path("site_scons/libobjcrystbuildutils.py")
           txt = p.read_text()
-          txt = txt.replace("FALLBACK_VERSION = '2026.2.post0'",
-                            "FALLBACK_VERSION = '2026.1.post0'")
+          old = """        afb = FALLBACK_VERSION
+        gfb = gi['version'].split('.post')[0] + '.post0'
+        if gfb != afb:
+            raise RuntimeError(EMSG_BAD_FALLBACK_VERSION.format(afb, gfb))
+"""
+          new = """        afb = FALLBACK_VERSION
+        gfb = gi['version'].split('.post')[0] + '.post0'
+"""
+          if old not in txt:
+              raise SystemExit("Expected fallback-version consistency block not found")
+          txt = txt.replace(old, new)
           p.write_text(txt)
           PY
           PREFIX="$CONDA_PREFIX" python -m SCons -Q lib
