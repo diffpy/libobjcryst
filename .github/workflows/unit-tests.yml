@@ -1,0 +1,63 @@
+name: Unit tests
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: unit-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: ubuntu-x64
+            os: ubuntu-latest
+            arch: x64
+            make_cmd: make
+          - label: macos-arm64
+            os: macos-14
+            arch: arm64
+            make_cmd: gmake
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    name: ${{ matrix.label }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: test-env
+          auto-activate-base: false
+          python-version: "3.13"
+
+      - name: Install build dependencies (Ubuntu)
+        if: startsWith(matrix.os, 'ubuntu-')
+        shell: bash -el {0}
+        run: |
+          conda install -y -c conda-forge scons compilers boost
+
+      - name: Install build dependencies (macOS)
+        if: startsWith(matrix.os, 'macos-')
+        shell: bash -el {0}
+        run: |
+          brew install make
+          conda install -y -c conda-forge scons compilers boost
+
+      - name: Build libobjcryst
+        shell: bash -el {0}
+        run: |
+          PREFIX="$CONDA_PREFIX" python -m SCons -Q lib
+
+      - name: Run standalone unit tests
+        shell: bash -el {0}
+        run: |
+          CONDA_PREFIX="$CONDA_PREFIX" ${{ matrix.make_cmd }} -C test

@@ -31,3 +31,7 @@ tags
 
 # source distribution tarball
 libobjcryst-*.tar.gz
+
+# standalone unit-test artifacts
+test/bin/
+test/obj/
