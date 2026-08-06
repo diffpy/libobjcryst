@@ -56,7 +56,15 @@ jobs:
       - name: Build libobjcryst
         shell: bash -el {0}
         run: |
-          PREFIX="$CONDA_PREFIX" python -m SCons -Q lib VERSION=2026.2
+          python - <<'PY'
+          from pathlib import Path
+          p = Path("site_scons/fallback_version.py")
+          txt = p.read_text()
+          txt = txt.replace("FALLBACK_VERSION = '2026.2.post0'",
+                            "FALLBACK_VERSION = '2026.1.post0'")
+          p.write_text(txt)
+          PY
+          PREFIX="$CONDA_PREFIX" python -m SCons -Q lib
 
       - name: Run standalone unit tests
         shell: bash -el {0}
