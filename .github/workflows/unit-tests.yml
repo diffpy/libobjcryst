@@ -18,12 +18,12 @@ jobs:
             os: ubuntu-latest
             arch: x64
             make_cmd: make
-            build_dir: ../build/x86_64-conda-linux-gnu-x86_64
+            lib_path: ../build/x86_64-conda-linux-gnu-x86_64/libObjCryst.so
           - label: macos-arm64
             os: macos-14
             arch: arm64
             make_cmd: gmake
-            build_dir: ../build/arm64-apple-darwin20.0.0-arm64
+            lib_path: ../build/arm64-apple-darwin20.0.0-arm64/libObjCryst.dylib
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     name: ${{ matrix.label }}
@@ -64,4 +64,4 @@ jobs:
       - name: Run standalone unit tests
         shell: bash -el {0}
         run: |
-          CONDA_PREFIX="$CONDA_PREFIX" ${{ matrix.make_cmd }} -C test BUILD_DIR="${{ matrix.build_dir }}"
+          CONDA_PREFIX="$CONDA_PREFIX" ${{ matrix.make_cmd }} -C test LIBOBJCRYST="${{ matrix.lib_path }}"
