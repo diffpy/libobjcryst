@@ -18,12 +18,10 @@ jobs:
             os: ubuntu-latest
             arch: x64
             make_cmd: make
-            lib_path: ../build/x86_64-conda-linux-gnu-x86_64/libObjCryst.so
           - label: macos-arm64
             os: macos-14
             arch: arm64
             make_cmd: gmake
-            lib_path: ../build/arm64-apple-darwin20.0.0-arm64/libObjCryst.dylib
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     name: ${{ matrix.label }}
@@ -61,7 +59,18 @@ jobs:
           sed -i.bak '/if gfb != afb:/,+1d' site_scons/libobjcrystbuildutils.py
           PREFIX="$CONDA_PREFIX" python -m SCons -Q lib
 
+      - name: Locate built library
+        shell: bash -el {0}
+        run: |
+          libpath="$(find build -type f \( -name 'libObjCryst.so' -o -name 'libObjCryst.dylib' \) | head -n 1)"
+          if [ -z "$libpath" ]; then
+            echo "No built libObjCryst library found under build/"
+            exit 1
+          fi
+          echo "LIBOBJCRYST_PATH=$libpath" >> "$GITHUB_ENV"
+          echo "Using LIBOBJCRYST_PATH=$libpath"
+
       - name: Run standalone unit tests
         shell: bash -el {0}
         run: |
-          CONDA_PREFIX="$CONDA_PREFIX" ${{ matrix.make_cmd }} -C test LIBOBJCRYST="${{ matrix.lib_path }}"
+          CONDA_PREFIX="$CONDA_PREFIX" ${{ matrix.make_cmd }} -C test LIBOBJCRYST="$LIBOBJCRYST_PATH"
