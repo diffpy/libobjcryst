@@ -64,12 +64,9 @@ run_test "unit::scatteringcorr-subclasses" "$SCRIPT_DIR/bin/$BIN_SUBDIR/api_powd
 run_test "unit::reflectionprofile-pseudo-voigt" "$SCRIPT_DIR/bin/$BIN_SUBDIR/api_powderpattern" "reflectionprofile-pseudo-voigt"
 run_test "unit::reflectionprofile-double-exponential-pv" "$SCRIPT_DIR/bin/$BIN_SUBDIR/api_powderpattern" "reflectionprofile-double-exponential-pv"
 
-# TODO: Re-enable these powder ground-truth regression checks once fixtures or
-# tolerances are reconciled between upstream ObjCryst's default single-precision
-# behavior and libobjcryst's double-precision build.
-# run_test "unit::powder-groundtruth-xray-pv-gaussian" "$SCRIPT_DIR/bin/$BIN_SUBDIR/api_powderpattern" "powder-groundtruth-xray-pv-gaussian"
-# run_test "unit::powder-groundtruth-xray-pv-lorentzian" "$SCRIPT_DIR/bin/$BIN_SUBDIR/api_powderpattern" "powder-groundtruth-xray-pv-lorentzian"
+run_test "unit::powder-groundtruth-xray-pv-gaussian" "$SCRIPT_DIR/bin/$BIN_SUBDIR/api_powderpattern" "powder-groundtruth-xray-pv-gaussian"
+run_test "unit::powder-groundtruth-xray-pv-lorentzian" "$SCRIPT_DIR/bin/$BIN_SUBDIR/api_powderpattern" "powder-groundtruth-xray-pv-lorentzian"
 run_test "unit::reflectionprofile-pv-anisotropic-direct" "$SCRIPT_DIR/bin/$BIN_SUBDIR/api_powderpattern" "reflectionprofile-pv-anisotropic-direct"
-# run_test "unit::powder-groundtruth-xray-anisotropic" "$SCRIPT_DIR/bin/$BIN_SUBDIR/api_powderpattern" "powder-groundtruth-xray-anisotropic"
-# run_test "unit::powder-groundtruth-neutron-pv-gaussian" "$SCRIPT_DIR/bin/$BIN_SUBDIR/api_powderpattern" "powder-groundtruth-neutron-pv-gaussian"
-# run_test "unit::powder-groundtruth-neutron-pv-lorentzian" "$SCRIPT_DIR/bin/$BIN_SUBDIR/api_powderpattern" "powder-groundtruth-neutron-pv-lorentzian"
+run_test "unit::powder-groundtruth-xray-anisotropic" "$SCRIPT_DIR/bin/$BIN_SUBDIR/api_powderpattern" "powder-groundtruth-xray-anisotropic"
+run_test "unit::powder-groundtruth-neutron-pv-gaussian" "$SCRIPT_DIR/bin/$BIN_SUBDIR/api_powderpattern" "powder-groundtruth-neutron-pv-gaussian"
+run_test "unit::powder-groundtruth-neutron-pv-lorentzian" "$SCRIPT_DIR/bin/$BIN_SUBDIR/api_powderpattern" "powder-groundtruth-neutron-pv-lorentzian"
