@@ -1,6 +1,6 @@
 # Release notes
 
-## Version 2026.2
+## Version 2026.2,  - 2026-08-07
 
 ### Changed
 - sync objcryst submodule to upstream `vincefn/objcryst` commit `4091cd9`, including:
