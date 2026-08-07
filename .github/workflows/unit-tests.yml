@@ -62,7 +62,7 @@ jobs:
       - name: Locate built library
         shell: bash -el {0}
         run: |
-          libpath="$(find build -type f \( -name 'libObjCryst.so' -o -name 'libObjCryst.dylib' \) | head -n 1)"
+          libpath="$(find "$PWD/build" -type f \( -name 'libObjCryst.so' -o -name 'libObjCryst.dylib' \) | head -n 1)"
           if [ -z "$libpath" ]; then
             echo "No built libObjCryst library found under build/"
             exit 1
