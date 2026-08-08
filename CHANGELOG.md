@@ -1,5 +1,14 @@
 # Release notes
 
+## Version 2026.2.0,  - 2026-08-07
+
+### Changed
+- sync objcryst submodule to upstream `vincefn/objcryst` commit `4091cd9`, including:
+  - CIF parser robustness fix for truncated input
+  - fix for single-crystal simulation crashes
+  - refinement guards for missing data/phase and empty MonteCarloObj
+- libobjcryst standalone workflow to build and run the upstream non-GUI unit-test suite
+
 ## Version 2026.1,  - 2026-02-05
 
 ### Changed
