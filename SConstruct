@@ -124,6 +124,10 @@ vars.Add(EnumVariable(
     'compiler settings',
     'fast', allowed_values=('debug', 'fast')))
 vars.Add(EnumVariable(
+    'warnings',
+    'warning flags policy',
+    'all', allowed_values=('all', 'none', 'default')))
+vars.Add(EnumVariable(
     'tool',
     'C++ compiler toolkit to be used',
     'default', allowed_values=('default', 'intelc')))

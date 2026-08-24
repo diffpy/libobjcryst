@@ -42,7 +42,10 @@ else:
         fast_optimflags = ['-fast', '-no-ipo']
     else:
         # g++ options
-        env.PrependUnique(CCFLAGS=['-Wall'])
+        if env['warnings'] == 'all':
+            env.PrependUnique(CCFLAGS=['-Wall'])
+        elif env['warnings'] == 'none':
+            env.PrependUnique(CCFLAGS=['-w'])
         fast_optimflags = ['-ffast-math']
 
     # Configure build variants
