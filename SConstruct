@@ -140,6 +140,14 @@ vars.Add(BoolVariable(
 vars.Add(BoolVariable(
     'with_shared_cctbx',
     'compile and link with the shared cctbx library', False))
+vars.Add(
+    'arch',
+    'target CPU passed to -march in the \'fast\' build. Empty (the default) means '
+    'no -march => maximum portability. Set \'x86-64-v3\' for a portable AVX2/FMA '
+    'build (Intel Haswell 2013+, AMD Zen 2017+), \'native\' for a machine-specific '
+    'build, or \'x86-64-v4\' for AVX-512. Also settable via the OBJCRYST_ARCH '
+    'environment variable.',
+    os.environ.get('OBJCRYST_ARCH', ''))
 
 vars.Update(env)
 SetOption('silent', not env['verbose'])

@@ -55,6 +55,8 @@ else:
         elif env['warnings'] == 'none':
             env.PrependUnique(CCFLAGS=['-w'])
         fast_optimflags = ['-ffast-math']
+        if env.get('arch'):
+            fast_optimflags.append('-march=' + env['arch'])
 
     # Configure build variants
     if env['build'] == 'debug':
