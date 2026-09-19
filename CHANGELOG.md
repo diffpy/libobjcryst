@@ -1,6 +1,6 @@
 # Release notes
 
-## Version 2026.3.0, - 2026-09-10
+## Version 2026.3.0, - 2026-09-19
 
 ### Added
 - `PowderPatternBackgroundHist` for a fixed background histogram with a
