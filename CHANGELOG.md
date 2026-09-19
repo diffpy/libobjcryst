@@ -13,7 +13,7 @@
   (#78 @vincefn)
 
 ### Changed
-- sync objcryst submodule to upstream `vincefn/objcryst` commit `30fc8df`
+- sync objcryst submodule to upstream `vincefn/objcryst` commit `9f2f5a4`
 - allow SCons build-command verbosity to be configured (#32 @clemisch)
 - allow the target CPU passed to `-march` to be configured for fast builds
   (#33 @clemisch)
@@ -23,6 +23,8 @@
 ### Fixed
 - anisotropic pseudo-Voigt profile construction (#93 @clemisch)
 - buffer overflow risk in `MonteCarloObj` XML autosave filenames (#89 @vincefn)
+- Le Bail extraction now refreshes extracted intensities when reflection count
+  changes (#99 @clemisch)
 
 ## Version 2026.2.0,  - 2026-08-07
 
