@@ -1,5 +1,31 @@
 # Release notes
 
+## Version 2026.3.0, - 2026-09-19
+
+### Added
+- `PowderPatternBackgroundHist` for a fixed background histogram with a
+  refinable scale factor (#94 @clemisch)
+- `ReflectionProfilePseudoVoigtTCH`, implementing the Thompson-Cox-Hastings
+  pseudo-Voigt profile (#97 @clemisch)
+- optional Rwp convergence threshold and per-cycle Rw history for
+  `LSQNumObj::Refine()` (#90 @clemisch, #91 @clemisch)
+- `RefinableParProxy` for locally named aliases of refinable parameters
+  (#78 @vincefn)
+
+### Changed
+- sync objcryst submodule to upstream `vincefn/objcryst` commit `9f2f5a4`
+- allow SCons build-command verbosity to be configured (#32 @clemisch)
+- allow the target CPU passed to `-march` to be configured for fast builds
+  (#33 @clemisch)
+- evaluate Chi2 and Rwp convergence thresholds using the absolute change
+  (#96 @clemisch)
+
+### Fixed
+- anisotropic pseudo-Voigt profile construction (#93 @clemisch)
+- buffer overflow risk in `MonteCarloObj` XML autosave filenames (#89 @vincefn)
+- Le Bail extraction now refreshes extracted intensities when reflection count
+  changes (#99 @clemisch)
+
 ## Version 2026.2.0,  - 2026-08-07
 
 ### Changed
